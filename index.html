@@ -403,7 +403,6 @@
             display: block;
         }
 
-        /* ESTILOS PARA BLOQUEO DE PANTALLA */
         #lockButton {
             position: fixed;
             top: 15px;
@@ -1815,11 +1814,13 @@
     function toggleShuffle() {
         shuffleMode = !shuffleMode;
         document.getElementById('btnShuffle').classList.toggle('btn-active', shuffleMode);
+        saveConfigToLocalStorage();
     }
     function toggleRepeat() {
         repeatMode = !repeatMode;
         if (currentAudio) currentAudio.loop = repeatMode;
         document.getElementById('btnRepeat').classList.toggle('btn-active', repeatMode);
+        saveConfigToLocalStorage();
     }
     document.getElementById('musicFiles').addEventListener('change', function() { if (this.files.length) loadPlaylistFromInput(this.files); });
     document.getElementById('musicVolume').addEventListener('input', function() { if (currentAudio) currentAudio.volume = getMusicVolume(); });
@@ -1839,7 +1840,9 @@
             sequentialMode: document.getElementById('sequentialMode').checked,
             repeatStats: document.getElementById('repeatStats').checked,
             accThreshold: document.getElementById('accThreshold').value,
-            musicVolume: document.getElementById('musicVolume').value
+            musicVolume: document.getElementById('musicVolume').value,
+            shuffleMode: shuffleMode,
+            repeatMode: repeatMode
         };
 
         localStorage.setItem('gps_config', JSON.stringify(config));
@@ -1859,6 +1862,16 @@
             if (config.repeatStats !== undefined) document.getElementById('repeatStats').checked = config.repeatStats;
             if (config.accThreshold !== undefined) document.getElementById('accThreshold').value = config.accThreshold;
             if (config.musicVolume !== undefined) document.getElementById('musicVolume').value = config.musicVolume;
+            
+            // Restaurar estado de Música local (Aleatorio y Repetir)
+            if (config.shuffleMode !== undefined) {
+                shuffleMode = config.shuffleMode;
+                document.getElementById('btnShuffle').classList.toggle('btn-active', shuffleMode);
+            }
+            if (config.repeatMode !== undefined) {
+                repeatMode = config.repeatMode;
+                document.getElementById('btnRepeat').classList.toggle('btn-active', repeatMode);
+            }
 
             if (currentAudio) currentAudio.volume = getMusicVolume();
         } catch (e) {
@@ -1877,7 +1890,6 @@
         if (this.checked) saveConfigToLocalStorage();
     });
 
-    // FUNCIONES PARA BLOQUEO DE PANTALLA
     function lockScreen() {
         isScreenLocked = true;
         document.getElementById('lockOverlay').classList.add('active');
