@@ -812,10 +812,6 @@
     function centerMap() {
         if (lastPosition && map) {
             map.setView([lastPosition.coords.latitude, lastPosition.coords.longitude], Math.max(map.getZoom(), 16));
-            if (!isFollowing) {
-                isFollowing = true;
-                document.getElementById('btnFollow').innerText = `Seguir: ON`;
-            }
         }
     }
 
@@ -1206,23 +1202,17 @@
             const existingContent = textarea.value.trim();
             const newContent = plainTextLines.join('\n');
             
-            // NUEVO: Registrar cuántos puntos existían antes de cargar los de ORS
-            const existingLinesCount = existingContent 
-                ? existingContent.split('\n').filter(l => l.trim()).length 
-                : 0;
-            
             if (existingContent) {
                 textarea.value = existingContent + '\n' + newContent;
-                logHistory(`Ruta de ORS agregada. Se conservaron ${existingLinesCount} puntos existentes.`);
+                logHistory(`Ruta de ORS agregada. Se conservaron ${existingContent.split('\n').length} puntos existentes.`);
             } else {
                 textarea.value = newContent;
             }
             
             loadPoints();
-            
-            // NUEVO: Marcar los puntos recién agregados como de origen 'ORS'
-            for (let i = existingLinesCount; i < points.length; i++) {
-                points[i].source = 'ORS';
+            const orsStart = points.length - plainTextLines.length;
+            for (let i = Math.max(0, orsStart); i < points.length; i++) {
+                points[i].isORS = true;
             }
 
             const leafletCoords = routeCoordinates.map(c => [c[1], c[0]]);
@@ -1313,7 +1303,7 @@
         if (n === 0)  return 'cero';
         if (n === 100) return 'cien';
         if (n < 20)   return ones[n];
-        if (n < 30)   return n === 20 ? 'veinte' : 'venti' + ones[n - 20];
+        if (n < 30)   return n === 20 ? 'veinte' : 'veinti' + ones[n - 20];
         if (n < 100) {
             const t = Math.floor(n / 10), u = n % 10;
             return u === 0 ? tens[t] : tens[t] + ' y ' + ones[u];
@@ -1374,7 +1364,7 @@
         let m = now.getMinutes();
         if (h > 12) h -= 12;
         if (h === 0) h = 12;
-        const timeText = `${h} y ${m}`; 
+        const timeText = m === 0 ? `${h} en punto` : `${h} y ${m}`;
 
         return {
             timeText,
@@ -1391,7 +1381,6 @@
         return `Son las ${s.timeText}. Velocidad actual ${s.currSpeedText} kilómetros por hora. Velocidad media ${s.avgSpeedText} kilómetros por hora. Distancia recorrida ${s.distanceText.toFixed(1)} kilómetros. Tiempo de viaje ${s.tripMinutesText} minutos. Precisión del GPS ${s.accuracyText} metros.`;
     }
 
-    // MODIFICADO: parseLine ahora asigna source por defecto 'MANUAL'
     function parseLine(line) {
         const trimmed = line.trim();
         if (!trimmed) return null;
@@ -1420,10 +1409,14 @@
             msg = rest;
         }
 
-        return { lat, lon, type, msg, triggered: false, anticipated: false, source: 'MANUAL' };
+        return { lat, lon, type, msg, triggered: false, anticipated: false, isORS: false };
     }
 
     function loadPoints() {
+        const hasProgress = watchId !== null && points.some(p => p.triggered);
+        if (hasProgress) {
+            if (!confirm('Estás en medio de una ruta activa. ¿Cargar nuevos puntos y perder el progreso actual?')) return;
+        }
         const text = document.getElementById('inputData').value;
         points = text.split('\n').map(line => parseLine(line)).filter(p => p !== null);
         updateTable();
@@ -1678,13 +1671,10 @@
                 if (idx >= 0) {
                     const dist = getDistance(latitude, longitude, points[idx].lat, points[idx].lon);
                     
-                    // MODIFICADO: Alerta anticipada SOLO para puntos de origen ORS
-                    if (dist <= anticipationDistance && !points[idx].anticipated && points[idx].source === 'ORS') {
+                    if ((points[idx].isORS || points[idx].type === 'ESTADISTICAS') && dist <= anticipationDistance && !points[idx].anticipated) {
                         points[idx].anticipated = true;
-                        const advanceMsg = points[idx].type === 'ESTADISTICAS'
-                            ? 'Prepárate, estadísticas próximamente'
-                            : `Prepárate: ${points[idx].msg || ''}`;
-                        speak(advanceMsg);
+                        const anticipMsg = points[idx].type === 'ESTADISTICAS' ? 'Preparate, estadísticas próximamente' : `Preparate: ${points[idx].msg}`;
+                        speak(anticipMsg);
                         logHistory(`Alerta anticipada: ${points[idx].msg || points[idx].type} (${Math.round(dist)}m)`);
                     }
                     
@@ -1697,13 +1687,10 @@
                     if (!p.triggered) {
                         const dist = getDistance(latitude, longitude, p.lat, p.lon);
                         
-                        // MODIFICADO: Alerta anticipada SOLO para puntos de origen ORS
-                        if (dist <= anticipationDistance && !p.anticipated && p.source === 'ORS') {
+                        if ((p.isORS || p.type === 'ESTADISTICAS') && dist <= anticipationDistance && !p.anticipated) {
                             p.anticipated = true;
-                            const advanceMsg = p.type === 'ESTADISTICAS'
-                                ? 'Prepárate, estadísticas próximamente'
-                                : `Prepárate: ${p.msg || ''}`;
-                            speak(advanceMsg);
+                            const anticipMsg = p.type === 'ESTADISTICAS' ? 'Preparate, estadísticas próximamente' : `Preparate: ${p.msg}`;
+                            speak(anticipMsg);
                             logHistory(`Alerta anticipada: ${p.msg || p.type} (${Math.round(dist)}m)`);
                         }
                         
@@ -1715,20 +1702,27 @@
             }
 
             if (document.getElementById('repeatStats').checked) {
+                let statsReset = false;
                 points.forEach(p => {
                     if (p.type === 'ESTADISTICAS' && p.triggered) {
                         const dist = getDistance(latitude, longitude, p.lat, p.lon);
                         if (dist > radius * 1.5) {
                             p.triggered = false;
                             p.anticipated = false;
+                            statsReset = true;
                         }
                     }
                 });
+                if (statsReset) updateTable();
             }
-
-            updateTable();
         }, (err) => {
-            document.getElementById('status').innerText = "Error GPS";
+            let errMsg = 'Error de GPS desconocido.';
+            if (err.code === 1) errMsg = 'Permiso de ubicación denegado.';
+            else if (err.code === 2) errMsg = 'Señal GPS no disponible.';
+            else if (err.code === 3) errMsg = 'Tiempo de espera del GPS agotado.';
+            document.getElementById('status').innerText = 'Error GPS: ' + errMsg;
+            speak(errMsg);
+            logHistory('Error GPS: ' + errMsg);
         }, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
     }
 
@@ -1847,6 +1841,9 @@
     document.getElementById('musicVolume').addEventListener('input', function() { if (currentAudio) currentAudio.volume = getMusicVolume(); });
     document.getElementById('globalVolume').addEventListener('input', function() { if (currentAudio) currentAudio.volume = getMusicVolume(); });
 
+    /* =========================================================
+       PERSISTENCIA DE DATOS - GUARDAR CONFIGURACIÓN AUTOMÁTICA
+       ========================================================= */
     function saveConfigToLocalStorage() {
         const saveStateChecked = document.getElementById('saveState').checked;
         if (!saveStateChecked) return;
@@ -1881,6 +1878,7 @@
             if (config.accThreshold !== undefined) document.getElementById('accThreshold').value = config.accThreshold;
             if (config.musicVolume !== undefined) document.getElementById('musicVolume').value = config.musicVolume;
             
+            // Restaurar estado de Música local (Aleatorio y Repetir)
             if (config.shuffleMode !== undefined) {
                 shuffleMode = config.shuffleMode;
                 document.getElementById('btnShuffle').classList.toggle('btn-active', shuffleMode);
