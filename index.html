@@ -1209,10 +1209,11 @@
                 textarea.value = newContent;
             }
             
-            loadPoints();
-            const orsStart = points.length - plainTextLines.length;
-            for (let i = Math.max(0, orsStart); i < points.length; i++) {
-                points[i].isORS = true;
+            if (loadPoints()) {
+                const orsStart = points.length - plainTextLines.length;
+                for (let i = Math.max(0, orsStart); i < points.length; i++) {
+                    points[i].isORS = true;
+                }
             }
 
             const leafletCoords = routeCoordinates.map(c => [c[1], c[0]]);
@@ -1415,13 +1416,14 @@
     function loadPoints() {
         const hasProgress = watchId !== null && points.some(p => p.triggered);
         if (hasProgress) {
-            if (!confirm('Estás en medio de una ruta activa. ¿Cargar nuevos puntos y perder el progreso actual?')) return;
+            if (!confirm('Estás en medio de una ruta activa. ¿Cargar nuevos puntos y perder el progreso actual?')) return false;
         }
         const text = document.getElementById('inputData').value;
         points = text.split('\n').map(line => parseLine(line)).filter(p => p !== null);
         updateTable();
         redrawPointMarkers();
         renderPointsList();
+        return true;
     }
 
     function renderPointsList() {
@@ -1671,7 +1673,7 @@
                 if (idx >= 0) {
                     const dist = getDistance(latitude, longitude, points[idx].lat, points[idx].lon);
                     
-                    if ((points[idx].isORS || points[idx].type === 'ESTADISTICAS') && dist <= anticipationDistance && !points[idx].anticipated) {
+                    if ((points[idx].isORS || points[idx].type === 'ESTADISTICAS') && dist <= radius + Math.max(anticipationDistance, 30) && !points[idx].anticipated) {
                         points[idx].anticipated = true;
                         const anticipMsg = points[idx].type === 'ESTADISTICAS' ? 'Preparate, estadísticas próximamente' : `Preparate: ${points[idx].msg}`;
                         speak(anticipMsg);
@@ -1687,7 +1689,7 @@
                     if (!p.triggered) {
                         const dist = getDistance(latitude, longitude, p.lat, p.lon);
                         
-                        if ((p.isORS || p.type === 'ESTADISTICAS') && dist <= anticipationDistance && !p.anticipated) {
+                        if ((p.isORS || p.type === 'ESTADISTICAS') && dist <= radius + Math.max(anticipationDistance, 30) && !p.anticipated) {
                             p.anticipated = true;
                             const anticipMsg = p.type === 'ESTADISTICAS' ? 'Preparate, estadísticas próximamente' : `Preparate: ${p.msg}`;
                             speak(anticipMsg);
