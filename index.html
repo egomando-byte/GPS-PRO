@@ -1190,7 +1190,6 @@
                             const instruction = step.instruction;
 
                             if (stepCoord && instruction) {
-                                // CAMBIO CLAVE: Agregar ",ORS" como 4ta columna para marcar el origen
                                 plainTextLines.push(`${stepCoord[1].toFixed(6)},${stepCoord[0].toFixed(6)},${instruction.trim()},ORS`);
                             }
                         });
@@ -1214,8 +1213,6 @@
                 textarea.value = newContent;
             }
             
-            // Ahora loadPoints() automáticamente marcará cada punto como ORS o MANUAL
-            // gracias al parseLine() mejorado que detecta la 4ta columna
             loadPoints();
 
             const leafletCoords = routeCoordinates.map(c => [c[1], c[0]]);
@@ -1384,7 +1381,8 @@
         return `Son las ${s.timeText}. Velocidad actual ${s.currSpeedText} kilómetros por hora. Velocidad media ${s.avgSpeedText} kilómetros por hora. Distancia recorrida ${s.distanceText.toFixed(1)} kilómetros. Tiempo de viaje ${s.tripMinutesText} minutos. Precisión del GPS ${s.accuracyText} metros.`;
     }
 
-    // CAMBIO CLAVE: parseLine ahora detecta la 4ta columna opcional para el source
+    // CORRECCIÓN DEL BUG DE LA COMA: Solo se reconoce ",ORS" o ",MANUAL" como source
+    // Cualquier otra cosa después de una coma se considera parte del mensaje
     function parseLine(line) {
         const trimmed = line.trim();
         if (!trimmed) return null;
@@ -1402,14 +1400,18 @@
         const lon = parseFloat(lonStr);
         if (isNaN(lat) || isNaN(lon) || !rest) return null;
 
-        // Buscar una 4ta columna (separada por coma después del mensaje)
-        const thirdComma = rest.indexOf(',');
         let messagePart = rest;
         let sourcePart = 'MANUAL';
         
-        if (thirdComma !== -1) {
-            messagePart = rest.substring(0, thirdComma).trim();
-            sourcePart = rest.substring(thirdComma + 1).trim().toUpperCase();
+        // Buscar la ÚLTIMA coma: solo si lo que sigue es exactamente "ORS" o "MANUAL"
+        // Esto permite mensajes con comas como "Cuidado, puente angosto"
+        const lastComma = rest.lastIndexOf(',');
+        if (lastComma !== -1) {
+            const potentialSource = rest.substring(lastComma + 1).trim().toUpperCase();
+            if (potentialSource === 'ORS' || potentialSource === 'MANUAL') {
+                messagePart = rest.substring(0, lastComma).trim();
+                sourcePart = potentialSource;
+            }
         }
 
         const rawRest = messagePart.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
@@ -1430,7 +1432,7 @@
             msg, 
             triggered: false, 
             anticipated: false, 
-            source: sourcePart  // 'ORS' si vino de OpenRouteService, 'MANUAL' si no
+            source: sourcePart
         };
     }
 
@@ -1600,14 +1602,11 @@
                   .replaceAll('${tiempo}', stats.tripMinutesText);
     }
 
-    // CAMBIO: rebuildTextarea ahora incluye el source para persistir el origen del punto
     function rebuildTextarea() {
         document.getElementById('inputData').value = points.map(p => {
             if (p.type === 'ESTADISTICAS') {
-                // Para ESTADISTICAS, preservar el source original
                 return `${p.lat.toFixed(6)},${p.lon.toFixed(6)},ESTADISTICAS${p.source === 'ORS' ? ',ORS' : ''}`;
             }
-            // Para otros puntos, incluir el source si es ORS
             return `${p.lat.toFixed(6)},${p.lon.toFixed(6)},${p.msg}${p.source === 'ORS' ? ',ORS' : ''}`;
         }).join('\n');
     }
@@ -1685,7 +1684,6 @@
 
             const sequential = document.getElementById('sequentialMode').checked;
             
-            // Lógica de anticipación: mínimo 50m garantizado, idealmente basado en velocidad × tiempo de reacción
             const speedMs = currentPositionSpeedKmh / 3.6;
             const reactionTimeSeconds = 10;
             const minAnticipationDistance = 50;
@@ -1701,8 +1699,9 @@
                 if (idx >= 0) {
                     const dist = getDistance(latitude, longitude, points[idx].lat, points[idx].lon);
                     
-                    // SOLO anticipar si el punto tiene source === 'ORS'
-                    if (dist <= anticipationDistance && !points[idx].anticipated && points[idx].source === 'ORS') {
+                    // Anticipar SI el punto es ORS O si es ESTADISTICAS (manual u ORS)
+                    if (dist <= anticipationDistance && !points[idx].anticipated && 
+                        (points[idx].source === 'ORS' || points[idx].type === 'ESTADISTICAS')) {
                         points[idx].anticipated = true;
                         anticipateTriggeredThisTick = true;
                         const advanceMsg = points[idx].type === 'ESTADISTICAS'
@@ -1721,8 +1720,9 @@
                     if (!p.triggered) {
                         const dist = getDistance(latitude, longitude, p.lat, p.lon);
                         
-                        // SOLO anticipar si el punto tiene source === 'ORS'
-                        if (dist <= anticipationDistance && !p.anticipated && p.source === 'ORS') {
+                        // Anticipar SI el punto es ORS O si es ESTADISTICAS (manual u ORS)
+                        if (dist <= anticipationDistance && !p.anticipated && 
+                            (p.source === 'ORS' || p.type === 'ESTADISTICAS')) {
                             p.anticipated = true;
                             anticipateTriggeredThisTick = true;
                             const advanceMsg = p.type === 'ESTADISTICAS'
