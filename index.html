@@ -735,6 +735,8 @@
     let lastPosition = null;
     let totalDistanceMeters = 0;
     let startTime = null;
+    let totalPausedMs = 0;
+    let pauseStartTime = null;
     let latestAccuracy = null;
     let currentPositionSpeedKmh = 0;
     let lastAccuracyWarn = 0;
@@ -1003,7 +1005,7 @@
             const line = `${pendingClickLatLng.lat.toFixed(6)},${pendingClickLatLng.lng.toFixed(6)},${finalMessage.trim()}`;
             const textarea = document.getElementById('inputData');
             textarea.value = textarea.value.trim() ? textarea.value.trim() + '\n' + line : line;
-            loadPoints();
+            loadPoints(true);
         }
 
         document.getElementById('pointDialog').close();
@@ -1213,7 +1215,7 @@
                 textarea.value = newContent;
             }
             
-            loadPoints();
+            loadPoints(true);
 
             const leafletCoords = routeCoordinates.map(c => [c[1], c[0]]);
             if (orsRouteLine) {
@@ -1303,7 +1305,7 @@
         if (n === 0)  return 'cero';
         if (n === 100) return 'cien';
         if (n < 20)   return ones[n];
-        if (n < 30)   return n === 20 ? 'veinte' : 'venti' + ones[n - 20];
+        if (n < 30)   return n === 20 ? 'veinte' : 'veinti' + ones[n - 20];
         if (n < 100) {
             const t = Math.floor(n / 10), u = n % 10;
             return u === 0 ? tens[t] : tens[t] + ' y ' + ones[u];
@@ -1356,7 +1358,7 @@
 
     function currentStats() {
         const now = new Date();
-        const elapsed = startTime ? (Date.now() - startTime) : 0;
+        const elapsed = startTime ? (Date.now() - startTime - totalPausedMs) : 0;
         const avgSpeed = elapsed > 0 ? ((totalDistanceMeters / (elapsed / 1000)) * 3.6) : 0;
         const currSpeed = currentPositionSpeedKmh || 0;
         
@@ -1364,7 +1366,7 @@
         let m = now.getMinutes();
         if (h > 12) h -= 12;
         if (h === 0) h = 12;
-        const timeText = `${h} y ${m}`; 
+        const timeText = m === 0 ? `${h} en punto` : `${h} y ${m}`;
 
         return {
             timeText,
@@ -1436,12 +1438,19 @@
         };
     }
 
-    function loadPoints() {
+    function loadPoints(skipConfirm) {
+        if (!skipConfirm) {
+            const hasProgress = watchId !== null && points.some(p => p.triggered);
+            if (hasProgress) {
+                if (!confirm('Estás en medio de una ruta activa. ¿Cargar nuevos puntos y perder el progreso actual?')) return false;
+            }
+        }
         const text = document.getElementById('inputData').value;
         points = text.split('\n').map(line => parseLine(line)).filter(p => p !== null);
         updateTable();
         redrawPointMarkers();
         renderPointsList();
+        return true;
     }
 
     function renderPointsList() {
@@ -1645,7 +1654,14 @@
         if (noSleep) noSleep.enable().catch(() => {});
         
         document.getElementById('status').innerText = "Navegando...";
-        startTime = startTime || Date.now();
+        if (startTime === null) {
+            startTime = Date.now();
+            totalPausedMs = 0;
+            pauseStartTime = null;
+        } else if (pauseStartTime !== null) {
+            totalPausedMs += Date.now() - pauseStartTime;
+            pauseStartTime = null;
+        }
         logHistory("Navegación iniciada.");
         updateGPSOriginHint();
 
@@ -1720,11 +1736,12 @@
                     if (!p.triggered) {
                         const dist = getDistance(latitude, longitude, p.lat, p.lon);
                         
+                        let anticipatedThisPoint = false;
                         // Anticipar SI el punto es ORS O si es ESTADISTICAS (manual u ORS)
                         if (dist <= anticipationDistance && !p.anticipated && 
                             (p.source === 'ORS' || p.type === 'ESTADISTICAS')) {
                             p.anticipated = true;
-                            anticipateTriggeredThisTick = true;
+                            anticipatedThisPoint = true;
                             const advanceMsg = p.type === 'ESTADISTICAS'
                                 ? 'Prepárate, estadísticas próximamente'
                                 : `Prepárate: ${p.msg || ''}`;
@@ -1732,7 +1749,7 @@
                             logHistory(`Alerta anticipada: ${p.msg || p.type} (${Math.round(dist)}m)`);
                         }
                         
-                        if (dist <= radius && !anticipateTriggeredThisTick) {
+                        if (dist <= radius && !anticipatedThisPoint) {
                             triggerPoint(p);
                         }
                     }
@@ -1751,9 +1768,14 @@
                 });
             }
 
-            updateTable();
         }, (err) => {
-            document.getElementById('status').innerText = "Error GPS";
+            let errMsg = 'Error de GPS desconocido.';
+            if (err.code === 1) errMsg = 'Permiso de ubicación denegado.';
+            else if (err.code === 2) errMsg = 'Señal GPS no disponible.';
+            else if (err.code === 3) errMsg = 'Tiempo de espera del GPS agotado.';
+            document.getElementById('status').innerText = 'Error GPS: ' + errMsg;
+            speak(errMsg);
+            logHistory('Error GPS: ' + errMsg);
         }, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
     }
 
@@ -1761,6 +1783,7 @@
         if (watchId !== null) {
             navigator.geolocation.clearWatch(watchId);
             watchId = null;
+            pauseStartTime = Date.now();
             synth.cancel();
             document.getElementById('status').innerText = "Detenido";
             
@@ -1778,7 +1801,7 @@
         document.getElementById('speed').innerText = formatSpeedKmh(speedMps);
 
         if (startTime) {
-            const elapsed = Date.now() - startTime;
+            const elapsed = Date.now() - startTime - totalPausedMs;
             const avg = elapsed > 0 ? (totalDistanceMeters / (elapsed / 1000)) : 0;
             document.getElementById('avgSpeed').innerText = (avg * 3.6).toFixed(0) + " km/h";
             document.getElementById('distanceTravelled').innerText = formatKm(totalDistanceMeters);
