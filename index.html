@@ -1190,7 +1190,8 @@
                             const instruction = step.instruction;
 
                             if (stepCoord && instruction) {
-                                plainTextLines.push(`${stepCoord[1].toFixed(6)},${stepCoord[0].toFixed(6)},${instruction.trim()}`);
+                                // CAMBIO CLAVE: Agregar ",ORS" como 4ta columna para marcar el origen
+                                plainTextLines.push(`${stepCoord[1].toFixed(6)},${stepCoord[0].toFixed(6)},${instruction.trim()},ORS`);
                             }
                         });
                     }
@@ -1206,24 +1207,16 @@
             const existingContent = textarea.value.trim();
             const newContent = plainTextLines.join('\n');
             
-            // CORREGIDO: Contar puntos VÁLIDOS existentes (no líneas)
-            const existingValidCount = existingContent
-                ? existingContent.split('\n').map(parseLine).filter(p => p !== null).length
-                : 0;
-            
             if (existingContent) {
                 textarea.value = existingContent + '\n' + newContent;
-                logHistory(`Ruta de ORS agregada. Se conservaron ${existingValidCount} puntos existentes.`);
+                logHistory(`Ruta de ORS agregada al final de los puntos existentes.`);
             } else {
                 textarea.value = newContent;
             }
             
+            // Ahora loadPoints() automáticamente marcará cada punto como ORS o MANUAL
+            // gracias al parseLine() mejorado que detecta la 4ta columna
             loadPoints();
-            
-            // Marcar los puntos recién agregados como de origen 'ORS'
-            for (let i = existingValidCount; i < points.length; i++) {
-                points[i].source = 'ORS';
-            }
 
             const leafletCoords = routeCoordinates.map(c => [c[1], c[0]]);
             if (orsRouteLine) {
@@ -1391,6 +1384,7 @@
         return `Son las ${s.timeText}. Velocidad actual ${s.currSpeedText} kilómetros por hora. Velocidad media ${s.avgSpeedText} kilómetros por hora. Distancia recorrida ${s.distanceText.toFixed(1)} kilómetros. Tiempo de viaje ${s.tripMinutesText} minutos. Precisión del GPS ${s.accuracyText} metros.`;
     }
 
+    // CAMBIO CLAVE: parseLine ahora detecta la 4ta columna opcional para el source
     function parseLine(line) {
         const trimmed = line.trim();
         if (!trimmed) return null;
@@ -1408,7 +1402,17 @@
         const lon = parseFloat(lonStr);
         if (isNaN(lat) || isNaN(lon) || !rest) return null;
 
-        const rawRest = rest.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+        // Buscar una 4ta columna (separada por coma después del mensaje)
+        const thirdComma = rest.indexOf(',');
+        let messagePart = rest;
+        let sourcePart = 'MANUAL';
+        
+        if (thirdComma !== -1) {
+            messagePart = rest.substring(0, thirdComma).trim();
+            sourcePart = rest.substring(thirdComma + 1).trim().toUpperCase();
+        }
+
+        const rawRest = messagePart.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
 
         let type = 'INFO';
         let msg  = '';
@@ -1416,10 +1420,18 @@
         if (rawRest === 'ESTADISTICAS') {
             type = 'ESTADISTICAS';
         } else {
-            msg = rest;
+            msg = messagePart;
         }
 
-        return { lat, lon, type, msg, triggered: false, anticipated: false, source: 'MANUAL' };
+        return { 
+            lat, 
+            lon, 
+            type, 
+            msg, 
+            triggered: false, 
+            anticipated: false, 
+            source: sourcePart  // 'ORS' si vino de OpenRouteService, 'MANUAL' si no
+        };
     }
 
     function loadPoints() {
@@ -1588,10 +1600,15 @@
                   .replaceAll('${tiempo}', stats.tripMinutesText);
     }
 
+    // CAMBIO: rebuildTextarea ahora incluye el source para persistir el origen del punto
     function rebuildTextarea() {
         document.getElementById('inputData').value = points.map(p => {
-            if (p.type === 'ESTADISTICAS') return `${p.lat.toFixed(6)},${p.lon.toFixed(6)},ESTADISTICAS`;
-            return `${p.lat.toFixed(6)},${p.lon.toFixed(6)},${p.msg}`;
+            if (p.type === 'ESTADISTICAS') {
+                // Para ESTADISTICAS, preservar el source original
+                return `${p.lat.toFixed(6)},${p.lon.toFixed(6)},ESTADISTICAS${p.source === 'ORS' ? ',ORS' : ''}`;
+            }
+            // Para otros puntos, incluir el source si es ORS
+            return `${p.lat.toFixed(6)},${p.lon.toFixed(6)},${p.msg}${p.source === 'ORS' ? ',ORS' : ''}`;
         }).join('\n');
     }
 
@@ -1668,17 +1685,26 @@
 
             const sequential = document.getElementById('sequentialMode').checked;
             
+            // Lógica de anticipación: mínimo 50m garantizado, idealmente basado en velocidad × tiempo de reacción
             const speedMs = currentPositionSpeedKmh / 3.6;
-            const reactionTimeSeconds = 5;
-            const anticipationDistance = speedMs * reactionTimeSeconds;
+            const reactionTimeSeconds = 10;
+            const minAnticipationDistance = 50;
+            const anticipationDistance = Math.max(
+                speedMs * reactionTimeSeconds,
+                minAnticipationDistance
+            );
+            
+            let anticipateTriggeredThisTick = false;
             
             if (sequential) {
                 const idx = points.findIndex(p => !p.triggered);
                 if (idx >= 0) {
                     const dist = getDistance(latitude, longitude, points[idx].lat, points[idx].lon);
                     
+                    // SOLO anticipar si el punto tiene source === 'ORS'
                     if (dist <= anticipationDistance && !points[idx].anticipated && points[idx].source === 'ORS') {
                         points[idx].anticipated = true;
+                        anticipateTriggeredThisTick = true;
                         const advanceMsg = points[idx].type === 'ESTADISTICAS'
                             ? 'Prepárate, estadísticas próximamente'
                             : `Prepárate: ${points[idx].msg || ''}`;
@@ -1686,7 +1712,7 @@
                         logHistory(`Alerta anticipada: ${points[idx].msg || points[idx].type} (${Math.round(dist)}m)`);
                     }
                     
-                    if (dist <= radius) {
+                    if (dist <= radius && !anticipateTriggeredThisTick) {
                         triggerPoint(points[idx]);
                     }
                 }
@@ -1695,8 +1721,10 @@
                     if (!p.triggered) {
                         const dist = getDistance(latitude, longitude, p.lat, p.lon);
                         
+                        // SOLO anticipar si el punto tiene source === 'ORS'
                         if (dist <= anticipationDistance && !p.anticipated && p.source === 'ORS') {
                             p.anticipated = true;
+                            anticipateTriggeredThisTick = true;
                             const advanceMsg = p.type === 'ESTADISTICAS'
                                 ? 'Prepárate, estadísticas próximamente'
                                 : `Prepárate: ${p.msg || ''}`;
@@ -1704,7 +1732,7 @@
                             logHistory(`Alerta anticipada: ${p.msg || p.type} (${Math.round(dist)}m)`);
                         }
                         
-                        if (dist <= radius) {
+                        if (dist <= radius && !anticipateTriggeredThisTick) {
                             triggerPoint(p);
                         }
                     }
