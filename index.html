@@ -1383,8 +1383,6 @@
         return `Son las ${s.timeText}. Velocidad actual ${s.currSpeedText} kilómetros por hora. Velocidad media ${s.avgSpeedText} kilómetros por hora. Distancia recorrida ${s.distanceText.toFixed(1)} kilómetros. Tiempo de viaje ${s.tripMinutesText} minutos. Precisión del GPS ${s.accuracyText} metros.`;
     }
 
-    // CORRECCIÓN DEL BUG DE LA COMA: Solo se reconoce ",ORS" o ",MANUAL" como source
-    // Cualquier otra cosa después de una coma se considera parte del mensaje
     function parseLine(line) {
         const trimmed = line.trim();
         if (!trimmed) return null;
@@ -1405,8 +1403,6 @@
         let messagePart = rest;
         let sourcePart = 'MANUAL';
         
-        // Buscar la ÚLTIMA coma: solo si lo que sigue es exactamente "ORS" o "MANUAL"
-        // Esto permite mensajes con comas como "Cuidado, puente angosto"
         const lastComma = rest.lastIndexOf(',');
         if (lastComma !== -1) {
             const potentialSource = rest.substring(lastComma + 1).trim().toUpperCase();
@@ -1708,52 +1704,51 @@
                 minAnticipationDistance
             );
             
-            let anticipateTriggeredThisTick = false;
-            
             if (sequential) {
                 const idx = points.findIndex(p => !p.triggered);
                 if (idx >= 0) {
                     const dist = getDistance(latitude, longitude, points[idx].lat, points[idx].lon);
                     
-                    // Anticipar SI el punto es ORS O si es ESTADISTICAS (manual u ORS)
-                    if (dist <= anticipationDistance && !points[idx].anticipated && 
+                    if (dist <= radius) {
+                        triggerPoint(points[idx]);
+                    } else if (dist <= anticipationDistance && !points[idx].anticipated && 
                         (points[idx].source === 'ORS' || points[idx].type === 'ESTADISTICAS')) {
                         points[idx].anticipated = true;
-                        anticipateTriggeredThisTick = true;
                         const advanceMsg = points[idx].type === 'ESTADISTICAS'
                             ? 'Prepárate, estadísticas próximamente'
                             : `Prepárate: ${points[idx].msg || ''}`;
                         speak(advanceMsg);
                         logHistory(`Alerta anticipada: ${points[idx].msg || points[idx].type} (${Math.round(dist)}m)`);
                     }
-                    
-                    if (dist <= radius && !anticipateTriggeredThisTick) {
-                        triggerPoint(points[idx]);
-                    }
                 }
             } else {
-                points.forEach((p, idx) => {
+                // MODO FLEXIBLE: Procesar solo el punto más cercano no activado
+                let closestPoint = null;
+                let closestDist = Infinity;
+                
+                points.forEach((p) => {
                     if (!p.triggered) {
                         const dist = getDistance(latitude, longitude, p.lat, p.lon);
-                        
-                        let anticipatedThisPoint = false;
-                        // Anticipar SI el punto es ORS O si es ESTADISTICAS (manual u ORS)
-                        if (dist <= anticipationDistance && !p.anticipated && 
-                            (p.source === 'ORS' || p.type === 'ESTADISTICAS')) {
-                            p.anticipated = true;
-                            anticipatedThisPoint = true;
-                            const advanceMsg = p.type === 'ESTADISTICAS'
-                                ? 'Prepárate, estadísticas próximamente'
-                                : `Prepárate: ${p.msg || ''}`;
-                            speak(advanceMsg);
-                            logHistory(`Alerta anticipada: ${p.msg || p.type} (${Math.round(dist)}m)`);
-                        }
-                        
-                        if (dist <= radius && !anticipatedThisPoint) {
-                            triggerPoint(p);
+                        if (dist < closestDist) {
+                            closestDist = dist;
+                            closestPoint = p;
                         }
                     }
                 });
+                
+                if (closestPoint) {
+                    if (closestDist <= radius) {
+                        triggerPoint(closestPoint);
+                    } else if (closestDist <= anticipationDistance && !closestPoint.anticipated && 
+                        (closestPoint.source === 'ORS' || closestPoint.type === 'ESTADISTICAS')) {
+                        closestPoint.anticipated = true;
+                        const advanceMsg = closestPoint.type === 'ESTADISTICAS'
+                            ? 'Prepárate, estadísticas próximamente'
+                            : `Prepárate: ${closestPoint.msg || ''}`;
+                        speak(advanceMsg);
+                        logHistory(`Alerta anticipada: ${closestPoint.msg || closestPoint.type} (${Math.round(closestDist)}m)`);
+                    }
+                }
             }
 
             if (document.getElementById('repeatStats').checked) {
