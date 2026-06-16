@@ -1,2022 +1,1123 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GPS Navigator Pro</title>
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/NoSleep.min.js"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor de Grafo - Bogotá</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root {
-            --primary: #2563eb;
-            --danger: #dc2626;
-            --success: #16a34a;
-            --bg: #000000;
-            --card: #000000;
-            --line: #2a2a2a;
-            --text: #e2e8f0;
-            --muted: #94a3b8;
-            --accent: #f59e0b;
-        }
-
-        * { box-sizing: border-box; }
-
-        html, body {
-            overscroll-behavior-y: contain; 
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0a0a0a; color: #e2e8f0; }
+        
+        #header {
+            background: #111;
             padding: 15px;
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        .container { max-width: 900px; margin: 0 auto; }
-
-        h1 {
-            font-size: 1.5rem;
-            text-align: center;
-            margin: 8px 0 14px;
-        }
-
-        .dashboard, .card, table, .music-panel, .map-panel {
-            border-radius: 10px;
-        }
-
-        .dashboard, .music-panel, .map-panel, .card {
-            background: var(--card);
-            padding: 14px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.10);
-            margin-bottom: 14px;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        @media (max-width: 760px) {
-            .grid-2 { grid-template-columns: 1fr; }
-        }
-
-        .stat-item {
+            border-bottom: 1px solid #2a2a2a;
             display: flex;
             justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 6px;
-            font-size: 0.95rem;
-        }
-
-        .stat-item strong { text-align: right; }
-
-        .small-note {
-            font-size: 0.82rem;
-            color: var(--muted);
-            line-height: 1.35;
-            margin-top: 8px;
-        }
-
-        input[type="number"], input[type="range"], select {
-            font: inherit;
-        }
-
-        .controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        button {
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            color: white;
-            background: #64748b;
-        }
-
-        .btn-load { background: var(--primary); }
-        .btn-start { background: var(--success); }
-        .btn-stop { background: var(--danger); }
-        .btn-test { background: #64748b; grid-column: span 2; }
-        .btn-secondary { background: #475569; }
-        .btn-small { padding: 8px; font-size: 0.85rem; }
-        .btn-accent { background: var(--accent); }
-
-        .field-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 10px 0;
-        }
-
-        .field {
-            background: #111111;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 10px;
-        }
-
-        .field label {
-            display: block;
-            font-size: 0.9rem;
-            margin-bottom: 6px;
-            color: #e2e8f0;
-        }
-
-        .field input[type="text"],
-        .field input[type="number"],
-        .field select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #2a2a2a;
-            border-radius: 6px;
-            background: #1a1a1a;
-            color: #e2e8f0;
-        }
-
-        .field input[type="checkbox"] { transform: scale(1.1); }
-
-        .row-inline {
-            display: flex;
-            gap: 10px;
             align-items: center;
             flex-wrap: wrap;
+            gap: 10px;
         }
-
+        
+        #header h1 {
+            font-size: 1.3rem;
+            margin: 0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            background: #475569;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        button:hover { background: #64748b; }
+        button:disabled { background: #334155; cursor: not-allowed; opacity: 0.6; }
+        .btn-primary { background: #2563eb; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-danger { background: #dc2626; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-success { background: #16a34a; }
+        .btn-success:hover { background: #15803d; }
+        
         #map {
             width: 100%;
-            height: 320px;
-            border-radius: 10px;
-            border: 1px solid #2a2a2a;
-            overflow: hidden;
+            height: calc(100vh - 70px);
         }
-
-        .playlist-list {
-            max-height: 170px;
-            overflow: auto;
-            border: 1px solid var(--line);
+        
+        #legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(17, 17, 17, 0.95);
+            padding: 15px;
             border-radius: 8px;
-            padding: 8px;
-            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            z-index: 1000;
+            font-size: 0.85rem;
         }
-
-        .playlist-item {
+        
+        #legend h3 {
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0;
+        }
+        
+        .legend-line {
+            width: 30px;
+            height: 4px;
+            border-radius: 2px;
+        }
+        
+        .legend-circle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #000;
+        }
+        
+        #stats {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            background: rgba(17, 17, 17, 0.95);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
+            z-index: 1000;
+            font-size: 0.85rem;
+        }
+        
+        #stats h3 {
+            margin: 0 0 8px 0;
+            font-size: 1rem;
+        }
+        
+        .stat-row {
             display: flex;
             justify-content: space-between;
-            gap: 10px;
-            padding: 8px;
-            border-bottom: 1px solid #2a2a2a;
-            font-size: 0.92rem;
-            cursor: pointer;
+            gap: 15px;
+            margin: 4px 0;
         }
-
-        .playlist-item.active { background: #1a2a3a; border-radius: 6px; }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #000000;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        th, td {
-            text-align: left;
-            padding: 10px;
-            border-bottom: 1px solid #2a2a2a;
-            font-size: 0.86rem;
-            vertical-align: top;
-        }
-
-        th { background: #111111; }
-
-        .history {
-            max-height: 160px;
-            overflow: auto;
-            border: 1px solid var(--line);
+        
+        .stat-label { color: #9ca3af; }
+        .stat-value { font-weight: 600; color: #60a5fa; }
+        
+        #info-panel {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: rgba(17, 17, 17, 0.95);
+            padding: 15px;
             border-radius: 8px;
-            padding: 8px;
-            background: #0a0a0a;
-            font-size: 0.9rem;
-            line-height: 1.45;
+            border: 1px solid #2a2a2a;
+            z-index: 1000;
+            max-width: 350px;
+            display: none;
         }
-
-        .history-item { padding: 6px 0; border-bottom: 1px solid #2a2a2a; }
-        .pill { display: inline-block; padding: 3px 8px; border-radius: 999px; background: #1e293b; color: #e2e8f0; font-size: 0.78rem; font-weight: 700; }
-        .btn-active { background: #1d4ed8 !important; box-shadow: inset 0 3px 6px rgba(0,0,0,0.5); transform: translateY(1px); outline: 2px solid #60a5fa; }
-        .muted { color: var(--muted); }
-        .footer-help { margin-top: 10px; font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
-
-        .list-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        @media (max-width: 760px) { .list-actions { grid-template-columns: 1fr 1fr; } }
-
-        dialog {
-            background: #111111;
-            color: #e2e8f0;
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 20px;
-            max-width: 450px;
-            width: 90%;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        }
-        dialog::backdrop {
-            background: rgba(0, 0, 0, 0.75);
-        }
-        dialog h3 {
-            margin-top: 0;
-            font-size: 1.2rem;
-            border-bottom: 1px solid var(--line);
-            padding-bottom: 8px;
-        }
-        dialog .dialog-field {
-            margin-bottom: 12px;
-        }
-        dialog label {
-            display: block;
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-            color: var(--muted);
-        }
-        dialog select, dialog input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            background: #1a1a1a;
-            border: 1px solid var(--line);
-            color: #e2e8f0;
-            border-radius: 6px;
-            font: inherit;
-        }
-        dialog .dialog-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 18px;
-        }
-        .btn-dialog-ok { background: var(--primary); }
-        .btn-dialog-cancel { background: #334155; }
-
-        .points-list-container {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            background: #0a0a0a;
-            margin: 8px 0 10px;
-        }
-
-        .point-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px;
-            border-bottom: 1px solid #2a2a2a;
-            transition: background 0.2s;
-            cursor: pointer;
-        }
-
-        .point-item:last-child {
-            border-bottom: none;
-        }
-
-        .point-item.highlighted {
-            background: #1a3a5a;
-        }
-
-        .point-number {
-            color: var(--muted);
-            font-weight: 700;
-            min-width: 30px;
-            font-size: 0.9rem;
-        }
-
-        .point-link {
-            color: #3b82f6;
-            text-decoration: underline;
-            cursor: pointer;
-            flex: 1;
-            font-size: 0.9rem;
-        }
-
-        .point-link:hover {
+        
+        #info-panel.visible { display: block; }
+        
+        #info-panel h3 {
+            margin: 0 0 10px 0;
+            font-size: 1rem;
             color: #60a5fa;
         }
-
-        .point-msg {
-            color: var(--text);
-            flex: 1;
-            font-size: 0.9rem;
+        
+        .info-row {
+            margin: 6px 0;
+            font-size: 0.85rem;
         }
-
-        .point-delete {
-            background: var(--danger);
-            color: white;
+        
+        .info-label {
+            color: #9ca3af;
+            display: inline-block;
+            min-width: 100px;
+        }
+        
+        .info-value {
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #dc2626;
             border: none;
-            border-radius: 4px;
-            padding: 4px 8px;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
             cursor: pointer;
+            font-size: 0.9rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover { background: #b91c1c; }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(17, 17, 17, 0.95);
+            padding: 30px 50px;
+            border-radius: 12px;
+            border: 1px solid #2a2a2a;
+            z-index: 2000;
+            text-align: center;
+            display: none;
+            max-width: 500px;
+        }
+        
+        #loading.visible { display: block; }
+        
+        .spinner {
+            border: 3px solid #2a2a2a;
+            border-top: 3px solid #60a5fa;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #progress-container {
+            margin-top: 15px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            overflow: hidden;
+            height: 24px;
+            position: relative;
+            border: 1px solid #2a2a2a;
+        }
+        
+        #progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #10b981);
+            transition: width 0.3s;
+            width: 0%;
+        }
+        
+        #progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             font-size: 0.8rem;
             font-weight: 700;
-        }
-
-        .point-delete:hover {
-            background: #b91c1c;
-        }
-
-        .waypoints-section {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--line);
-        }
-
-        .waypoint-item {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .waypoint-item input {
-            flex: 1;
-        }
-
-        .waypoint-controls {
-            display: flex;
-            gap: 4px;
-        }
-
-        .waypoint-btn {
-            padding: 4px 8px;
-            font-size: 0.75rem;
-            background: #475569;
             color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
         }
-
-        .waypoint-btn:hover {
-            background: #64748b;
-        }
-
-        .btn-add-waypoint {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 0.85rem;
+        
+        #progress-details {
             margin-top: 8px;
+            font-size: 0.85rem;
+            color: #9ca3af;
         }
-
-        .btn-add-waypoint:hover {
-            background: #1d4ed8;
-        }
-
-        textarea#inputData {
-            width: 100%;
-            min-height: 165px;
-            margin: 8px 0 10px;
-            border: 1px solid #2a2a2a;
-            padding: 10px;
-            resize: vertical;
-            font: inherit;
-            background: #000000;
-            color: #e2e8f0;
-            display: none;
-        }
-
-        textarea#inputData.show-raw {
-            display: block;
-        }
-
-        #lockButton {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1000;
-            padding: 10px 16px;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-
-        #lockOverlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000000;
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        #lockOverlay.active {
-            display: flex;
-        }
-
-        .lock-icon {
-            font-size: 80px;
-            color: #800000;
-            margin-bottom: 20px;
-            user-select: none;
-        }
-
-        .lock-text {
-            color: #800000;
-            font-size: 14px;
-            opacity: 0.7;
-            user-select: none;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
+        
+        #error {
+            position: absolute;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            background: rgba(128, 0, 0, 0.95);
-            color: white;
-            padding: 12px 24px;
+            transform: translate(-50%, -50%);
+            background: rgba(127, 29, 29, 0.95);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #dc2626;
+            z-index: 2000;
+            max-width: 500px;
+            text-align: center;
+            display: none;
+        }
+        
+        #error.visible { display: block; }
+        
+        #error h2 {
+            margin: 0 0 15px 0;
+            color: #fca5a5;
+        }
+        
+        #error p {
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        
+        #debug-log {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(17, 17, 17, 0.95);
+            padding: 15px;
             border-radius: 8px;
-            font-size: 14px;
-            z-index: 10000;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
+            border: 1px solid #2a2a2a;
+            z-index: 1000;
+            max-width: 400px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #9ca3af;
+            display: none;
         }
-
-        .toast.show {
-            opacity: 1;
+        
+        #debug-log.visible { display: block; }
+        
+        .debug-entry {
+            margin: 3px 0;
+            line-height: 1.4;
         }
+        
+        .debug-success { color: #10b981; }
+        .debug-error { color: #ef4444; }
+        .debug-info { color: #60a5fa; }
     </style>
 </head>
 <body>
-<button id="lockButton" onclick="lockScreen()">🔒 Bloquear</button>
-
-<div id="lockOverlay">
-    <div class="lock-icon">🔒</div>
-    <div class="lock-text">Pantalla bloqueada</div>
-</div>
-
-<div class="toast" id="toast">Pantalla bloqueada. Toca 3 veces para desbloquear</div>
-
-<div class="container">
-    <h1>GPS Navigator</h1>
-
-    <div class="dashboard" id="status-panel">
-        <div class="stat-item"><span>Estado:</span> <strong id="status">Esperando...</strong></div>
-        <div class="stat-item"><span>Lat / Lon:</span> <span><span id="lat">-</span> / <span id="lon">-</span></span></div>
-        <div class="stat-item"><span>Precisión:</span> <span id="acc">-</span> m</div>
-        <div class="stat-item"><span>Velocidad actual:</span> <span id="speed">-</span></div>
-        <div class="stat-item"><span>Velocidad media:</span> <span id="avgSpeed">-</span></div>
-        <div class="stat-item"><span>Distancia recorrida:</span> <span id="distanceTravelled">-</span></div>
-        <div class="stat-item"><span>Tiempo de recorrido:</span> <span id="tripTime">-</span></div>
-    </div>
-
-    <div class="card" id="ors-panel">
-        <strong>Rutas Automáticas (OpenRouteService)</strong>
-        <div class="small-note" style="margin-bottom: 8px;">Fija los puntos escribiendo coordenadas o haz clic en los botones de abajo para capturarlos interactivamente desde el mapa.</div>
-        <div class="field-row">
-            <div class="field" style="grid-column: span 2;">
-                <label for="orsApiKeyInput">API Key de OpenRouteService</label>
-                <div style="display:flex; gap:8px; margin-top:4px;">
-                    <input type="password" id="orsApiKeyInput" placeholder="Pega aquí tu API key..." style="flex:1; padding:8px; border:1px solid #2a2a2a; border-radius:6px; background:#1a1a1a; color:#e2e8f0; font:inherit;" />
-                    <button class="btn-secondary btn-small" onclick="saveOrsKey()" style="white-space:nowrap;">💾 Guardar</button>
-                </div>
-                <div class="small-note">Se guarda localmente en tu dispositivo. Nunca sale del navegador.</div>
-            </div>
-        </div>
-        <div class="field-row">
-            <div class="field">
-                <label for="orsOrigin">Origen (Lat, Lon)</label>
-                <div style="display:flex; gap:6px; align-items:center;">
-                    <input type="text" id="orsOrigin" placeholder="Ej: 4.6534,-74.0543" style="flex:1;" />
-                    <button class="btn-secondary btn-small" onclick="clearField('orsOrigin')" style="padding:6px;" title="Limpiar">✕</button>
-                </div>
-                <button class="btn-secondary btn-small" id="btnPickOrigin" onclick="startPicking('origin')" style="width:100%; margin-top:6px; padding:4px;">📍 Capturar en Mapa</button>
-                <div class="small-note" id="gpsOriginHint" style="display:none; color:var(--accent); margin-top:4px;">⚡ Se usará tu ubicación GPS actual como origen</div>
-            </div>
-            <div class="field">
-                <label for="orsDestination">Destino (Lat, Lon)</label>
-                <div style="display:flex; gap:6px; align-items:center;">
-                    <input type="text" id="orsDestination" placeholder="Ej: 4.6612,-74.0611" style="flex:1;" />
-                    <button class="btn-secondary btn-small" onclick="clearField('orsDestination')" style="padding:6px;" title="Limpiar">✕</button>
-                </div>
-                <button class="btn-secondary btn-small" id="btnPickDest" onclick="startPicking('destination')" style="width:100%; margin-top:6px; padding:4px;">📍 Capturar en Mapa</button>
-            </div>
-        </div>
-        
-        <div class="waypoints-section">
-            <strong style="font-size:0.95rem;">Puntos intermedios (Waypoints)</strong>
-            <div class="small-note" style="margin-bottom:8px;">Añade paradas opcionales entre origen y destino. Puedes reordenarlas libremente.</div>
-            <div id="waypointsList"></div>
-            <button class="btn-add-waypoint" onclick="addWaypoint()">+ Añadir punto intermedio</button>
-        </div>
-        
-        <div class="field-row" style="margin-top:12px;">
-            <div class="field">
-                <label for="orsProfile">Tipo de Ruta</label>
-                <select id="orsProfile">
-                    <option value="cycling-regular">Ciclismo regular</option>
-                    <option value="cycling-road">Ciclismo en carretera</option>
-                    <option value="cycling-mountain">Ciclismo de montaña</option>
-                    <option value="cycling-electric">Bicicleta eléctrica</option>
-                </select>
-            </div>
-            <div class="field">
-                <label for="orsPreference">Preferencia de ruta</label>
-                <select id="orsPreference">
-                    <option value="recommended">Recomendada</option>
-                    <option value="shortest">Más corta</option>
-                </select>
-            </div>
-        </div>
-        <button class="btn-accent" onclick="calculateORSRoute()" style="width:100%; padding:10px; margin-top:4px;">⚡ Calcular Ruta</button>
-    </div>
-
-    <div class="grid-2">
-        <div class="card">
-            <div class="row-inline" style="justify-content: space-between;">
-                <strong>Configuración general</strong>
-            </div>
-
-            <div class="field-row">
-                <div class="field">
-                    <label for="radius">Radio de aviso (metros)</label>
-                    <input type="number" id="radius" value="25" min="1" step="1" />
-                </div>
-                <div class="field">
-                    <label for="voiceSelect">Voz del GPS</label>
-                    <select id="voiceSelect"></select>
-                </div>
-            </div>
-
-            <div class="field-row">
-                <div class="field">
-                    <label for="voiceVolume">Volumen de voz</label>
-                    <input type="range" id="voiceVolume" min="0" max="1" step="0.05" value="1" />
-                </div>
-                <div class="field">
-                    <label for="globalVolume">Volumen de música</label>
-                    <input type="range" id="globalVolume" min="0" max="1" step="0.05" value="1" />
-                </div>
-            </div>
-
-            <div class="field-row">
-                <div class="field">
-                    <label><input type="checkbox" id="sequentialMode" /> Ruta secuencial inteligente</label>
-                    <div class="small-note">Desmarcado (Flexible): Verifica todos los puntos pendientes.</div>
-                </div>
-                <div class="field">
-                    <label><input type="checkbox" id="repeatStats" /> Repetir punto ESTADISTICAS</label>
-                </div>
-            </div>
-            <div class="field-row">
-                <div class="field">
-                    <label for="accThreshold">Aviso precisión GPS (metros)</label>
-                    <input type="number" id="accThreshold" value="50" min="10" step="5" />
-                </div>
-                <div class="field">
-                    <label><input type="checkbox" id="saveState" checked /> Guardar configuración automática</label>
-                </div>
-            </div>
-        </div>
-
-        <div class="music-panel">
-            <div class="row-inline" style="justify-content: space-between;">
-                <strong>Música local</strong>
-            </div>
-            <input type="file" id="musicFiles" accept="audio/*" multiple style="margin-top: 8px; margin-bottom: 8px;"/>
-            <div class="list-actions">
-                <button class="btn-secondary" onclick="playMusic()">▶️ Play</button>
-                <button class="btn-secondary" onclick="pauseMusic()">⏸️ Pausa</button>
-                <button class="btn-secondary" onclick="nextTrack()">⏭️ Siguiente</button>
-                <button class="btn-secondary" onclick="prevTrack()">⏮️ Anterior</button>
-                <button id="btnShuffle" class="btn-secondary" onclick="toggleShuffle()">🔀 Aleatorio</button>
-                <button id="btnRepeat" class="btn-secondary" onclick="toggleRepeat()">🔁 Repetir</button>
-            </div>
-            <div class="field-row" style="margin-top: 10px;">
-                <div class="field">
-                    <label>Volumen</label>
-                    <input type="range" id="musicVolume" min="0" max="1" step="0.05" value="0.85" />
-                </div>
-                <div class="field">
-                    <label>Estado</label>
-                    <div id="musicStatus" class="small-note">Sin archivos</div>
-                </div>
-            </div>
-            <div class="playlist-list" id="playlist"></div>
-        </div>
-    </div>
-
-    <div class="map-panel">
-        <div class="row-inline" style="justify-content: space-between; margin-bottom: 8px;">
-            <strong>Mapa interactivo</strong>
-            <div>
-                <button class="btn-secondary btn-small" onclick="centerMap()">📍 Centrar</button>
-                <button class="btn-secondary btn-small" id="btnFollow" onclick="toggleFollow()">Seguir: ON</button>
-            </div>
-        </div>
-        <div id="map"></div>
-    </div>
-
-    <div class="card">
-        <strong>Puntos / avisos</strong>
-        <div class="small-note" style="margin-top:8px;">Variables disponibles en mensajes: <code>${velocidad}</code> · <code>${promedio}</code> · <code>${distancia}</code> · <code>${tiempo}</code> · <code>${hora}</code></div>
-        <div style="margin-top:8px;">
-            <button class="btn-secondary btn-small" onclick="toggleRawMode()">📝 Ver/Editar texto original</button>
-        </div>
-        <textarea id="inputData" placeholder="Pega aquí tus puntos..."></textarea>
-        <div id="pointsListContainer" class="points-list-container"></div>
+    <div id="header">
+        <h1>🗺️ Visor de Grafo - Bogotá</h1>
         <div class="controls">
-            <button class="btn-load" onclick="loadPoints()">Cargar avisos</button>
-            <button class="btn-start" onclick="startNav()">Iniciar Nav</button>
-            <button class="btn-stop" onclick="stopNav()">Detener</button>
-            <button class="btn-secondary" onclick="resetPoints()">↺ Reiniciar puntos</button>
-            <button class="btn-test" onclick="testVoice()">Probar Voz</button>
+            <button id="btnDeleteDB" class="btn-danger">🗑️ Eliminar BD</button>
+            <button id="btnDownload" class="btn-success">📥 Descargar Grafo</button>
+            <button id="btnLoad" class="btn-primary" disabled>📂 Cargar Grafo</button>
+            <button id="btnZoom" disabled>🔍 Centrar en Grafo</button>
+            <button id="btnClear" disabled>🗑️ Limpiar Mapa</button>
+            <button id="btnExport" disabled>📤 Exportar GeoJSON</button>
         </div>
-        <div id="pointsCounter" class="small-note" style="margin-bottom:6px;"></div>
-        <table id="pointsTable">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Mensaje</th>
-                    <th>Dist</th>
-                    <th>Estado</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody id="pointsBody"></tbody>
-        </table>
     </div>
-
-    <div class="card">
-        <strong>Historial</strong>
-        <div id="history" class="history"></div>
-    </div>
-</div>
-
-<dialog id="pointDialog">
-    <h3>Configurar Punto Nuevo</h3>
-    <div class="dialog-field">
-        <label for="modalSelect">Seleccionar mensaje predefinido:</label>
-        <select id="modalSelect">
-            <option value="">-- Selecciona una opción o escribe abajo --</option>
-            <option value="Gire a la derecha">1. Gire a la derecha</option>
-            <option value="Gire a la izquierda">2. Gire a la izquierda</option>
-            <option value="Continúe recto">3. Continúe recto</option>
-            <option value="Manténgase a la derecha">4. Manténgase a la derecha</option>
-            <option value="Manténgase a la izquierda">5. Manténgase a la izquierda</option>
-            <option value="En la próxima calle gire a la derecha">6. En la próxima calle gire a la derecha</option>
-            <option value="En la próxima calle gire a la izquierda">7. En la próxima calle gire a la izquierda</option>
-            <option value="Continúe recto y llegara a su destino">8. Continúe recto y llegara a su destino</option>
-            <option value="Tome la primera a la derecha">9. Tome la primera a la derecha</option>
-            <option value="Tome la primera a la izquierda">10. Tome la primera a la izquierda</option>
-            <option value="Tome la segunda a la derecha">11. Tome la segunda a la derecha</option>
-            <option value="Tome la segunda a la izquierda">12. Tome la segunda a la izquierda</option>
-            <option value="Llegó a su destino">13. Llegó a su destino</option>
-            <option disabled>──────────────</option>
-            <option value="ESTADISTICAS">14. estadísticas</option>
-            <option value="${velocidad}">15. ${velocidad}</option>
-            <option value="${promedio}">16. ${promedio}</option>
-            <option value="${distancia}">17. ${distancia}</option>
-            <option value="${tiempo}">18. ${tiempo}</option>
-            <option value="${hora}">19. ${hora}</option>
-        </select>
-    </div>
-    <div class="dialog-field">
-        <label for="modalText">O escribe un mensaje personalizado:</label>
-        <input type="text" id="modalText" value="" placeholder="Completamente vacío por defecto" />
-    </div>
-    <div class="dialog-buttons">
-        <button class="btn-dialog-cancel" onclick="cancelPointModal()">Cancelar</button>
-        <button class="btn-dialog-ok" onclick="acceptPointModal()">Guardar Punto</button>
-    </div>
-</dialog>
-
-<script>
-    let points = [];
-    let watchId = null;
-    let map = null;
-    let userMarker = null;
-    let routeLine = null;
-    let pointMarkers = [];
-    let musicPlaylist = [];
-    let currentTrackIndex = -1;
-    let shuffleMode = false;
-    let repeatMode = false;
-    let currentAudio = null;
-    let currentSpeech = false;
-    let routePath = [];
-    let waypoints = [];
-    let waypointMarkers = [];
     
-    let lastPosition = null;
-    let totalDistanceMeters = 0;
-    let startTime = null;
-    let totalPausedMs = 0;
-    let pauseStartTime = null;
-    let latestAccuracy = null;
-    let currentPositionSpeedKmh = 0;
-    let lastAccuracyWarn = 0;
-    let orsRouteLine = null;
-    let originMarker = null;
-    let destinationMarker = null;
-    let _editingPointIdx = null;
+    <div id="map"></div>
     
-    let voices = [];
-    let isFollowing = true;
-    let highlightedPointIdx = null;
-
-    let pendingClickLatLng = null;
-    let pickingMode = null;
-    let pickingWaypointIdx = null;
+    <div id="legend">
+        <h3>🎨 Leyenda</h3>
+        <div class="legend-item">
+            <div class="legend-line" style="background: #00ff00;"></div>
+            <span>Ciclovía</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-line" style="background: #00cc00; height: 6px;"></div>
+            <span>Ciclovía segregada</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-line" style="background: #ff9900;"></div>
+            <span>Vía principal</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-line" style="background: #0099ff;"></div>
+            <span>Puente</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-line" style="background: #666666;"></div>
+            <span>Calle residencial</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="background: #ff0000;"></div>
+            <span>Intersección</span>
+        </div>
+    </div>
     
-    let noSleep = null;
-    try { noSleep = new NoSleep(); } catch(e) { console.warn("NoSleep no disponible:", e); }
+    <div id="stats">
+        <h3>📊 Estadísticas</h3>
+        <div class="stat-row">
+            <span class="stat-label">Edges:</span>
+            <span class="stat-value" id="statEdges">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Nodos:</span>
+            <span class="stat-value" id="statNodes">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Intersecciones:</span>
+            <span class="stat-value" id="statIntersections">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Ciclovías:</span>
+            <span class="stat-value" id="statCycleways">0</span>
+        </div>
+    </div>
     
-    const synth = window.speechSynthesis;
+    <div id="info-panel">
+        <button class="close-btn" onclick="closeInfoPanel()">×</button>
+        <h3 id="info-title">Información</h3>
+        <div id="info-content"></div>
+    </div>
+    
+    <div id="loading">
+        <div class="spinner"></div>
+        <div id="loading-text">Inicializando...</div>
+        <div id="progress-container" style="display:none;">
+            <div id="progress-bar"></div>
+            <div id="progress-text">0%</div>
+        </div>
+        <div id="progress-details"></div>
+    </div>
+    
+    <div id="error">
+        <h2>❌ Grafo no encontrado</h2>
+        <p>No se encontró el grafo de Bogotá en IndexedDB.</p>
+        <p>Haz clic en "📥 Descargar Grafo" para descargarlo desde OpenStreetMap.</p>
+        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+            <button class="btn-success" onclick="downloadGraph()">📥 Descargar Grafo</button>
+            <button class="btn-primary" onclick="location.reload()">Reintentar</button>
+        </div>
+    </div>
+    
+    <div id="debug-log"></div>
 
-    let isScreenLocked = false;
-    let tapCount = 0;
-    let tapTimer = null;
-    const TAP_INTERVAL = 500;
+    <script>
+        let map = null;
+        let bogotaDB = null;
+        let grafoLayer = null;
+        let streetGraph = null;
+        let bounds = null;
+        
+        const BOGOTA_BBOX = { south: 4.47, north: 4.83, west: -74.22, east: -74.01 };
+        const DB_VERSION = 4; // Incrementado de 3 a 4
 
-    function metersToKm(m) { return (m / 1000).toFixed(2); }
-    function formatKm(m) {
-        const km = m / 1000;
-        return km >= 10 ? km.toFixed(1) + " kilómetros" : km.toFixed(2) + " kilómetros";
-    }
-    function formatSpeedKmh(ms) {
-        if (ms == null || isNaN(ms)) return "-";
-        return (ms * 3.6).toFixed(0) + " km/h";
-    }
-    function formatDuration(ms) {
-        if (!ms || ms < 0) return "-";
-        const totalSec = Math.floor(ms / 1000);
-        const h = Math.floor(totalSec / 3600);
-        const m = Math.floor((totalSec % 3600) / 60);
-        const s = totalSec % 60;
-        if (h > 0) return `${h}h ${m}m ${s}s`;
-        if (m > 0) return `${m} minutos`;
-        return `${s} segundos`;
-    }
-    function getDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3;
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    }
+        function initMap() {
+            map = L.map('map').setView([4.65, -74.05], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+        }
 
-    function escapeHtml(str) {
-        return String(str).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-    }
+        function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('BogotaGraph', DB_VERSION);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    bogotaDB = request.result;
+                    resolve(bogotaDB);
+                };
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    
+                    // Eliminar stores existentes si hay problema
+                    if (db.objectStoreNames.contains('nodes')) {
+                        db.deleteObjectStore('nodes');
+                    }
+                    if (db.objectStoreNames.contains('edges')) {
+                        db.deleteObjectStore('edges');
+                    }
+                    if (db.objectStoreNames.contains('metadata')) {
+                        db.deleteObjectStore('metadata');
+                    }
+                    
+                    // Crear stores desde cero
+                    const nodesStore = db.createObjectStore('nodes', { keyPath: 'id' });
+                    nodesStore.createIndex('grid', 'grid', { unique: false });
+                    
+                    const edgesStore = db.createObjectStore('edges', { keyPath: 'id', autoIncrement: true });
+                    edgesStore.createIndex('grid', 'grid', { unique: false, multiEntry: true });
+                    edgesStore.createIndex('highway', 'highway', { unique: false });
+                    
+                    db.createObjectStore('metadata', { keyPath: 'key' });
+                    
+                    console.log('Object stores creados correctamente');
+                };
+            });
+        }
 
-    function logHistory(text) {
-        const box = document.getElementById('history');
-        const item = document.createElement('div');
-        item.className = 'history-item';
-        item.textContent = `[${new Date().toLocaleTimeString('es-CO')}] ${text}`;
-        box.prepend(item);
-    }
+        function logDebug(msg, type = 'info') {
+            const debugLog = document.getElementById('debug-log');
+            debugLog.classList.add('visible');
+            
+            const entry = document.createElement('div');
+            entry.className = `debug-entry debug-${type}`;
+            const time = new Date().toLocaleTimeString();
+            entry.textContent = `[${time}] ${msg}`;
+            debugLog.appendChild(entry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
 
-    function toggleFollow() {
-        isFollowing = !isFollowing;
-        document.getElementById('btnFollow').innerText = `Seguir: ${isFollowing ? 'ON' : 'OFF'}`;
-        if (isFollowing) centerMap();
-    }
+        function updateProgress(percent, text, details) {
+            document.getElementById('progress-bar').style.width = percent + '%';
+            document.getElementById('progress-text').textContent = Math.round(percent) + '%';
+            if (text) document.getElementById('loading-text').textContent = text;
+            if (details) document.getElementById('progress-details').textContent = details;
+        }
 
-    function centerMap() {
-        if (lastPosition && map) {
-            map.setView([lastPosition.coords.latitude, lastPosition.coords.longitude], Math.max(map.getZoom(), 16));
-            if (!isFollowing) {
-                isFollowing = true;
-                document.getElementById('btnFollow').innerText = `Seguir: ON`;
+        function getGridCell(lat, lon) {
+            const cellSize = 0.005;
+            const cellLat = Math.floor((lat - BOGOTA_BBOX.south) / cellSize);
+            const cellLon = Math.floor((lon - BOGOTA_BBOX.west) / cellSize);
+            return `${cellLat}_${cellLon}`;
+        }
+
+        function buildStreetGraph(elements) {
+            logDebug('Construyendo grafo...');
+            
+            const nodesMap = new Map();
+            const ways = [];
+            
+            elements.forEach(el => {
+                if (el.type === 'node') {
+                    nodesMap.set(el.id, { id: el.id, lat: el.lat, lon: el.lon, tags: el.tags || {} });
+                } else if (el.type === 'way' && el.nodes) {
+                    ways.push(el);
+                }
+            });
+            
+            logDebug(`Nodos: ${nodesMap.size}, Ways: ${ways.length}`, 'info');
+            
+            const nodes = new Map();
+            const edges = [];
+            
+            nodesMap.forEach((node, id) => nodes.set(id, { ...node, edges: [] }));
+            
+            let processedWays = 0;
+            ways.forEach(way => {
+                const nodeIds = way.nodes;
+                if (!nodeIds || nodeIds.length < 2) return;
+                
+                for (let i = 0; i < nodeIds.length - 1; i++) {
+                    const fromId = nodeIds[i];
+                    const toId = nodeIds[i + 1];
+                    const fromNode = nodes.get(fromId);
+                    const toNode = nodes.get(toId);
+                    
+                    if (!fromNode || !toNode) continue;
+                    
+                    const edge = {
+                        id: edges.length,
+                        from: fromId,
+                        to: toId,
+                        tags: way.tags || {},
+                        highway: way.tags?.highway || null,
+                        geometry: [{ lat: fromNode.lat, lon: fromNode.lon }, { lat: toNode.lat, lon: toNode.lon }],
+                        grid: [getGridCell(fromNode.lat, fromNode.lon), getGridCell(toNode.lat, toNode.lon)]
+                    };
+                    
+                    edges.push(edge);
+                    fromNode.edges.push(edge.id);
+                    toNode.edges.push(edge.id);
+                }
+                
+                processedWays++;
+                if (processedWays % 5000 === 0) {
+                    logDebug(`Procesadas ${processedWays}/${ways.length} ways`, 'info');
+                }
+            });
+            
+            nodes.forEach(node => {
+                node.isIntersection = node.edges.length >= 3;
+                node.grid = getGridCell(node.lat, node.lon);
+            });
+            
+            logDebug(`Grafo construido: ${nodes.size} nodos, ${edges.length} edges`, 'success');
+            return { nodes, edges };
+        }
+
+        async function saveGraphToDB(graph) {
+            logDebug('Guardando nodos en IndexedDB...');
+            
+            // Verificar que los stores existan
+            if (!bogotaDB.objectStoreNames.contains('nodes')) {
+                throw new Error('Object store "nodes" no existe en la base de datos');
+            }
+            
+            const nodesArray = Array.from(graph.nodes.values());
+            
+            for (let i = 0; i < nodesArray.length; i += 500) {
+                const batch = nodesArray.slice(i, i + 500);
+                await new Promise((resolve, reject) => {
+                    const tx = bogotaDB.transaction(['nodes'], 'readwrite');
+                    const store = tx.objectStore('nodes');
+                    batch.forEach(node => store.put(node));
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject(tx.error);
+                });
+                if (i % 5000 === 0) {
+                    updateProgress(70 + (i / nodesArray.length) * 15, 'Guardando nodos...', `${i}/${nodesArray.length} nodos`);
+                    logDebug(`Guardados ${i}/${nodesArray.length} nodos`, 'info');
+                }
+            }
+            
+            logDebug('Guardando edges en IndexedDB...');
+            for (let i = 0; i < graph.edges.length; i += 500) {
+                const batch = graph.edges.slice(i, i + 500);
+                await new Promise((resolve, reject) => {
+                    const tx = bogotaDB.transaction(['edges'], 'readwrite');
+                    const store = tx.objectStore('edges');
+                    batch.forEach(edge => store.put(edge));
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject(tx.error);
+                });
+                if (i % 5000 === 0) {
+                    updateProgress(85 + (i / graph.edges.length) * 10, 'Guardando edges...', `${i}/${graph.edges.length} edges`);
+                    logDebug(`Guardados ${i}/${graph.edges.length} edges`, 'info');
+                }
+            }
+            
+            await saveMetadata('graphBuilt', true);
+            await saveMetadata('buildTimestamp', Date.now());
+            await saveMetadata('nodesCount', graph.nodes.size);
+            await saveMetadata('edgesCount', graph.edges.length);
+            
+            logDebug('Grafo guardado exitosamente', 'success');
+        }
+
+        async function saveMetadata(key, value) {
+            return new Promise((resolve, reject) => {
+                const tx = bogotaDB.transaction(['metadata'], 'readwrite');
+                const request = tx.objectStore('metadata').put({ key, value, timestamp: Date.now() });
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getMetadata(key) {
+            return new Promise((resolve, reject) => {
+                const tx = bogotaDB.transaction(['metadata'], 'readonly');
+                const request = tx.objectStore('metadata').get(key);
+                request.onsuccess = () => resolve(request.result?.value || null);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function downloadGraph() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const btnDownload = document.getElementById('btnDownload');
+            
+            loading.classList.add('visible');
+            error.classList.remove('visible');
+            btnDownload.disabled = true;
+            
+            document.getElementById('progress-container').style.display = 'block';
+            
+            logDebug('Iniciando descarga del grafo...');
+            
+            try {
+                const { south, north, west, east } = BOGOTA_BBOX;
+                const bbox = `${south},${west},${north},${east}`;
+                const query = `[out:json][timeout:90];
+(
+  way["highway"~"^(motorway|trunk|primary|secondary|tertiary|residential|unclassified|service|cycleway|footway|path|track)$"](${bbox});
+  node["highway"~"^(traffic_signals|crossing|stop|give_way)$"](${bbox});
+);
+out body;
+>;
+out skel qt;`;
+                
+                let data = null;
+                let fetchMethod = '';
+                
+                try {
+                    logDebug('Intentando Overpass API directo...');
+                    updateProgress(10, 'Consultando Overpass API...', 'Método 1: Overpass API directo');
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 90000);
+                    
+                    const response = await fetch('https://overpass-api.de/api/interpreter', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `data=${encodeURIComponent(query)}`,
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    data = await response.json();
+                    fetchMethod = 'Overpass API directo';
+                    logDebug(`✅ Overpass API respondió: ${data.elements?.length || 0} elementos`, 'success');
+                    
+                } catch (error1) {
+                    logDebug(`❌ Overpass API falló: ${error1.message}`, 'error');
+                    
+                    try {
+                        logDebug('Intentando con proxy CORS...');
+                        updateProgress(30, 'Usando proxy CORS...', 'Método 2: allorigins.win');
+                        
+                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://overpass-api.de/api/interpreter')}`;
+                        
+                        const controller2 = new AbortController();
+                        const timeoutId2 = setTimeout(() => controller2.abort(), 90000);
+                        
+                        const response2 = await fetch(proxyUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `data=${encodeURIComponent(query)}`,
+                            signal: controller2.signal
+                        });
+                        
+                        clearTimeout(timeoutId2);
+                        if (!response2.ok) throw new Error(`HTTP ${response2.status}`);
+                        
+                        data = await response2.json();
+                        fetchMethod = 'Overpass API + Proxy CORS';
+                        logDebug(`✅ Proxy CORS funcionó: ${data.elements?.length || 0} elementos`, 'success');
+                        
+                    } catch (error2) {
+                        logDebug(`❌ Proxy CORS falló: ${error2.message}`, 'error');
+                        
+                        try {
+                            logDebug('Intentando Overpass Kumi (servidor alternativo)...');
+                            updateProgress(50, 'Usando servidor alternativo...', 'Método 3: Overpass Kumi');
+                            
+                            const controller3 = new AbortController();
+                            const timeoutId3 = setTimeout(() => controller3.abort(), 90000);
+                            
+                            const response3 = await fetch('https://overpass.kumi.systems/api/interpreter', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: `data=${encodeURIComponent(query)}`,
+                                signal: controller3.signal
+                            });
+                            
+                            clearTimeout(timeoutId3);
+                            if (!response3.ok) throw new Error(`HTTP ${response3.status}`);
+                            
+                            data = await response3.json();
+                            fetchMethod = 'Overpass Kumi (alternativo)';
+                            logDebug(`✅ Overpass Kumi funcionó: ${data.elements?.length || 0} elementos`, 'success');
+                            
+                        } catch (error3) {
+                            logDebug(`❌ Overpass Kumi falló: ${error3.message}`, 'error');
+                            throw new Error('Todos los métodos de descarga fallaron');
+                        }
+                    }
+                }
+                
+                if (!data || !data.elements || data.elements.length === 0) {
+                    throw new Error('No se recibieron datos de ninguna fuente');
+                }
+                
+                logDebug(`Descargados ${data.elements.length} elementos vía ${fetchMethod}`, 'success');
+                updateProgress(60, 'Construyendo grafo...', `${data.elements.length} elementos`);
+                
+                const graph = buildStreetGraph(data.elements);
+                
+                updateProgress(70, 'Guardando en base de datos...', 'Guardando nodos...');
+                await saveGraphToDB(graph);
+                
+                updateProgress(100, '¡Completado!', 'Grafo descargado y guardado');
+                
+                logDebug('✅ Grafo descargado y guardado exitosamente', 'success');
+                
+                setTimeout(() => {
+                    loading.classList.remove('visible');
+                    btnDownload.disabled = false;
+                    document.getElementById('btnLoad').disabled = false;
+                    alert(`✅ ¡Grafo descargado exitosamente!\n\n🔗 ${graph.nodes.size} nodos\n🛣️ ${graph.edges.length} edges\n\nFuente: ${fetchMethod}\n\nAhora haz clic en "📂 Cargar Grafo" para verlo en el mapa.`);
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Error completo:', error);
+                logDebug(`❌ ERROR FINAL: ${error.message}`, 'error');
+                
+                loading.classList.remove('visible');
+                btnDownload.disabled = false;
+                
+                alert(`Error al descargar el grafo:\n\n${error.message}\n\nRevisa el log de debug para más detalles.`);
             }
         }
-    }
 
-    function clearField(fieldId) {
-        document.getElementById(fieldId).value = '';
-        if (fieldId === 'orsOrigin' && originMarker) {
-            map.removeLayer(originMarker);
-            originMarker = null;
-        }
-        if (fieldId === 'orsDestination' && destinationMarker) {
-            map.removeLayer(destinationMarker);
-            destinationMarker = null;
-        }
-        updateGPSOriginHint();
-    }
-
-    function updateGPSOriginHint() {
-        const originVal = document.getElementById('orsOrigin').value.trim();
-        const destVal = document.getElementById('orsDestination').value.trim();
-        const hint = document.getElementById('gpsOriginHint');
-        
-        if (!originVal && destVal && watchId !== null) {
-            hint.style.display = 'block';
-        } else {
-            hint.style.display = 'none';
-        }
-    }
-
-    function startPicking(mode) {
-        const btnOrigin = document.getElementById('btnPickOrigin');
-        const btnDest = document.getElementById('btnPickDest');
-
-        if (pickingMode === mode) {
-            pickingMode = null;
-            pickingWaypointIdx = null;
-            btnOrigin.innerText = "📍 Capturar en Mapa";
-            btnOrigin.style.background = "";
-            btnDest.innerText = "📍 Capturar en Mapa";
-            btnDest.style.background = "";
-            renderWaypoints();
-            return;
-        }
-
-        pickingMode = mode;
-        pickingWaypointIdx = null;
-        
-        if (mode === 'origin') {
-            btnOrigin.innerText = "⌛ Toca el mapa...";
-            btnOrigin.style.background = "var(--accent)";
-            btnDest.innerText = "📍 Capturar en Mapa";
-            btnDest.style.background = "";
-        } else if (mode === 'destination') {
-            btnDest.innerText = "⌛ Toca el mapa...";
-            btnDest.style.background = "var(--accent)";
-            btnOrigin.innerText = "📍 Capturar en Mapa";
-            btnOrigin.style.background = "";
-        }
-        renderWaypoints();
-    }
-
-    function startPickingWaypoint(idx) {
-        pickingMode = 'waypoint';
-        pickingWaypointIdx = idx;
-        
-        const btnOrigin = document.getElementById('btnPickOrigin');
-        const btnDest = document.getElementById('btnPickDest');
-        btnOrigin.innerText = "📍 Capturar en Mapa";
-        btnOrigin.style.background = "";
-        btnDest.innerText = "📍 Capturar en Mapa";
-        btnDest.style.background = "";
-        
-        renderWaypoints();
-    }
-
-    function resetPickingButtons() {
-        pickingMode = null;
-        pickingWaypointIdx = null;
-        document.getElementById('btnPickOrigin').innerText = "📍 Capturar en Mapa";
-        document.getElementById('btnPickOrigin').style.background = "";
-        document.getElementById('btnPickDest').innerText = "📍 Capturar en Mapa";
-        document.getElementById('btnPickDest').style.background = "";
-        renderWaypoints();
-    }
-
-    function initMap() {
-        map = L.map('map').setView([4.65, -74.05], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-        routeLine = L.polyline([], { color: '#3b82f6', weight: 4 }).addTo(map);
-        orsRouteLine = L.polyline([], { color: '#f59e0b', weight: 3, dashArray: '8 4', opacity: 0.8 }).addTo(map);
-
-        const originIcon = L.divIcon({
-            html: '<div style="background:#16a34a;width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.7);"></div>',
-            className: '',
-            iconSize: [22, 22],
-            iconAnchor: [11, 11]
-        });
-        const destIcon = L.divIcon({
-            html: '<div style="background:#dc2626;width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.7);"></div>',
-            className: '',
-            iconSize: [22, 22],
-            iconAnchor: [11, 11]
-        });
-
-        map.on('dragstart', () => {
-            isFollowing = false;
-            document.getElementById('btnFollow').innerText = `Seguir: OFF`;
-        });
-
-        map.on('click', function(e) {
-            if (pickingMode) {
-                const coordStr = `${e.latlng.lat.toFixed(6)},${e.latlng.lng.toFixed(6)}`;
-                
-                if (pickingMode === 'origin') {
-                    document.getElementById('orsOrigin').value = coordStr;
-                    if (originMarker) map.removeLayer(originMarker);
-                    originMarker = L.marker(e.latlng, { icon: originIcon }).addTo(map).bindPopup('📍 Origen');
-                    startPicking('destination');
-                    updateGPSOriginHint();
-                } else if (pickingMode === 'destination') {
-                    document.getElementById('orsDestination').value = coordStr;
-                    if (destinationMarker) map.removeLayer(destinationMarker);
-                    destinationMarker = L.marker(e.latlng, { icon: destIcon }).addTo(map).bindPopup('🏁 Destino');
-                    resetPickingButtons();
-                    updateGPSOriginHint();
-                } else if (pickingMode === 'waypoint' && pickingWaypointIdx !== null) {
-                    waypoints[pickingWaypointIdx] = coordStr;
-                    resetPickingButtons();
-                    renderWaypoints();
-                    redrawWaypointMarkers();
-                }
+        async function deleteDatabase() {
+            if (!confirm('¿Estás seguro de eliminar completamente la base de datos?\n\nEsto borrará todo el grafo descargado y deberás descargarlo de nuevo.')) {
                 return;
             }
-
-            pendingClickLatLng = e.latlng;
-            _editingPointIdx = null;
-            document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
-            document.getElementById('modalSelect').value = "";
-            document.getElementById('modalText').value = "";
-            document.getElementById('pointDialog').showModal();
-        });
-    }
-
-    function cancelPointModal() {
-        document.getElementById('pointDialog').close();
-        document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
-        pendingClickLatLng = null;
-        _editingPointIdx = null;
-    }
-
-    function acceptPointModal() {
-        const selectVal = document.getElementById('modalSelect').value;
-        const textVal = document.getElementById('modalText').value.trim();
-        
-        let finalMessage = textVal !== "" ? textVal : selectVal;
-
-        if (!finalMessage || finalMessage.trim() === "") {
-            alert('¡Advertencia! No has escrito ni seleccionado nada. El punto no se creará.');
-            return;
+            
+            logDebug('Eliminando base de datos...');
+            
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.deleteDatabase('BogotaGraph');
+                
+                request.onsuccess = () => {
+                    logDebug('✅ Base de datos eliminada', 'success');
+                    alert('Base de datos eliminada correctamente.\n\nLa página se recargará ahora.');
+                    location.reload();
+                    resolve();
+                };
+                
+                request.onerror = () => {
+                    logDebug(`❌ Error eliminando BD: ${request.error}`, 'error');
+                    alert('Error al eliminar la base de datos: ' + request.error);
+                    reject(request.error);
+                };
+                
+                request.onblocked = () => {
+                    logDebug('⚠️ Eliminación bloqueada, recarga la página', 'error');
+                    alert('La eliminación está bloqueada. Recarga la página e intenta de nuevo.');
+                    reject(new Error('Blocked'));
+                };
+            });
         }
 
-        if (_editingPointIdx !== null) {
-            const idx = _editingPointIdx;
-            if (idx >= 0 && idx < points.length) {
-                const rawMsg = finalMessage.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-                if (rawMsg === 'ESTADISTICAS') {
-                    points[idx].type = 'ESTADISTICAS';
-                    points[idx].msg  = '';
-                } else {
-                    points[idx].type = 'INFO';
-                    points[idx].msg  = finalMessage.trim();
-                }
-                rebuildTextarea();
-                redrawPointMarkers();
-                updateTable();
-                renderPointsList();
-                logHistory(`Pto ${idx + 1} editado: "${points[idx].msg || points[idx].type}".`);
+        async function loadGraphFromDB() {
+            const nodes = new Map();
+            const edges = [];
+
+            await new Promise((resolve, reject) => {
+                const tx = bogotaDB.transaction(['nodes'], 'readonly');
+                const request = tx.objectStore('nodes').getAll();
+                request.onsuccess = () => {
+                    request.result.forEach(node => nodes.set(node.id, node));
+                    resolve();
+                };
+                request.onerror = () => reject(request.error);
+            });
+
+            await new Promise((resolve, reject) => {
+                const tx = bogotaDB.transaction(['edges'], 'readonly');
+                const request = tx.objectStore('edges').getAll();
+                request.onsuccess = () => {
+                    request.result.forEach(edge => edges.push(edge));
+                    resolve();
+                };
+                request.onerror = () => reject(request.error);
+            });
+
+            return { nodes, edges };
+        }
+
+        async function checkGraphExists() {
+            try {
+                const tx = bogotaDB.transaction(['metadata'], 'readonly');
+                const request = tx.objectStore('metadata').get('graphBuilt');
+                return new Promise((resolve) => {
+                    request.onsuccess = () => resolve(request.result?.value === true);
+                    request.onerror = () => resolve(false);
+                });
+            } catch {
+                return false;
             }
-            _editingPointIdx = null;
-            document.getElementById('pointDialog').close();
-            document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
-            return;
         }
 
-        if (pendingClickLatLng) {
-            const line = `${pendingClickLatLng.lat.toFixed(6)},${pendingClickLatLng.lng.toFixed(6)},${finalMessage.trim()}`;
-            const textarea = document.getElementById('inputData');
-            textarea.value = textarea.value.trim() ? textarea.value.trim() + '\n' + line : line;
-            loadPoints(true);
+        function getEdgeColor(edge) {
+            if (edge.highway === 'cycleway') {
+                return { color: '#00ff00', weight: 3 };
+            }
+            if (edge.tags?.['cycleway:left'] === 'track' || edge.tags?.['cycleway:right'] === 'track') {
+                return { color: '#00cc00', weight: 4 };
+            }
+            if (edge.highway === 'primary' || edge.highway === 'secondary' || edge.highway === 'tertiary') {
+                return { color: '#ff9900', weight: 3 };
+            }
+            if (edge.tags?.bridge === 'yes') {
+                return { color: '#0099ff', weight: 3 };
+            }
+            return { color: '#666666', weight: 2 };
         }
 
-        document.getElementById('pointDialog').close();
-        document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
-        pendingClickLatLng = null;
-    }
+        function drawGraph(graph) {
+            if (grafoLayer) {
+                map.removeLayer(grafoLayer);
+            }
 
-    function saveOrsKey() {
-        const val = document.getElementById('orsApiKeyInput').value.trim();
-        if (!val) { alert("El campo está vacío. Escribe tu API key antes de guardar."); return; }
-        localStorage.setItem('ors_api_key', val);
-        alert("Clave guardada correctamente.");
-    }
+            const features = [];
+            let cyclewayCount = 0;
+            bounds = L.latLngBounds();
 
-    function addWaypoint() {
-        waypoints.push('');
-        renderWaypoints();
-        redrawWaypointMarkers();
-    }
+            graph.edges.forEach(edge => {
+                const fromNode = graph.nodes.get(edge.from);
+                const toNode = graph.nodes.get(edge.to);
 
-    function removeWaypoint(idx) {
-        if (idx < 0 || idx >= waypoints.length) return;
-        waypoints.splice(idx, 1);
-        renderWaypoints();
-        redrawWaypointMarkers();
-    }
+                if (fromNode && toNode) {
+                    const { color, weight } = getEdgeColor(edge);
+                    
+                    if (edge.highway === 'cycleway' || edge.tags?.['cycleway:left'] === 'track' || edge.tags?.['cycleway:right'] === 'track') {
+                        cyclewayCount++;
+                    }
 
-    function moveWaypointUp(idx) {
-        if (idx <= 0 || idx >= waypoints.length) return;
-        [waypoints[idx - 1], waypoints[idx]] = [waypoints[idx], waypoints[idx - 1]];
-        renderWaypoints();
-        redrawWaypointMarkers();
-    }
+                    const latlng1 = [fromNode.lat, fromNode.lon];
+                    const latlng2 = [toNode.lat, toNode.lon];
+                    bounds.extend(latlng1);
+                    bounds.extend(latlng2);
 
-    function moveWaypointDown(idx) {
-        if (idx < 0 || idx >= waypoints.length - 1) return;
-        [waypoints[idx], waypoints[idx + 1]] = [waypoints[idx + 1], waypoints[idx]];
-        renderWaypoints();
-        redrawWaypointMarkers();
-    }
+                    const polyline = L.polyline([latlng1, latlng2], {
+                        color: color,
+                        weight: weight,
+                        opacity: 0.7
+                    });
 
-    function updateWaypointValue(idx, value) {
-        waypoints[idx] = value;
-        redrawWaypointMarkers();
-    }
+                    polyline.on('click', () => showEdgeInfo(edge, fromNode, toNode));
+                    features.push(polyline);
+                }
+            });
 
-    function renderWaypoints() {
-        const container = document.getElementById('waypointsList');
-        container.innerHTML = '';
-        
-        waypoints.forEach((wp, idx) => {
-            const div = document.createElement('div');
-            div.className = 'waypoint-item';
-            
-            const isCapturing = pickingMode === 'waypoint' && pickingWaypointIdx === idx;
-            const captureBtnText = isCapturing ? '⌛ Toca el mapa...' : '📍';
-            const captureBtnStyle = isCapturing ? 'background:var(--accent);' : '';
-            
-            div.innerHTML = `
-                <input type="text" value="${escapeHtml(wp)}" placeholder="Ej: 4.6534,-74.0543" 
-                    onchange="updateWaypointValue(${idx}, this.value)" />
-                <button class="waypoint-btn" onclick="startPickingWaypoint(${idx})" 
-                    style="${captureBtnStyle}" title="Capturar en mapa">${captureBtnText}</button>
-                <div class="waypoint-controls">
-                    <button class="waypoint-btn" onclick="moveWaypointUp(${idx})" title="Subir">↑</button>
-                    <button class="waypoint-btn" onclick="moveWaypointDown(${idx})" title="Bajar">↓</button>
-                    <button class="waypoint-btn" onclick="removeWaypoint(${idx})" title="Eliminar" style="background:var(--danger);">✕</button>
+            graph.nodes.forEach(node => {
+                if (node.isIntersection) {
+                    const circle = L.circleMarker([node.lat, node.lon], {
+                        radius: 5,
+                        fillColor: '#ff0000',
+                        color: '#000',
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    });
+
+                    circle.on('click', () => showNodeInfo(node, graph));
+                    features.push(circle);
+                }
+            });
+
+            grafoLayer = L.layerGroup(features).addTo(map);
+
+            document.getElementById('statEdges').textContent = graph.edges.length.toLocaleString();
+            document.getElementById('statNodes').textContent = graph.nodes.size.toLocaleString();
+            document.getElementById('statIntersections').textContent = Array.from(graph.nodes.values()).filter(n => n.isIntersection).length.toLocaleString();
+            document.getElementById('statCycleways').textContent = cyclewayCount.toLocaleString();
+
+            document.getElementById('btnZoom').disabled = false;
+            document.getElementById('btnClear').disabled = false;
+            document.getElementById('btnExport').disabled = false;
+        }
+
+        function showEdgeInfo(edge, fromNode, toNode) {
+            const panel = document.getElementById('info-panel');
+            const title = document.getElementById('info-title');
+            const content = document.getElementById('info-content');
+
+            title.textContent = `Edge #${edge.id}`;
+            content.innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">Tipo:</span>
+                    <span class="info-value">${edge.highway || 'Desconocido'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Nombre:</span>
+                    <span class="info-value">${edge.tags?.name || 'Sin nombre'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Ciclovía:</span>
+                    <span class="info-value">${edge.tags?.cycleway || edge.tags?.['cycleway:left'] || edge.tags?.['cycleway:right'] || 'No'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Puente:</span>
+                    <span class="info-value">${edge.tags?.bridge || 'No'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Oneway:</span>
+                    <span class="info-value">${edge.tags?.oneway || 'No'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Superficie:</span>
+                    <span class="info-value">${edge.tags?.surface || 'No especificado'}</span>
+                </div>
+                <div class="info-row" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #2a2a2a;">
+                    <span class="info-label">From:</span>
+                    <span class="info-value" style="font-size: 0.8rem;">${fromNode.lat.toFixed(6)}, ${fromNode.lon.toFixed(6)}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">To:</span>
+                    <span class="info-value" style="font-size: 0.8rem;">${toNode.lat.toFixed(6)}, ${toNode.lon.toFixed(6)}</span>
                 </div>
             `;
-            container.appendChild(div);
-        });
-    }
 
-    function redrawWaypointMarkers() {
-        if (!map) return;
-        waypointMarkers.forEach(m => map.removeLayer(m));
-        waypointMarkers = [];
-        
-        const waypointIcon = L.divIcon({
-            html: '<div style="background:#f59e0b;width:18px;height:18px;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.5);"></div>',
-            className: '',
-            iconSize: [18, 18],
-            iconAnchor: [9, 9]
-        });
-        
-        waypoints.forEach((wpStr, idx) => {
-            if (!wpStr) return;
-            const coords = wpStr.split(',').map(c => parseFloat(c.trim()));
-            if (coords.length !== 2 || isNaN(coords[0]) || isNaN(coords[1])) return;
-            
-            const marker = L.marker([coords[0], coords[1]], { icon: waypointIcon })
-                .addTo(map)
-                .bindPopup(`Waypoint ${idx + 1}`);
-            waypointMarkers.push(marker);
-        });
-    }
-
-    async function calculateORSRoute() {
-        const orsApiKey = localStorage.getItem('ors_api_key') || '';
-        if (!orsApiKey) {
-            alert("Primero debes guardar tu API key de OpenRouteService en el campo de arriba.");
-            return;
+            panel.classList.add('visible');
         }
 
-        let originVal = document.getElementById('orsOrigin').value.trim();
-        const destVal = document.getElementById('orsDestination').value.trim();
-        const profile = document.getElementById('orsProfile').value;
+        function showNodeInfo(node, graph) {
+            const panel = document.getElementById('info-panel');
+            const title = document.getElementById('info-title');
+            const content = document.getElementById('info-content');
 
-        if (!originVal && watchId !== null && lastPosition) {
-            originVal = `${lastPosition.coords.latitude.toFixed(6)},${lastPosition.coords.longitude.toFixed(6)}`;
-            document.getElementById('orsOrigin').value = originVal;
-            logHistory("Usando ubicación GPS actual como origen automático.");
-        }
-
-        if (!originVal || !destVal) {
-            alert("Por favor, introduce las coordenadas de origen y destino (o inicia la navegación para usar GPS como origen).");
-            return;
-        }
-
-        const originCoords = originVal.split(',').map(c => parseFloat(c.trim()));
-        const destCoords = destVal.split(',').map(c => parseFloat(c.trim()));
-
-        if (originCoords.length !== 2 || isNaN(originCoords[0]) || isNaN(originCoords[1]) ||
-            destCoords.length !== 2 || isNaN(destCoords[0]) || isNaN(destCoords[1])) {
-            alert("El formato de origen o destino es inválido. Debe ser: latitud,longitud");
-            return;
-        }
-
-        const coordinates = [
-            [originCoords[1], originCoords[0]]
-        ];
-        
-        waypoints.forEach(wpStr => {
-            if (!wpStr) return;
-            const coords = wpStr.split(',').map(c => parseFloat(c.trim()));
-            if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
-                coordinates.push([coords[1], coords[0]]);
-            }
-        });
-        
-        coordinates.push([destCoords[1], destCoords[0]]);
-
-        const url = `https://api.openrouteservice.org/v2/directions/${profile}/geojson`;
-        
-        const bodyData = {
-            coordinates: coordinates,
-            language: "es",
-            preference: document.getElementById('orsPreference').value
-        };
-
-        try {
-            logHistory("Solicitando ruta automática a OpenRouteService...");
-            
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
-                    'Content-Type': 'application/json',
-                    'Authorization': orsApiKey
-                },
-                body: JSON.stringify(bodyData)
+            const connectedEdges = node.edges.map(edgeId => {
+                const edge = graph.edges.find(e => e.id === edgeId);
+                return edge ? `${edge.highway || 'desconocido'}` : 'N/A';
             });
 
-            if (!response.ok) throw new Error(`Error en el servidor ORS: ${response.status}`);
-            
-            const data = await response.json();
-            if (!data.features || data.features.length === 0) {
-                alert("No se encontró ninguna ruta válida para los puntos indicados.");
+            title.textContent = `Intersección #${node.id}`;
+            content.innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">Ubicación:</span>
+                    <span class="info-value" style="font-size: 0.8rem;">${node.lat.toFixed(6)}, ${node.lon.toFixed(6)}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Edges conectados:</span>
+                    <span class="info-value">${node.edges.length}</span>
+                </div>
+                <div class="info-row" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #2a2a2a;">
+                    <span class="info-label">Tipos de vías:</span>
+                </div>
+                <div style="margin-top: 6px; padding-left: 10px; font-size: 0.85rem;">
+                    ${connectedEdges.map((tipo, idx) => `<div style="margin: 3px 0;">• ${tipo}</div>`).join('')}
+                </div>
+                ${node.tags && Object.keys(node.tags).length > 0 ? `
+                    <div class="info-row" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #2a2a2a;">
+                        <span class="info-label">Tags:</span>
+                    </div>
+                    <div style="margin-top: 6px; font-size: 0.8rem; font-family: monospace; background: #0a0a0a; padding: 8px; border-radius: 4px;">
+                        ${JSON.stringify(node.tags, null, 2)}
+                    </div>
+                ` : ''}
+            `;
+
+            panel.classList.add('visible');
+        }
+
+        function closeInfoPanel() {
+            document.getElementById('info-panel').classList.remove('visible');
+        }
+
+        async function handleLoadGraph() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const btnLoad = document.getElementById('btnLoad');
+
+            loading.classList.add('visible');
+            document.getElementById('loading-text').textContent = 'Cargando grafo desde IndexedDB...';
+            document.getElementById('progress-container').style.display = 'none';
+            btnLoad.disabled = true;
+
+            try {
+                streetGraph = await loadGraphFromDB();
+                drawGraph(streetGraph);
+
+                loading.classList.remove('visible');
+                error.classList.remove('visible');
+                btnLoad.disabled = false;
+
+            } catch (err) {
+                console.error('Error cargando grafo:', err);
+                loading.classList.remove('visible');
+                error.classList.add('visible');
+                btnLoad.disabled = false;
+            }
+        }
+
+        function handleZoom() {
+            if (bounds && map) {
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+
+        function handleClear() {
+            if (grafoLayer && map) {
+                map.removeLayer(grafoLayer);
+                grafoLayer = null;
+                document.getElementById('btnZoom').disabled = true;
+                document.getElementById('btnClear').disabled = true;
+                document.getElementById('btnExport').disabled = true;
+            }
+        }
+
+        function handleExport() {
+            if (!streetGraph) {
+                alert('Primero carga el grafo');
                 return;
             }
 
-            const feature = data.features[0];
-            const routeCoordinates = feature.geometry.coordinates;
-            const segments = feature.properties.segments;
-
-            let plainTextLines = [];
-
-            if (segments && segments.length > 0) {
-                segments.forEach(segment => {
-                    if (segment.steps) {
-                        segment.steps.forEach(step => {
-                            const startIdx = step.way_points[0];
-                            const stepCoord = routeCoordinates[startIdx];
-                            const instruction = step.instruction;
-
-                            if (stepCoord && instruction) {
-                                plainTextLines.push(`${stepCoord[1].toFixed(6)},${stepCoord[0].toFixed(6)},${instruction.trim()},ORS`);
-                            }
-                        });
-                    }
-                });
-            }
-
-            if (plainTextLines.length === 0) {
-                alert("Ruta recibida pero no se pudieron extraer pasos o instrucciones utilizables.");
-                return;
-            }
-
-            const textarea = document.getElementById('inputData');
-            const existingContent = textarea.value.trim();
-            const newContent = plainTextLines.join('\n');
-            
-            if (existingContent) {
-                textarea.value = existingContent + '\n' + newContent;
-                logHistory(`Ruta de ORS agregada al final de los puntos existentes.`);
-            } else {
-                textarea.value = newContent;
-            }
-            
-            loadPoints(true);
-
-            const leafletCoords = routeCoordinates.map(c => [c[1], c[0]]);
-            if (orsRouteLine) {
-                orsRouteLine.setLatLngs(leafletCoords);
-            }
-            if (leafletCoords.length > 0 && map) {
-                map.fitBounds(L.polyline(leafletCoords).getBounds());
-            }
-
-            logHistory("Ruta de ORS cargada exitosamente.");
-            alert(`¡Ruta calculada con éxito! Se han importado ${plainTextLines.length} puntos de guía en español.`);
-
-        } catch (error) {
-            console.error(error);
-            logHistory(`Error al calcular ruta: ${error.message}`);
-            alert(`Error al conectar con OpenRouteService: ${error.message}\nVerifica que tu 'orsApiKey' esté configurada correctamente.`);
-        }
-    }
-
-    function refreshVoices() {
-        let rawVoices = synth.getVoices().filter(v => {
-            const lang = (v.lang || '').toLowerCase();
-            return lang.startsWith('es');
-        });
-        rawVoices.sort((a, b) => {
-            if (a.localService && !b.localService) return -1;
-            if (!a.localService && b.localService) return 1;
-            return 0;
-        });
-
-        voices = rawVoices;
-        const select = document.getElementById('voiceSelect');
-        const previous = select.value;
-        select.innerHTML = '';
-
-        if (!voices.length) {
-            select.innerHTML = '<option value="">Cargando voces...</option>';
-            return;
-        }
-
-        voices.forEach((voice, idx) => {
-            const opt = document.createElement('option');
-            opt.value = String(idx);
-            opt.textContent = `${voice.name} (${voice.lang})`;
-            select.appendChild(opt);
-        });
-
-        const saved = localStorage.getItem('gps_voice_idx');
-        if (saved && voices[parseInt(saved, 10)]) select.value = saved;
-        else if (previous && voices[parseInt(previous, 10)]) select.value = previous;
-        else select.value = '0';
-    }
-
-    document.getElementById('voiceSelect').addEventListener('change', function() {
-        localStorage.setItem('gps_voice_idx', this.value);
-    });
-
-    synth.onvoiceschanged = refreshVoices;
-    setTimeout(refreshVoices, 300);
-
-    function applyAccentCorrections(text) {
-        const corrections = {
-            "estadisticas": "estadísticas",
-            "kilometros": "kilómetros",
-            "rapido": "rápido",
-            "precaucion": "precaución",
-            "atencion": "atención",
-            "proximo": "próximo",
-            "camara": "cámara"
-        };
-        let corrected = text;
-        for (const [wrong, right] of Object.entries(corrections)) {
-            const regex = new RegExp(`\\b${wrong}\\b`, 'gi');
-            corrected = corrected.replace(regex, right);
-        }
-        return corrected;
-    }
-
-    function numToWordsEs(n) {
-        const ones = ['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve',
-                      'diez','once','doce','trece','catorce','quince','dieciséis','diecisiete',
-                      'dieciocho','diecinueve'];
-        const tens = ['','diez','veinte','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'];
-        const hundreds = ['','ciento','doscientos','trescientos','cuatrocientos','quinientos',
-                          'seiscientos','setecientos','ochocientos','novecientos'];
-        if (n < 0)    return 'menos ' + numToWordsEs(-n);
-        if (n === 0)  return 'cero';
-        if (n === 100) return 'cien';
-        if (n < 20)   return ones[n];
-        if (n < 30)   return n === 20 ? 'veinte' : 'veinti' + ones[n - 20];
-        if (n < 100) {
-            const t = Math.floor(n / 10), u = n % 10;
-            return u === 0 ? tens[t] : tens[t] + ' y ' + ones[u];
-        }
-        if (n < 1000) {
-            const h = Math.floor(n / 100), rest = n % 100;
-            return rest === 0 ? hundreds[h] : hundreds[h] + ' ' + numToWordsEs(rest);
-        }
-        return String(n);
-    }
-
-    function applyNumbersToWords(text) {
-        return text.replace(/(?<![.\d])(\d+)(?![.\d])/g, (match) => {
-            const n = parseInt(match, 10);
-            return (n >= 0 && n <= 999) ? numToWordsEs(n) : match;
-        });
-    }
-
-    function speak(text, onDone) {
-        const textToRead = applyAccentCorrections(applyNumbersToWords(text));
-        const utterance = new SpeechSynthesisUtterance(textToRead);
-        const voice = voices[parseInt(document.getElementById('voiceSelect').value || '0', 10)];
-        if (voice) utterance.voice = voice;
-        utterance.volume = parseFloat(document.getElementById('voiceVolume').value || '1');
-
-        if (currentAudio && !currentAudio.paused) {
-            currentAudio.pause();
-            currentAudio.dataset.wasPlaying = '1';
-        }
-
-        currentSpeech = true;
-        synth.cancel();
-
-        utterance.onend = () => {
-            currentSpeech = false;
-            if (currentAudio && currentAudio.dataset.wasPlaying === '1') {
-                currentAudio.play().catch(() => {});
-                delete currentAudio.dataset.wasPlaying;
-            }
-            if (typeof onDone === 'function') onDone();
-        };
-
-        utterance.onerror = utterance.onend;
-        synth.speak(utterance);
-    }
-
-    function testVoice() {
-        speak("Probando estadísticas. 40 kilometros. Atención.");
-    }
-
-    function currentStats() {
-        const now = new Date();
-        const elapsed = startTime ? (Date.now() - startTime - totalPausedMs) : 0;
-        const avgSpeed = elapsed > 0 ? ((totalDistanceMeters / (elapsed / 1000)) * 3.6) : 0;
-        const currSpeed = currentPositionSpeedKmh || 0;
-        
-        let h = now.getHours();
-        let m = now.getMinutes();
-        if (h > 12) h -= 12;
-        if (h === 0) h = 12;
-        const timeText = m === 0 ? `${h} en punto` : `${h} y ${m}`;
-
-        return {
-            timeText,
-            currSpeedText: Math.round(currSpeed),
-            avgSpeedText: Math.round(avgSpeed),
-            distanceText: totalDistanceMeters / 1000,
-            tripMinutesText: Math.max(1, Math.round(elapsed / 60000)),
-            accuracyText: latestAccuracy != null ? Math.round(latestAccuracy) : 0
-        };
-    }
-
-    function buildStatsMessage() {
-        const s = currentStats();
-        return `Son las ${s.timeText}. Velocidad actual ${s.currSpeedText} kilómetros por hora. Velocidad media ${s.avgSpeedText} kilómetros por hora. Distancia recorrida ${s.distanceText.toFixed(1)} kilómetros. Tiempo de viaje ${s.tripMinutesText} minutos. Precisión del GPS ${s.accuracyText} metros.`;
-    }
-
-    function parseLine(line) {
-        const trimmed = line.trim();
-        if (!trimmed) return null;
-
-        const firstComma = trimmed.indexOf(',');
-        if (firstComma === -1) return null;
-        const secondComma = trimmed.indexOf(',', firstComma + 1);
-        if (secondComma === -1) return null;
-
-        const latStr = trimmed.substring(0, firstComma).trim();
-        const lonStr = trimmed.substring(firstComma + 1, secondComma).trim();
-        const rest   = trimmed.substring(secondComma + 1).trim();
-
-        const lat = parseFloat(latStr);
-        const lon = parseFloat(lonStr);
-        if (isNaN(lat) || isNaN(lon) || !rest) return null;
-
-        let messagePart = rest;
-        let sourcePart = 'MANUAL';
-        
-        const lastComma = rest.lastIndexOf(',');
-        if (lastComma !== -1) {
-            const potentialSource = rest.substring(lastComma + 1).trim().toUpperCase();
-            if (potentialSource === 'ORS' || potentialSource === 'MANUAL') {
-                messagePart = rest.substring(0, lastComma).trim();
-                sourcePart = potentialSource;
-            }
-        }
-
-        const rawRest = messagePart.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-
-        let type = 'INFO';
-        let msg  = '';
-
-        if (rawRest === 'ESTADISTICAS') {
-            type = 'ESTADISTICAS';
-        } else {
-            msg = messagePart;
-        }
-
-        return { 
-            lat, 
-            lon, 
-            type, 
-            msg, 
-            triggered: false, 
-            anticipated: false, 
-            source: sourcePart
-        };
-    }
-
-    function loadPoints(skipConfirm) {
-        if (!skipConfirm) {
-            const hasProgress = watchId !== null && points.some(p => p.triggered);
-            if (hasProgress) {
-                if (!confirm('Estás en medio de una ruta activa. ¿Cargar nuevos puntos y perder el progreso actual?')) return false;
-            }
-        }
-        const text = document.getElementById('inputData').value;
-        points = text.split('\n').map(line => parseLine(line)).filter(p => p !== null);
-        updateTable();
-        redrawPointMarkers();
-        renderPointsList();
-        return true;
-    }
-
-    function renderPointsList() {
-        const container = document.getElementById('pointsListContainer');
-        container.innerHTML = '';
-        
-        points.forEach((p, idx) => {
-            const div = document.createElement('div');
-            div.className = 'point-item';
-            div.id = `point-item-${idx}`;
-            
-            const coordStr = `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
-            const streetViewUrl = `https://www.google.com/maps/@${p.lat},${p.lon},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192`;
-            
-            const numberSpan = document.createElement('span');
-            numberSpan.className = 'point-number';
-            numberSpan.textContent = `${idx + 1}.`;
-            
-            const linkElement = document.createElement('a');
-            linkElement.className = 'point-link';
-            linkElement.href = streetViewUrl;
-            linkElement.target = '_blank';
-            linkElement.textContent = coordStr;
-            
-            linkElement.addEventListener('click', function(e) {
-                e.stopPropagation();
-                highlightPointOnMap(idx);
-            });
-            
-            const msgSpan = document.createElement('span');
-            msgSpan.className = 'point-msg';
-            msgSpan.textContent = p.msg || p.type;
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'point-delete';
-            deleteBtn.innerHTML = '✕';
-            deleteBtn.title = 'Eliminar';
-            deleteBtn.onclick = function(e) {
-                e.stopPropagation();
-                deletePointFromList(idx);
+            const geojson = {
+                type: "FeatureCollection",
+                features: []
             };
-            
-            div.appendChild(numberSpan);
-            div.appendChild(linkElement);
-            div.appendChild(msgSpan);
-            div.appendChild(deleteBtn);
-            
-            div.addEventListener('click', function(e) {
-                if (e.target !== linkElement && e.target !== deleteBtn) {
-                    highlightPointOnMap(idx);
+
+            streetGraph.edges.forEach(edge => {
+                const fromNode = streetGraph.nodes.get(edge.from);
+                const toNode = streetGraph.nodes.get(edge.to);
+
+                if (fromNode && toNode) {
+                    geojson.features.push({
+                        type: "Feature",
+                        properties: {
+                            id: edge.id,
+                            highway: edge.highway || 'desconocido',
+                            name: edge.tags?.name || 'Sin nombre',
+                            cycleway: edge.tags?.cycleway || edge.tags?.['cycleway:left'] || edge.tags?.['cycleway:right'] || null,
+                            bridge: edge.tags?.bridge || null,
+                            surface: edge.tags?.surface || null
+                        },
+                        geometry: {
+                            type: "LineString",
+                            coordinates: [
+                                [fromNode.lon, fromNode.lat],
+                                [toNode.lon, toNode.lat]
+                            ]
+                        }
+                    });
                 }
             });
-            
-            container.appendChild(div);
-        });
-        
-        if (points.length === 0) {
-            container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--muted);">No hay puntos cargados</div>';
-        }
-    }
 
-    function highlightPointOnMap(idx) {
-        if (idx < 0 || idx >= points.length) return;
-        if (map && pointMarkers[idx]) {
-            map.setView([points[idx].lat, points[idx].lon], Math.max(map.getZoom(), 16));
-            pointMarkers[idx].openPopup();
-        }
-    }
-
-    function highlightPointInList(idx) {
-        document.querySelectorAll('.point-item.highlighted').forEach(el => {
-            el.classList.remove('highlighted');
-        });
-        
-        const item = document.getElementById(`point-item-${idx}`);
-        if (item) {
-            item.classList.add('highlighted');
-            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-        
-        highlightedPointIdx = idx;
-    }
-
-    function deletePointFromList(idx) {
-        if (idx < 0 || idx >= points.length) return;
-        const label = points[idx].msg || points[idx].type;
-        if (!confirm(`¿Eliminar el Pto ${idx + 1}: "${label}"?`)) return;
-        if (map) map.closePopup();
-        logHistory(`Pto ${idx + 1} eliminado: "${label}".`);
-        points.splice(idx, 1);
-        rebuildTextarea();
-        redrawPointMarkers();
-        updateTable();
-        renderPointsList();
-    }
-
-    function toggleRawMode() {
-        const textarea = document.getElementById('inputData');
-        const listContainer = document.getElementById('pointsListContainer');
-        
-        if (textarea.classList.contains('show-raw')) {
-            textarea.classList.remove('show-raw');
-            listContainer.style.display = 'block';
-        } else {
-            textarea.classList.add('show-raw');
-            listContainer.style.display = 'none';
-        }
-    }
-
-    function updateTable() {
-        const tbody = document.getElementById('pointsBody');
-        tbody.innerHTML = '';
-        const currentLat = lastPosition?.coords.latitude;
-        const currentLon = lastPosition?.coords.longitude;
-
-        points.forEach((p, idx) => {
-            let dist = '-';
-            if (typeof currentLat === 'number' && typeof currentLon === 'number') {
-                dist = Math.round(getDistance(currentLat, currentLon, p.lat, p.lon)) + ' m';
-            }
-            const row = document.createElement('tr');
-            const n = idx + 1;
-            row.innerHTML = `<td style="color:var(--muted);font-size:0.8rem;">${n}</td><td>${escapeHtml(p.msg || p.type)}</td><td>${escapeHtml(dist)}</td><td>${p.triggered ? '✅' : '⏳'}</td><td style="white-space:nowrap"><button onclick="editPoint(${idx})" title="Editar pto ${n}" style="padding:3px 6px;background:#2563eb;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.75rem;">✏️</button> <button onclick="deletePoint(${idx})" title="Eliminar pto ${n}" style="padding:3px 6px;background:#dc2626;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.75rem;">🗑️</button></td>`;
-            tbody.appendChild(row);
-        });
-
-        const triggered = points.filter(p => p.triggered).length;
-        const counter = document.getElementById('pointsCounter');
-        if (counter) counter.textContent = points.length ? `${triggered} / ${points.length} puntos activados` : '';
-    }
-
-    function resetPoints() {
-        points.forEach(p => {
-            p.triggered = false;
-            p.anticipated = false;
-        });
-        updateTable();
-        renderPointsList();
-        logHistory("Puntos reiniciados.");
-    }
-
-    function triggerPoint(p) {
-        p.triggered = true;
-        const stats = currentStats();
-        let spoken = p.type === 'ESTADISTICAS' ? buildStatsMessage() : replaceVariables(p.msg || '', stats);
-        
-        speak(spoken);
-        logHistory(`Punto activado: ${p.msg || p.type}`);
-        updateTable();
-        renderPointsList();
-    }
-
-    function replaceVariables(msg, stats) {
-        return msg.replaceAll('${hora}', stats.timeText)
-                  .replaceAll('${velocidad}', stats.currSpeedText)
-                  .replaceAll('${promedio}', stats.avgSpeedText)
-                  .replaceAll('${distancia}', stats.distanceText.toFixed(1))
-                  .replaceAll('${tiempo}', stats.tripMinutesText);
-    }
-
-    function rebuildTextarea() {
-        document.getElementById('inputData').value = points.map(p => {
-            if (p.type === 'ESTADISTICAS') {
-                return `${p.lat.toFixed(6)},${p.lon.toFixed(6)},ESTADISTICAS${p.source === 'ORS' ? ',ORS' : ''}`;
-            }
-            return `${p.lat.toFixed(6)},${p.lon.toFixed(6)},${p.msg}${p.source === 'ORS' ? ',ORS' : ''}`;
-        }).join('\n');
-    }
-
-    function editPoint(idx) {
-        if (idx < 0 || idx >= points.length) return;
-        if (map) map.closePopup();
-        _editingPointIdx = idx;
-        const p = points[idx];
-        document.getElementById('pointDialog').querySelector('h3').textContent = `Editar Pto ${idx + 1}`;
-        document.getElementById('modalSelect').value = "";
-        document.getElementById('modalText').value = p.type === 'ESTADISTICAS' ? 'ESTADISTICAS' : (p.msg || '');
-        document.getElementById('pointDialog').showModal();
-    }
-
-    function deletePoint(idx) {
-        if (idx < 0 || idx >= points.length) return;
-        const label = points[idx].msg || points[idx].type;
-        if (!confirm(`¿Eliminar el Pto ${idx + 1}: "${label}"?`)) return;
-        if (map) map.closePopup();
-        logHistory(`Pto ${idx + 1} eliminado: "${label}".`);
-        points.splice(idx, 1);
-        rebuildTextarea();
-        redrawPointMarkers();
-        updateTable();
-        renderPointsList();
-    }
-
-    function startNav() {
-        if (watchId !== null) {
-            logHistory("La navegación ya está activa. Detén primero antes de reiniciar.");
-            return;
-        }
-        if (!navigator.geolocation) return alert("Geolocalización no soportada.");
-        
-        if (noSleep) noSleep.enable().catch(() => {});
-        
-        document.getElementById('status').innerText = "Navegando...";
-        if (startTime === null) {
-            startTime = Date.now();
-            totalPausedMs = 0;
-            pauseStartTime = null;
-        } else if (pauseStartTime !== null) {
-            totalPausedMs += Date.now() - pauseStartTime;
-            pauseStartTime = null;
-        }
-        logHistory("Navegación iniciada.");
-        updateGPSOriginHint();
-
-        watchId = navigator.geolocation.watchPosition((pos) => {
-            const { latitude, longitude, accuracy, speed } = pos.coords;
-            const radius = parseInt(document.getElementById('radius').value || '40', 10);
-            
-            currentPositionSpeedKmh = speed != null && !isNaN(speed) ? (speed * 3.6) : 0;
-            latestAccuracy = accuracy;
-
-            const accThreshold = parseInt(document.getElementById('accThreshold').value || '50', 10);
-            const nowMs = Date.now();
-            if (accuracy > accThreshold && nowMs - lastAccuracyWarn > 60000) {
-                lastAccuracyWarn = nowMs;
-                speak(`Señal GPS débil. Precisión ${Math.round(accuracy)} metros.`);
-            }
-
-            if (lastPosition) {
-                const stepDist = getDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, latitude, longitude);
-                if (stepDist > 0 && stepDist < 500) { 
-                    totalDistanceMeters += stepDist;
-                }
-            }
-            lastPosition = pos;
-
-            updateStatusPanel(latitude, longitude, accuracy, speed || 0);
-            updateGPSOriginHint();
-
-            routePath.push([latitude, longitude]);
-            if (routeLine) routeLine.setLatLngs(routePath);
-            
-            if (userMarker) userMarker.setLatLng([latitude, longitude]);
-            else if (map) userMarker = L.marker([latitude, longitude]).addTo(map).bindPopup("Tú");
-
-            if (isFollowing && map) map.setView([latitude, longitude]);
-
-            const sequential = document.getElementById('sequentialMode').checked;
-            
-            const speedMs = currentPositionSpeedKmh / 3.6;
-            const reactionTimeSeconds = 10;
-            const minAnticipationDistance = 50;
-            const anticipationDistance = Math.max(
-                speedMs * reactionTimeSeconds,
-                minAnticipationDistance
-            );
-            
-            if (sequential) {
-                const idx = points.findIndex(p => !p.triggered);
-                if (idx >= 0) {
-                    const dist = getDistance(latitude, longitude, points[idx].lat, points[idx].lon);
-                    
-                    if (dist <= radius) {
-                        triggerPoint(points[idx]);
-                    } else if (dist <= anticipationDistance && !points[idx].anticipated && 
-                        (points[idx].source === 'ORS' || points[idx].type === 'ESTADISTICAS')) {
-                        points[idx].anticipated = true;
-                        const advanceMsg = points[idx].type === 'ESTADISTICAS'
-                            ? 'Prepárate, estadísticas próximamente'
-                            : `Prepárate: ${points[idx].msg || ''}`;
-                        speak(advanceMsg);
-                        logHistory(`Alerta anticipada: ${points[idx].msg || points[idx].type} (${Math.round(dist)}m)`);
-                    }
-                }
-            } else {
-                // MODO FLEXIBLE: Procesar solo el punto más cercano no activado
-                let closestPoint = null;
-                let closestDist = Infinity;
-                
-                points.forEach((p) => {
-                    if (!p.triggered) {
-                        const dist = getDistance(latitude, longitude, p.lat, p.lon);
-                        if (dist < closestDist) {
-                            closestDist = dist;
-                            closestPoint = p;
+            streetGraph.nodes.forEach(node => {
+                if (node.isIntersection) {
+                    geojson.features.push({
+                        type: "Feature",
+                        properties: {
+                            id: node.id,
+                            type: "intersection",
+                            connected_edges: node.edges.length,
+                            tags: node.tags
+                        },
+                        geometry: {
+                            type: "Point",
+                            coordinates: [node.lon, node.lat]
                         }
-                    }
-                });
-                
-                if (closestPoint) {
-                    if (closestDist <= radius) {
-                        triggerPoint(closestPoint);
-                    } else if (closestDist <= anticipationDistance && !closestPoint.anticipated && 
-                        (closestPoint.source === 'ORS' || closestPoint.type === 'ESTADISTICAS')) {
-                        closestPoint.anticipated = true;
-                        const advanceMsg = closestPoint.type === 'ESTADISTICAS'
-                            ? 'Prepárate, estadísticas próximamente'
-                            : `Prepárate: ${closestPoint.msg || ''}`;
-                        speak(advanceMsg);
-                        logHistory(`Alerta anticipada: ${closestPoint.msg || closestPoint.type} (${Math.round(closestDist)}m)`);
-                    }
+                    });
                 }
-            }
-
-            if (document.getElementById('repeatStats').checked) {
-                points.forEach(p => {
-                    if (p.type === 'ESTADISTICAS' && p.triggered) {
-                        const dist = getDistance(latitude, longitude, p.lat, p.lon);
-                        if (dist > radius * 1.5) {
-                            p.triggered = false;
-                            p.anticipated = false;
-                        }
-                    }
-                });
-            }
-
-        }, (err) => {
-            let errMsg = 'Error de GPS desconocido.';
-            if (err.code === 1) errMsg = 'Permiso de ubicación denegado.';
-            else if (err.code === 2) errMsg = 'Señal GPS no disponible.';
-            else if (err.code === 3) errMsg = 'Tiempo de espera del GPS agotado.';
-            document.getElementById('status').innerText = 'Error GPS: ' + errMsg;
-            speak(errMsg);
-            logHistory('Error GPS: ' + errMsg);
-        }, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
-    }
-
-    function stopNav() {
-        if (watchId !== null) {
-            navigator.geolocation.clearWatch(watchId);
-            watchId = null;
-            pauseStartTime = Date.now();
-            synth.cancel();
-            document.getElementById('status').innerText = "Detenido";
-            
-            if (noSleep) noSleep.disable();
-            
-            logHistory("Navegación detenida.");
-            updateGPSOriginHint();
-        }
-    }
-
-    function updateStatusPanel(lat, lon, accuracy, speedMps) {
-        document.getElementById('lat').innerText = lat.toFixed(5);
-        document.getElementById('lon').innerText = lon.toFixed(5);
-        document.getElementById('acc').innerText = Math.round(accuracy);
-        document.getElementById('speed').innerText = formatSpeedKmh(speedMps);
-
-        if (startTime) {
-            const elapsed = Date.now() - startTime - totalPausedMs;
-            const avg = elapsed > 0 ? (totalDistanceMeters / (elapsed / 1000)) : 0;
-            document.getElementById('avgSpeed').innerText = (avg * 3.6).toFixed(0) + " km/h";
-            document.getElementById('distanceTravelled').innerText = formatKm(totalDistanceMeters);
-            document.getElementById('tripTime').innerText = formatDuration(elapsed);
-        }
-    }
-
-    function redrawPointMarkers() {
-        if (!map) return;
-        pointMarkers.forEach(m => map.removeLayer(m));
-        pointMarkers = [];
-        points.forEach((p, idx) => {
-            const marker = L.marker([p.lat, p.lon]).addTo(map);
-            const n = idx + 1;
-            marker.bindPopup(
-                `<strong>Pto ${n}</strong><br>${escapeHtml(p.msg || p.type)}<br>` +
-                `<div style="margin-top:6px;display:flex;gap:6px;">` +
-                `<button onclick="editPoint(${idx})" style="padding:4px 10px;background:#2563eb;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.82rem;">✏️ Editar</button>` +
-                `<button onclick="deletePoint(${idx})" style="padding:4px 10px;background:#dc2626;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.82rem;">🗑️ Eliminar</button>` +
-                `</div>`
-            );
-            
-            marker.on('click', function() {
-                highlightPointInList(idx);
             });
-            
-            pointMarkers.push(marker);
-        });
-    }
 
-    function createAudioFromFile(file) { return { url: URL.createObjectURL(file), name: file.name }; }
-    function loadPlaylistFromInput(files) {
-        musicPlaylist.forEach(t => { if (t.url) URL.revokeObjectURL(t.url); });
-        musicPlaylist = Array.from(files).map(createAudioFromFile);
-        currentTrackIndex = musicPlaylist.length ? 0 : -1;
-        renderPlaylist();
-        document.getElementById('musicStatus').textContent = 'Playlist cargada';
-    }
-    function renderPlaylist() {
-        const box = document.getElementById('playlist');
-        box.innerHTML = '';
-        musicPlaylist.forEach((track, idx) => {
-            const div = document.createElement('div');
-            div.className = 'playlist-item' + (idx === currentTrackIndex ? ' active' : '');
-            div.innerHTML = `<span>${escapeHtml(track.name)}</span>`;
-            div.onclick = () => { currentTrackIndex = idx; playCurrentTrack(); };
-            box.appendChild(div);
-        });
-    }
-    function getMusicVolume() {
-        return parseFloat(document.getElementById('globalVolume').value || '1') * parseFloat(document.getElementById('musicVolume').value || '1');
-    }
-    function playCurrentTrack() {
-        if (currentTrackIndex < 0 || currentTrackIndex >= musicPlaylist.length) return;
-        if (currentAudio) currentAudio.pause();
-        currentAudio = new Audio(musicPlaylist[currentTrackIndex].url);
-        currentAudio.volume = getMusicVolume();
-        currentAudio.loop = repeatMode;
-        currentAudio.onended = () => {
-            if (shuffleMode && musicPlaylist.length > 1) {
-                let next = currentTrackIndex;
-                while (next === currentTrackIndex) next = Math.floor(Math.random() * musicPlaylist.length);
-                currentTrackIndex = next; playCurrentTrack();
-            } else if (!repeatMode) nextTrack();
-            else playCurrentTrack();
-        };
-        currentAudio.play().then(() => {
-            document.getElementById('musicStatus').textContent = `Música: ${musicPlaylist[currentTrackIndex].name}`;
-            renderPlaylist();
-        }).catch(() => {});
-    }
-    function playMusic() {
-        if (!musicPlaylist.length && document.getElementById('musicFiles').files.length) loadPlaylistFromInput(document.getElementById('musicFiles').files);
-        if (!currentAudio) playCurrentTrack(); else currentAudio.play();
-    }
-    function pauseMusic() { if (currentAudio) currentAudio.pause(); }
-    function nextTrack() { if (!musicPlaylist.length) return; currentTrackIndex = (currentTrackIndex + 1) % musicPlaylist.length; playCurrentTrack(); }
-    function prevTrack() { if (!musicPlaylist.length) return; currentTrackIndex = (currentTrackIndex - 1 + musicPlaylist.length) % musicPlaylist.length; playCurrentTrack(); }
-    function toggleShuffle() {
-        shuffleMode = !shuffleMode;
-        document.getElementById('btnShuffle').classList.toggle('btn-active', shuffleMode);
-        saveConfigToLocalStorage();
-    }
-    function toggleRepeat() {
-        repeatMode = !repeatMode;
-        if (currentAudio) currentAudio.loop = repeatMode;
-        document.getElementById('btnRepeat').classList.toggle('btn-active', repeatMode);
-        saveConfigToLocalStorage();
-    }
-    document.getElementById('musicFiles').addEventListener('change', function() { if (this.files.length) loadPlaylistFromInput(this.files); });
-    document.getElementById('musicVolume').addEventListener('input', function() { if (currentAudio) currentAudio.volume = getMusicVolume(); });
-    document.getElementById('globalVolume').addEventListener('input', function() { if (currentAudio) currentAudio.volume = getMusicVolume(); });
-
-    function saveConfigToLocalStorage() {
-        const saveStateChecked = document.getElementById('saveState').checked;
-        if (!saveStateChecked) return;
-
-        const config = {
-            radius: document.getElementById('radius').value,
-            voiceVolume: document.getElementById('voiceVolume').value,
-            globalVolume: document.getElementById('globalVolume').value,
-            sequentialMode: document.getElementById('sequentialMode').checked,
-            repeatStats: document.getElementById('repeatStats').checked,
-            accThreshold: document.getElementById('accThreshold').value,
-            musicVolume: document.getElementById('musicVolume').value,
-            shuffleMode: shuffleMode,
-            repeatMode: repeatMode
-        };
-
-        localStorage.setItem('gps_config', JSON.stringify(config));
-    }
-
-    function loadConfigFromLocalStorage() {
-        const savedConfig = localStorage.getItem('gps_config');
-        if (!savedConfig) return;
-
-        try {
-            const config = JSON.parse(savedConfig);
-            
-            if (config.radius !== undefined) document.getElementById('radius').value = config.radius;
-            if (config.voiceVolume !== undefined) document.getElementById('voiceVolume').value = config.voiceVolume;
-            if (config.globalVolume !== undefined) document.getElementById('globalVolume').value = config.globalVolume;
-            if (config.sequentialMode !== undefined) document.getElementById('sequentialMode').checked = config.sequentialMode;
-            if (config.repeatStats !== undefined) document.getElementById('repeatStats').checked = config.repeatStats;
-            if (config.accThreshold !== undefined) document.getElementById('accThreshold').value = config.accThreshold;
-            if (config.musicVolume !== undefined) document.getElementById('musicVolume').value = config.musicVolume;
-            
-            if (config.shuffleMode !== undefined) {
-                shuffleMode = config.shuffleMode;
-                document.getElementById('btnShuffle').classList.toggle('btn-active', shuffleMode);
-            }
-            if (config.repeatMode !== undefined) {
-                repeatMode = config.repeatMode;
-                document.getElementById('btnRepeat').classList.toggle('btn-active', repeatMode);
-            }
-
-            if (currentAudio) currentAudio.volume = getMusicVolume();
-        } catch (e) {
-            console.error("Error al cargar configuración:", e);
+            const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `grafo-bogota-${new Date().toISOString().split('T')[0]}.geojson`;
+            a.click();
+            URL.revokeObjectURL(url);
         }
-    }
 
-    document.getElementById('radius').addEventListener('input', saveConfigToLocalStorage);
-    document.getElementById('voiceVolume').addEventListener('input', saveConfigToLocalStorage);
-    document.getElementById('globalVolume').addEventListener('input', saveConfigToLocalStorage);
-    document.getElementById('sequentialMode').addEventListener('change', saveConfigToLocalStorage);
-    document.getElementById('repeatStats').addEventListener('change', saveConfigToLocalStorage);
-    document.getElementById('accThreshold').addEventListener('input', saveConfigToLocalStorage);
-    document.getElementById('musicVolume').addEventListener('input', saveConfigToLocalStorage);
-    document.getElementById('saveState').addEventListener('change', function() {
-        if (this.checked) saveConfigToLocalStorage();
-    });
+        document.getElementById('btnDeleteDB').addEventListener('click', deleteDatabase);
+        document.getElementById('btnDownload').addEventListener('click', downloadGraph);
+        document.getElementById('btnLoad').addEventListener('click', handleLoadGraph);
+        document.getElementById('btnZoom').addEventListener('click', handleZoom);
+        document.getElementById('btnClear').addEventListener('click', handleClear);
+        document.getElementById('btnExport').addEventListener('click', handleExport);
 
-    function lockScreen() {
-        isScreenLocked = true;
-        document.getElementById('lockOverlay').classList.add('active');
-        document.getElementById('lockButton').style.display = 'none';
-        logHistory("Pantalla bloqueada");
-    }
-
-    function unlockScreen() {
-        isScreenLocked = false;
-        document.getElementById('lockOverlay').classList.remove('active');
-        document.getElementById('lockButton').style.display = 'block';
-        tapCount = 0;
-        logHistory("Pantalla desbloqueada");
-    }
-
-    function showToast() {
-        const toast = document.getElementById('toast');
-        toast.classList.add('show');
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 2000);
-    }
-
-    document.getElementById('lockOverlay').addEventListener('click', function(e) {
-        if (!isScreenLocked) return;
-        
-        tapCount++;
-        
-        if (tapCount === 1) {
-            tapTimer = setTimeout(() => {
-                if (tapCount < 3) {
-                    showToast();
+        async function init() {
+            initMap();
+            
+            try {
+                await initIndexedDB();
+                const exists = await checkGraphExists();
+                
+                if (exists) {
+                    document.getElementById('btnLoad').disabled = false;
+                    logDebug('Grafo encontrado en IndexedDB', 'success');
+                } else {
+                    document.getElementById('error').classList.add('visible');
+                    logDebug('Grafo no encontrado', 'error');
                 }
-                tapCount = 0;
-            }, TAP_INTERVAL);
+            } catch (err) {
+                console.error('Error inicializando:', err);
+                document.getElementById('error').classList.add('visible');
+                logDebug(`Error: ${err.message}`, 'error');
+            }
         }
-        
-        if (tapCount === 3) {
-            clearTimeout(tapTimer);
-            unlockScreen();
-        }
-    });
 
-    document.addEventListener('click', function(e) {
-        if (isScreenLocked && !e.target.closest('#lockOverlay')) {
-            e.stopPropagation();
-            e.preventDefault();
-            showToast();
-        }
-    }, true);
-
-    document.addEventListener('touchstart', function(e) {
-        if (isScreenLocked && !e.target.closest('#lockOverlay')) {
-            e.stopPropagation();
-            e.preventDefault();
-            showToast();
-        }
-    }, true);
-
-    initMap();
-    renderWaypoints();
-    renderPointsList();
-    
-    loadConfigFromLocalStorage();
-    
-    const savedKey = localStorage.getItem('ors_api_key');
-    if (savedKey) document.getElementById('orsApiKeyInput').value = savedKey;
-</script>
+        init();
+    </script>
 </body>
 </html>
