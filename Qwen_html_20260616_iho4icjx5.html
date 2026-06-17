@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor de Grafo - Bogotá (con semáforos)</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0a0a0a; color: #e2e8f0; }
+        
+        #header {
+            background: #111;
+            padding: 15px;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        #header h1 { font-size: 1.3rem; margin: 0; }
+        
+        .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+        
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            background: #475569;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        button:hover { background: #64748b; }
+        button:disabled { background: #334155; cursor: not-allowed; opacity: 0.6; }
+        .btn-primary { background: #2563eb; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-success { background: #16a34a; }
+        .btn-success:hover { background: #15803d; }
+        
+        #map { width: 100%; height: calc(100vh - 70px); }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(17, 17, 17, 0.95);
+            padding: 30px 50px;
+            border-radius: 12px;
+            border: 1px solid #2a2a2a;
+            z-index: 2000;
+            text-align: center;
+            display: none;
+            max-width: 500px;
+        }
+        
+        #loading.visible { display: block; }
+        
+        .spinner {
+            border: 3px solid #2a2a2a;
+            border-top: 3px solid #60a5fa;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #progress-container {
+            margin-top: 15px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            overflow: hidden;
+            height: 24px;
+            position: relative;
+            border: 1px solid #2a2a2a;
+        }
+        
+        #progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #10b981);
+            transition: width 0.3s;
+            width: 0%;
+        }
+        
+        #progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+        
+        #progress-details {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>🗺️ Visor de Grafo - Bogotá (con semáforos)</h1>
+        <div class="controls">
+            <button id="btnDownload" class="btn-success">📥 Descargar Grafo</button>
+            <button id="btnLoad" class="btn-primary" disabled>📂 Cargar Grafo</button>
+            <button id="btnExport" disabled>📤 Exportar GeoJSON COMPLETO</button>
+        </div>
+    </div>
+    
+    <div id="map"></div>
+    
+    <div id="loading">
+        <div class="spinner"></div>
+        <div id="loading-text">Inicializando...</div>
+        <div id="progress-container" style="display:none;">
+            <div id="progress-bar"></div>
+            <div id="progress-text">0%</div>
+        </div>
+        <div id="progress-details"></div>
+    </div>
+
+    <script>
+        let map = null;
+        let bogotaDB = null;
+        let streetGraph = null;
+        let bounds = null;
+        let rawOSMData = null; // Guardar datos crudos de OSM
+        
+        const BOGOTA_BBOX = { south: 4.47, north: 4.83, west: -74.22, east: -74.01 };
+        const DB_VERSION = 4;
+
+        function initMap() {
+            map = L.map('map').setView([4.65, -74.05], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+        }
+
+        function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('BogotaGraph', DB_VERSION);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    bogotaDB = request.result;
+                    resolve(bogotaDB);
+                };
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (db.objectStoreNames.contains('nodes')) db.deleteObjectStore('nodes');
+                    if (db.objectStoreNames.contains('edges')) db.deleteObjectStore('edges');
+                    if (db.objectStoreNames.contains('metadata')) db.deleteObjectStore('metadata');
+                    
+                    const nodesStore = db.createObjectStore('nodes', { keyPath: 'id' });
+                    nodesStore.createIndex('grid', 'grid', { unique: false });
+                    
+                    const edgesStore = db.createObjectStore('edges', { keyPath: 'id', autoIncrement: true });
+                    edgesStore.createIndex('grid', 'grid', { unique: false, multiEntry: true });
+                    edgesStore.createIndex('highway', 'highway', { unique: false });
+                    
+                    db.createObjectStore('metadata', { keyPath: 'key' });
+                };
+            });
+        }
+
+        function updateProgress(percent, text, details) {
+            document.getElementById('progress-bar').style.width = percent + '%';
+            document.getElementById('progress-text').textContent = Math.round(percent) + '%';
+            if (text) document.getElementById('loading-text').textContent = text;
+            if (details) document.getElementById('progress-details').textContent = details;
+        }
+
+        function getGridCell(lat, lon) {
+            const cellSize = 0.005;
+            const cellLat = Math.floor((lat - BOGOTA_BBOX.south) / cellSize);
+            const cellLon = Math.floor((lon - BOGOTA_BBOX.west) / cellSize);
+            return `${cellLat}_${cellLon}`;
+        }
+
+        function buildStreetGraph(elements) {
+            const nodesMap = new Map();
+            const ways = [];
+            
+            elements.forEach(el => {
+                if (el.type === 'node') {
+                    nodesMap.set(el.id, { id: el.id, lat: el.lat, lon: el.lon, tags: el.tags || {} });
+                } else if (el.type === 'way' && el.nodes) {
+                    ways.push(el);
+                }
+            });
+            
+            const nodes = new Map();
+            const edges = [];
+            
+            nodesMap.forEach((node, id) => nodes.set(id, { ...node, edges: [] }));
+            
+            ways.forEach(way => {
+                const nodeIds = way.nodes;
+                if (!nodeIds || nodeIds.length < 2) return;
+                
+                for (let i = 0; i < nodeIds.length - 1; i++) {
+                    const fromId = nodeIds[i];
+                    const toId = nodeIds[i + 1];
+                    const fromNode = nodes.get(fromId);
+                    const toNode = nodes.get(toId);
+                    
+                    if (!fromNode || !toNode) continue;
+                    
+                    const edge = {
+                        id: edges.length,
+                        from: fromId,
+                        to: toId,
+                        tags: way.tags || {},
+                        highway: way.tags?.highway || null,
+                        geometry: [{ lat: fromNode.lat, lon: fromNode.lon }, { lat: toNode.lat, lon: toNode.lon }],
+                        grid: [getGridCell(fromNode.lat, fromNode.lon), getGridCell(toNode.lat, toNode.lon)]
+                    };
+                    
+                    edges.push(edge);
+                    fromNode.edges.push(edge.id);
+                    toNode.edges.push(edge.id);
+                }
+            });
+            
+            nodes.forEach(node => {
+                node.isIntersection = node.edges.length >= 3;
+                node.grid = getGridCell(node.lat, node.lon);
+            });
+            
+            return { nodes, edges };
+        }
+
+        async function saveGraphToDB(graph) {
+            const nodesArray = Array.from(graph.nodes.values());
+            
+            for (let i = 0; i < nodesArray.length; i += 500) {
+                const batch = nodesArray.slice(i, i + 500);
+                await new Promise((resolve, reject) => {
+                    const tx = bogotaDB.transaction(['nodes'], 'readwrite');
+                    const store = tx.objectStore('nodes');
+                    batch.forEach(node => store.put(node));
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject(tx.error);
+                });
+            }
+            
+            for (let i = 0; i < graph.edges.length; i += 500) {
+                const batch = graph.edges.slice(i, i + 500);
+                await new Promise((resolve, reject) => {
+                    const tx = bogotaDB.transaction(['edges'], 'readwrite');
+                    const store = tx.objectStore('edges');
+                    batch.forEach(edge => store.put(edge));
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject(tx.error);
+                });
+            }
+            
+            await saveMetadata('graphBuilt', true);
+            await saveMetadata('buildTimestamp', Date.now());
+            await saveMetadata('nodesCount', graph.nodes.size);
+            await saveMetadata('edgesCount', graph.edges.length);
+        }
+
+        async function saveMetadata(key, value) {
+            return new Promise((resolve, reject) => {
+                const tx = bogotaDB.transaction(['metadata'], 'readwrite');
+                const request = tx.objectStore('metadata').put({ key, value, timestamp: Date.now() });
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function downloadGraph() {
+            const loading = document.getElementById('loading');
+            const btnDownload = document.getElementById('btnDownload');
+            
+            loading.classList.add('visible');
+            btnDownload.disabled = true;
+            document.getElementById('progress-container').style.display = 'block';
+            
+            try {
+                const { south, north, west, east } = BOGOTA_BBOX;
+                const bbox = `${south},${west},${north},${east}`;
+                const query = `[out:json][timeout:90];
+(
+  way["highway"~"^(motorway|trunk|primary|secondary|tertiary|residential|unclassified|service|cycleway|footway|path|track)$"](${bbox});
+  node["highway"~"^(traffic_signals|crossing|stop|give_way)$"](${bbox});
+);
+out body;
+>;
+out skel qt;`;
+                
+                let data = null;
+                
+                try {
+                    updateProgress(10, 'Consultando Overpass API...', 'Descargando datos');
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 90000);
+                    
+                    const response = await fetch('https://overpass-api.de/api/interpreter', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `data=${encodeURIComponent(query)}`,
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    data = await response.json();
+                    
+                } catch (error1) {
+                    try {
+                        updateProgress(30, 'Usando proxy CORS...', 'Reintentando');
+                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://overpass-api.de/api/interpreter')}`;
+                        const controller2 = new AbortController();
+                        const timeoutId2 = setTimeout(() => controller2.abort(), 90000);
+                        
+                        const response2 = await fetch(proxyUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `data=${encodeURIComponent(query)}`,
+                            signal: controller2.signal
+                        });
+                        
+                        clearTimeout(timeoutId2);
+                        if (!response2.ok) throw new Error(`HTTP ${response2.status}`);
+                        
+                        data = await response2.json();
+                        
+                    } catch (error2) {
+                        throw new Error('Todos los métodos de descarga fallaron');
+                    }
+                }
+                
+                if (!data || !data.elements || data.elements.length === 0) {
+                    throw new Error('No se recibieron datos');
+                }
+                
+                // GUARDAR DATOS CRUDOS para exportación posterior
+                rawOSMData = data;
+                
+                updateProgress(60, 'Construyendo grafo...', `${data.elements.length} elementos`);
+                const graph = buildStreetGraph(data.elements);
+                streetGraph = graph;
+                
+                updateProgress(70, 'Guardando en base de datos...', 'Guardando nodos...');
+                await saveGraphToDB(graph);
+                
+                updateProgress(100, '¡Completado!', 'Grafo descargado y guardado');
+                
+                setTimeout(() => {
+                    loading.classList.remove('visible');
+                    btnDownload.disabled = false;
+                    document.getElementById('btnLoad').disabled = false;
+                    document.getElementById('btnExport').disabled = false;
+                    alert(`✅ ¡Grafo descargado exitosamente!\n\n🔗 ${graph.nodes.size} nodos\n🛣️ ${graph.edges.length} edges\n\nAhora haz clic en "📤 Exportar GeoJSON COMPLETO"`);
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                loading.classList.remove('visible');
+                btnDownload.disabled = false;
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        async function loadGraphFromDB() {
+            const nodes = new Map();
+            const edges = [];
+
+            await new Promise((resolve, reject) => {
+                const tx = bogotaDB.transaction(['nodes'], 'readonly');
+                const request = tx.objectStore('nodes').getAll();
+                request.onsuccess = () => {
+                    request.result.forEach(node => nodes.set(node.id, node));
+                    resolve();
+                };
+                request.onerror = () => reject(request.error);
+            });
+
+            await new Promise((resolve, reject) => {
+                const tx = bogotaDB.transaction(['edges'], 'readonly');
+                const request = tx.objectStore('edges').getAll();
+                request.onsuccess = () => {
+                    request.result.forEach(edge => edges.push(edge));
+                    resolve();
+                };
+                request.onerror = () => reject(request.error);
+            });
+
+            return { nodes, edges };
+        }
+
+        async function checkGraphExists() {
+            try {
+                const tx = bogotaDB.transaction(['metadata'], 'readonly');
+                const request = tx.objectStore('metadata').get('graphBuilt');
+                return new Promise((resolve) => {
+                    request.onsuccess = () => resolve(request.result?.value === true);
+                    request.onerror = () => resolve(false);
+                });
+            } catch {
+                return false;
+            }
+        }
+
+        async function handleLoadGraph() {
+            const loading = document.getElementById('loading');
+            const btnLoad = document.getElementById('btnLoad');
+
+            loading.classList.add('visible');
+            document.getElementById('loading-text').textContent = 'Cargando grafo...';
+            document.getElementById('progress-container').style.display = 'none';
+            btnLoad.disabled = true;
+
+            try {
+                streetGraph = await loadGraphFromDB();
+                loading.classList.remove('visible');
+                btnLoad.disabled = false;
+                document.getElementById('btnExport').disabled = false;
+                alert(`Grafo cargado: ${streetGraph.nodes.size} nodos, ${streetGraph.edges.length} edges`);
+
+            } catch (err) {
+                console.error('Error:', err);
+                loading.classList.remove('visible');
+                btnLoad.disabled = false;
+            }
+        }
+
+        function exportGeoJSONComplete() {
+            if (!rawOSMData) {
+                alert('Primero debes descargar el grafo desde Overpass.\n\nEl botón "📥 Descargar Grafo" descarga los datos completos incluyendo semáforos.');
+                return;
+            }
+
+            const geojson = {
+                type: "FeatureCollection",
+                features: []
+            };
+
+            // Exportar TODOS los nodos especiales (semáforos, cruces, etc.)
+            rawOSMData.elements.forEach(element => {
+                if (element.type === 'node' && element.tags) {
+                    // Semáforos
+                    if (element.tags.highway === 'traffic_signals') {
+                        geojson.features.push({
+                            type: "Feature",
+                            properties: {
+                                type: "semaforo",
+                                id: element.id,
+                                tags: element.tags
+                            },
+                            geometry: {
+                                type: "Point",
+                                coordinates: [element.lon, element.lat]
+                            }
+                        });
+                    }
+                    
+                    // Cruces peatonales
+                    if (element.tags.highway === 'crossing') {
+                        geojson.features.push({
+                            type: "Feature",
+                            properties: {
+                                type: "cruce_peatonal",
+                                id: element.id,
+                                tags: element.tags
+                            },
+                            geometry: {
+                                type: "Point",
+                                coordinates: [element.lon, element.lat]
+                            }
+                        });
+                    }
+                    
+                    // Señales de pare
+                    if (element.tags.highway === 'stop') {
+                        geojson.features.push({
+                            type: "Feature",
+                            properties: {
+                                type: "senal_pare",
+                                id: element.id,
+                                tags: element.tags
+                            },
+                            geometry: {
+                                type: "Point",
+                                coordinates: [element.lon, element.lat]
+                            }
+                        });
+                    }
+                }
+            });
+
+            // Exportar ways (calles, ciclovías, puentes)
+            rawOSMData.elements.forEach(element => {
+                if (element.type === 'way' && element.tags) {
+                    const nodes = element.nodes || [];
+                    if (nodes.length < 2) return;
+                    
+                    const coordinates = nodes.map(nodeId => {
+                        const node = rawOSMData.elements.find(e => e.type === 'node' && e.id === nodeId);
+                        return node ? [node.lon, node.lat] : null;
+                    }).filter(coord => coord !== null);
+                    
+                    if (coordinates.length < 2) return;
+
+                    geojson.features.push({
+                        type: "Feature",
+                        properties: {
+                            type: "via",
+                            id: element.id,
+                            highway: element.tags.highway || 'desconocido',
+                            name: element.tags.name || null,
+                            cycleway: element.tags.cycleway || element.tags['cycleway:left'] || element.tags['cycleway:right'] || null,
+                            bridge: element.tags.bridge || null,
+                            oneway: element.tags.oneway || null,
+                            tags: element.tags
+                        },
+                        geometry: {
+                            type: "LineString",
+                            coordinates: coordinates
+                        }
+                    });
+                }
+            });
+
+            const json = JSON.stringify(geojson);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `grafo-bogota-completo-${new Date().toISOString().split('T')[0]}.geojson`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert(`✅ GeoJSON COMPLETO exportado\n\n📊 Total de features: ${geojson.features.length}\n\nEste archivo incluye:\n• Semáforos\n• Cruces peatonales\n• Señales de pare\n• Todas las calles\n• Ciclovías\n• Puentes\n\nAhora puedes procesarlo con el divisor de zonas.`);
+        }
+
+        document.getElementById('btnDownload').addEventListener('click', downloadGraph);
+        document.getElementById('btnLoad').addEventListener('click', handleLoadGraph);
+        document.getElementById('btnExport').addEventListener('click', exportGeoJSONComplete);
+
+        async function init() {
+            initMap();
+            
+            try {
+                await initIndexedDB();
+                const exists = await checkGraphExists();
+                
+                if (exists) {
+                    document.getElementById('btnLoad').disabled = false;
+                    document.getElementById('btnExport').disabled = false;
+                }
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
