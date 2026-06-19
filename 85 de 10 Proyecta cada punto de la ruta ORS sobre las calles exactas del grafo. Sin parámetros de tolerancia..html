@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snapping de Ruta al Grafo</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e2e8f0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { font-size: 1.6rem; margin-bottom: 10px; }
+        h2 { font-size: 1.1rem; margin: 20px 0 10px; color: #60a5fa; }
+        
+        .card {
+            background: #111;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .file-input-wrapper {
+            border: 2px dashed #475569;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+        
+        .file-input-wrapper:hover {
+            border-color: #60a5fa;
+            background: #1a1a1a;
+        }
+        
+        .file-input-wrapper.dragover {
+            border-color: #10b981;
+            background: #0f3a2f;
+        }
+        
+        .file-input-wrapper.edges {
+            border-color: #f59e0b;
+        }
+        
+        .file-input-wrapper.edges:hover {
+            border-color: #fbbf24;
+            background: #1a1814;
+        }
+        
+        input[type="file"] { display: none; }
+        
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            margin: 5px;
+        }
+        
+        button:hover:not(:disabled) { background: #1d4ed8; }
+        button:disabled { background: #334155; cursor: not-allowed; opacity: 0.5; }
+        .btn-success { background: #16a34a; }
+        .btn-success:hover:not(:disabled) { background: #15803d; }
+        .btn-secondary { background: #475569; }
+        .btn-warning { background: #f59e0b; color: #000; }
+        .btn-warning:hover:not(:disabled) { background: #d97706; }
+        
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        @media (max-width: 900px) {
+            .two-columns { grid-template-columns: 1fr; }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin: 15px 0;
+        }
+        
+        .stat-box {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #2a2a2a;
+            text-align: center;
+        }
+        
+        .stat-label { color: #9ca3af; font-size: 0.85rem; margin-bottom: 5px; }
+        .stat-value { font-size: 1.4rem; font-weight: 700; color: #60a5fa; }
+        .stat-value.green { color: #10b981; }
+        .stat-value.orange { color: #f59e0b; }
+        .stat-value.pink { color: #ec4899; }
+        .stat-value.purple { color: #a855f7; }
+        
+        .config-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 6px;
+        }
+        
+        .config-row label {
+            font-weight: 600;
+        }
+        
+        .config-row input[type="number"] {
+            background: #0a0a0a;
+            color: #e2e8f0;
+            border: 1px solid #2a2a2a;
+            border-radius: 4px;
+            padding: 8px;
+            width: 80px;
+            font-size: 1rem;
+        }
+        
+        .table-wrapper {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        
+        th {
+            background: #1a1a1a;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid #2a2a2a;
+            position: sticky;
+            top: 0;
+            color: #60a5fa;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        
+        td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #1a1a1a;
+            font-family: monospace;
+            font-size: 0.78rem;
+        }
+        
+        tr:hover { background: #1a1a1a; }
+        tr.has-instruction { background: #1a1814; }
+        tr.has-instruction:hover { background: #2a2418; }
+        
+        .metro-cell {
+            font-weight: 700;
+            color: #10b981;
+            text-align: right;
+            padding-right: 10px;
+        }
+        
+        .instruction-cell {
+            color: #f59e0b;
+            font-weight: 600;
+            font-family: -apple-system, sans-serif;
+            font-size: 0.82rem;
+        }
+        
+        .instruction-cell.first { color: #60a5fa; }
+        .instruction-cell.last { color: #10b981; }
+        .instruction-cell.anticipatory { color: #ec4899; font-weight: 700; }
+        
+        .crossing-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: #a855f7;
+            color: white;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        
+        .hidden { display: none; }
+        
+        .info-box {
+            background: #1e293b;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        
+        .log {
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.82rem;
+            color: #9ca3af;
+            margin-top: 15px;
+        }
+        
+        .log-entry { margin: 3px 0; }
+        .log-success { color: #10b981; }
+        .log-error { color: #ef4444; }
+        .log-info { color: #60a5fa; }
+        .log-warn { color: #f59e0b; }
+        .log-special { color: #ec4899; }
+        
+        .file-status {
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .file-status.loaded {
+            background: #0f3a2f;
+            border: 1px solid #10b981;
+            color: #10b981;
+        }
+        
+        .file-status.empty {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #9ca3af;
+        }
+        
+        #map {
+            height: 450px;
+            border-radius: 6px;
+            border: 1px solid #2a2a2a;
+        }
+        
+        .legend {
+            background: rgba(17, 17, 17, 0.9);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #2a2a2a;
+            font-size: 0.85rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+        }
+        
+        .legend-line {
+            width: 20px;
+            height: 3px;
+        }
+        
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .progress-container {
+            margin: 15px 0;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #2a2a2a;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            transition: width 0.2s;
+            width: 0%;
+        }
+        
+        .progress-text {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Snapping de Ruta al Grafo</h1>
+        <p>Proyecta cada punto de la ruta ORS sobre las calles exactas del grafo. Sin parámetros de tolerancia.</p>
+        
+        <div class="info-box">
+            <strong>📋 Cómo funciona:</strong>
+            <ol style="margin-left: 20px; margin-top: 8px;">
+                <li>Cargas el GeoJSON de ORS (tu ruta)</li>
+                <li>Cargas los archivos con edges (generados por el optimizador v3)</li>
+                <li>El algoritmo proyecta cada punto de la ruta sobre el edge más cercano</li>
+                <li>Identifica cruces exactos por donde pasa la ruta</li>
+                <li>Genera avisos anticipados "En la próxima calle gire..." en los cruces previos</li>
+                <li>Exportas la tabla a Excel</li>
+            </ol>
+        </div>
+        
+        <div class="card">
+            <h2>1. Cargar archivos</h2>
+            
+            <div class="two-columns">
+                <div>
+                    <div class="file-input-wrapper" id="dropZone">
+                        <p style="font-size: 1rem; margin-bottom: 8px;">📁 <strong>GeoJSON de ORS</strong></p>
+                        <p style="color: #9ca3af; font-size: 0.85rem;">Descargado de maps.openrouteservice.org</p>
+                        <input type="file" id="fileInput" accept=".geojson,.json">
+                    </div>
+                    <div id="orsStatus" class="file-status empty">Sin ruta cargada</div>
+                </div>
+                
+                <div>
+                    <div class="file-input-wrapper edges" id="dropZoneEdges">
+                        <p style="font-size: 1rem; margin-bottom: 8px;">🗺️ <strong>Archivos con edges</strong> (múltiples)</p>
+                        <p style="color: #9ca3af; font-size: 0.85rem;">Archivos generados por optimizador v3</p>
+                        <input type="file" id="fileInputEdges" accept=".geojson,.json" multiple>
+                    </div>
+                    <div id="edgesStatus" class="file-status empty">Sin edges cargados</div>
+                </div>
+            </div>
+            
+            <div class="config-row hidden" id="configRow">
+                <label for="intervalInput">Intervalo (metros):</label>
+                <input type="number" id="intervalInput" value="1" min="0.1" step="0.1">
+                
+                <label for="offsetInput" style="margin-left: 20px;">Mover instrucciones atrás (m):</label>
+                <input type="number" id="offsetInput" value="5" min="0" step="1">
+                
+                <button id="btnProcess" class="btn-warning">🚀 Procesar con snapping</button>
+            </div>
+            
+            <div class="progress-container hidden" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">0%</div>
+            </div>
+            
+            <div class="log hidden" id="logSection"></div>
+        </div>
+        
+        <div class="card hidden" id="resultsCard">
+            <h2>2. Estadísticas</h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Distancia total</div>
+                    <div class="stat-value green" id="statDistance">0 m</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Puntos snappeados</div>
+                    <div class="stat-value" id="statSnapped">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Cruces detectados</div>
+                    <div class="stat-value purple" id="statCrossings">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Instrucciones ORS</div>
+                    <div class="stat-value orange" id="statInstructions">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Avisos anticipados</div>
+                    <div class="stat-value pink" id="statAnticipatory">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Edges usados</div>
+                    <div class="stat-value" id="statEdges">0</div>
+                </div>
+            </div>
+            
+            <h2>3. Mapa de visualización</h2>
+            <div id="map"></div>
+            <div class="legend" style="margin-top: 10px; display: inline-block;">
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #3b82f6;"></div>
+                    <span>Ruta original ORS</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #10b981;"></div>
+                    <span>Ruta snappeada (sobre calles)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #a855f7;"></div>
+                    <span>Cruces detectados</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #ec4899;"></div>
+                    <span>Avisos anticipados</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #f59e0b;"></div>
+                    <span>Instrucciones ORS</span>
+                </div>
+            </div>
+            
+            <h2>4. Exportar</h2>
+            <div class="actions">
+                <button id="btnDownloadCSV" class="btn-success">📥 Descargar CSV</button>
+                <button id="btnDownloadTSV" class="btn-success">📥 Descargar TSV</button>
+                <button id="btnCopyTable" class="btn-secondary">📋 Copiar tabla</button>
+            </div>
+            
+            <h2>5. Filtrar puntos</h2>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                <div style="flex: 1; min-width: 250px;">
+                    <input type="text" id="searchInput" placeholder="Buscar por metro (ej: 500)"
+                        style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #e2e8f0; font-size: 1rem;">
+                </div>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 15px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px;">
+                    <input type="checkbox" id="onlyInstructions" style="width: 18px; height: 18px;">
+                    <span style="font-weight: 600;">Solo con instrucción</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 15px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px;">
+                    <input type="checkbox" id="onlyCrossings" style="width: 18px; height: 18px;">
+                    <span style="font-weight: 600;">Solo cruces</span>
+                </label>
+            </div>
+            
+            <h2>6. Tabla de puntos snappeados</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metro</th>
+                            <th>Lat orig</th>
+                            <th>Lon orig</th>
+                            <th>Lat snap</th>
+                            <th>Lon snap</th>
+                            <th>Cruce</th>
+                            <th>Instrucción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pointsBody"></tbody>
+                </table>
+            </div>
+            <p style="margin-top: 10px; color: #9ca3af; font-size: 0.85rem;" id="visibleCount"></p>
+        </div>
+    </div>
+
+    <script>
+        // === ESTADO GLOBAL ===
+        let orsRoute = null;          // Ruta original de ORS
+        let orsInstructions = [];     // Instrucciones extraídas
+        let edges = [];               // Todos los edges cargados
+        let crossings = [];           // Todos los cruces cargados
+        let snappedPoints = [];       // Resultado final
+        
+        let map = null;
+        let layers = {
+            originalRoute: null,
+            snappedRoute: null,
+            crossings: [],
+            anticipatory: [],
+            instructions: []
+        };
+        
+        // === CONSTANTES DE CONVERSIÓN (Bogotá) ===
+        const LAT_TO_METERS = 111000;
+        const LON_TO_METERS = 110640; // cos(4.65°) * 111000
+        
+        // === CARGA DE ARCHIVOS ===
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const dropZoneEdges = document.getElementById('dropZoneEdges');
+        const fileInputEdges = document.getElementById('fileInputEdges');
+        
+        // Setup drag & drop ORS
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) loadORSFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) loadORSFile(e.target.files[0]);
+        });
+        
+        // Setup drag & drop edges
+        dropZoneEdges.addEventListener('click', () => fileInputEdges.click());
+        dropZoneEdges.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZoneEdges.classList.add('dragover');
+        });
+        dropZoneEdges.addEventListener('dragleave', () => dropZoneEdges.classList.remove('dragover'));
+        dropZoneEdges.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZoneEdges.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) loadEdgesFiles(Array.from(e.dataTransfer.files));
+        });
+        fileInputEdges.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) loadEdgesFiles(Array.from(e.target.files));
+        });
+        
+        async function loadORSFile(file) {
+            log('Cargando ruta ORS...', 'info');
+            try {
+                const text = await file.text();
+                const geojson = JSON.parse(text);
+                
+                if (!geojson.features || geojson.features.length === 0) {
+                    throw new Error('Sin features');
+                }
+                
+                const feature = geojson.features[0];
+                const coords = feature.geometry?.coordinates;
+                if (!coords || coords.length < 2) {
+                    throw new Error('Sin coordenadas válidas');
+                }
+                
+                orsRoute = coords.map(c => ({ lon: c[0], lat: c[1] }));
+                orsInstructions = extractORSInstructions(feature);
+                
+                const statusEl = document.getElementById('orsStatus');
+                statusEl.className = 'file-status loaded';
+                statusEl.innerHTML = `✅ <strong>${orsRoute.length}</strong> puntos · <strong>${orsInstructions.length}</strong> instrucciones`;
+                
+                log(`✅ Ruta ORS cargada: ${orsRoute.length} puntos, ${orsInstructions.length} instrucciones`, 'success');
+                checkReadyToProcess();
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function loadEdgesFiles(files) {
+            log(`Cargando ${files.length} archivo(s) de edges...`, 'info');
+            
+            edges = [];
+            crossings = [];
+            
+            for (const file of files) {
+                try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+                    
+                    let edgesCount = 0;
+                    let crossingsCount = 0;
+                    
+                    if (data.edges && Array.isArray(data.edges)) {
+                        data.edges.forEach(e => {
+                            if (typeof e.lat_inicio === 'number') {
+                                edges.push(e);
+                                edgesCount++;
+                            }
+                        });
+                    }
+                    
+                    if (data.cruces && Array.isArray(data.cruces)) {
+                        data.cruces.forEach(c => {
+                            if (typeof c.lat === 'number') {
+                                crossings.push(c);
+                                crossingsCount++;
+                            }
+                        });
+                    }
+                    
+                    log(`✅ ${file.name}: ${edgesCount} edges, ${crossingsCount} cruces`, 'success');
+                    
+                } catch (error) {
+                    log(`❌ Error en ${file.name}: ${error.message}`, 'error');
+                }
+            }
+            
+            const statusEl = document.getElementById('edgesStatus');
+            if (edges.length > 0) {
+                statusEl.className = 'file-status loaded';
+                statusEl.innerHTML = `✅ <strong>${edges.length.toLocaleString()}</strong> edges · <strong>${crossings.length.toLocaleString()}</strong> cruces de ${files.length} archivo(s)`;
+            } else {
+                statusEl.className = 'file-status empty';
+                statusEl.textContent = 'No se pudieron cargar edges';
+            }
+            
+            checkReadyToProcess();
+        }
+        
+        function checkReadyToProcess() {
+            if (orsRoute && edges.length > 0) {
+                document.getElementById('configRow').classList.remove('hidden');
+            }
+        }
+        
+        // === EXTRACCIÓN DE INSTRUCCIONES ORS ===
+        function extractORSInstructions(feature) {
+            const instructions = [];
+            const segments = feature.properties?.segments || [];
+            
+            segments.forEach((segment, segIdx) => {
+                const steps = segment.steps || [];
+                steps.forEach((step, stepIdx) => {
+                    const waypointIndex = step.way_points?.[0] || 0;
+                    const coord = feature.geometry.coordinates[waypointIndex];
+                    if (!coord) return;
+                    
+                    const originalInstruction = step.instruction || '';
+                    const simplified = simplifyInstruction(originalInstruction);
+                    
+                    let accumulatedDistance = 0;
+                    for (let i = 0; i < waypointIndex; i++) {
+                        const A = feature.geometry.coordinates[i];
+                        const B = feature.geometry.coordinates[i + 1];
+                        if (A && B) {
+                            accumulatedDistance += haversineDistance(A[1], A[0], B[1], B[0]);
+                        }
+                    }
+                    
+                    instructions.push({
+                        originalInstruction,
+                        simplified,
+                        metro: accumulatedDistance,
+                        lat: coord[1],
+                        lon: coord[0],
+                        isWalkInstruction: originalInstruction.toLowerCase().startsWith('camina hacia'),
+                        segmentIndex: segIdx,
+                        stepIndex: stepIdx
+                    });
+                });
+            });
+            
+            return instructions;
+        }
+        
+        function simplifyInstruction(instruction) {
+            const lower = instruction.toLowerCase();
+            if (lower.startsWith('camina hacia')) return instruction;
+            
+            const patterns = [
+                /gire a la (derecha|izquierda)/i,
+                /gire (hacia la derecha|hacia la izquierda)/i,
+                /continúe recto/i,
+                /continúe/i,
+                /manténgase a la (derecha|izquierda)/i,
+                /tome la (primera|segunda|tercera) a la (derecha|izquierda)/i,
+                /en la rotonda/i,
+                /llegó a su destino/i
+            ];
+            
+            for (const pattern of patterns) {
+                const match = instruction.match(pattern);
+                if (match) return match[0];
+            }
+            
+            const cleaned = instruction.replace(/\s+a\s+[A-ZÁÉÍÓÚÑ].*$/i, '');
+            return cleaned || instruction;
+        }
+        
+        // === ALGORITMO DE SNAPPING ===
+        document.getElementById('btnProcess').addEventListener('click', processWithSnapping);
+        
+        async function processWithSnapping() {
+            if (!orsRoute || edges.length === 0) {
+                alert('Carga la ruta ORS y al menos un archivo de edges');
+                return;
+            }
+            
+            const interval = parseFloat(document.getElementById('intervalInput').value) || 1;
+            const offset = parseFloat(document.getElementById('offsetInput').value) || 0;
+            
+            log(`🚀 Iniciando snapping: intervalo ${interval}m, offset ${offset}m`, 'info');
+            
+            document.getElementById('progressContainer').classList.remove('hidden');
+            updateProgress(0, 'Preparando datos...');
+            
+            // 1. Interpolar puntos cada X metros en la ruta original
+            await sleep(10);
+            const interpolatedPoints = interpolateRoute(orsRoute, interval);
+            log(`✅ ${interpolatedPoints.length} puntos interpolados`, 'success');
+            
+            // 2. Filtrar edges por bounding box de la ruta (optimización)
+            updateProgress(10, 'Filtrando edges relevantes...');
+            await sleep(10);
+            const relevantEdges = filterEdgesByBBox(interpolatedPoints, edges);
+            log(`✅ ${relevantEdges.length} edges relevantes de ${edges.length} totales`, 'success');
+            
+            // 3. Snapping: proyectar cada punto sobre el edge más cercano
+            updateProgress(20, 'Aplicando snapping...');
+            const snappedPointsTemp = [];
+            const batchSize = Math.max(1, Math.floor(interpolatedPoints.length / 50));
+            
+            for (let i = 0; i < interpolatedPoints.length; i++) {
+                const point = interpolatedPoints[i];
+                const snapped = snapPointToEdges(point, relevantEdges);
+                
+                snappedPointsTemp.push({
+                    metro: point.metro,
+                    originalLat: point.lat,
+                    originalLon: point.lon,
+                    snappedLat: snapped.lat,
+                    snappedLon: snapped.lon,
+                    edgeId: snapped.edgeId,
+                    snapDistance: snapped.distance,
+                    instruction: null,
+                    isFirst: false,
+                    isLast: false,
+                    isAnticipatory: false,
+                    isCrossing: false,
+                    crossingId: null
+                });
+                
+                if (i % batchSize === 0) {
+                    const progress = 20 + (i / interpolatedPoints.length) * 40;
+                    updateProgress(progress, `Snapping punto ${i + 1}/${interpolatedPoints.length}...`);
+                    await sleep(0);
+                }
+            }
+            
+            log(`✅ Snapping completado: ${snappedPointsTemp.length} puntos proyectados`, 'success');
+            
+            // 4. Detectar cruces (donde la ruta snappeada pasa por un cruce)
+            updateProgress(65, 'Detectando cruces...');
+            await sleep(10);
+            let crossingsDetected = 0;
+            
+            for (const point of snappedPointsTemp) {
+                for (const crossing of crossings) {
+                    const dist = haversineDistance(point.snappedLat, point.snappedLon, crossing.lat, crossing.lon);
+                    if (dist < 5) { // 5 metros es muy preciso después del snapping
+                        point.isCrossing = true;
+                        point.crossingId = `${crossing.lat.toFixed(5)}_${crossing.lon.toFixed(5)}`;
+                        crossingsDetected++;
+                        break;
+                    }
+                }
+            }
+            
+            log(`✅ ${crossingsDetected} cruces detectados sobre la ruta`, 'success');
+            
+            // 5. Asignar instrucciones ORS con offset
+            updateProgress(75, 'Asignando instrucciones...');
+            await sleep(10);
+            
+            const processedInstructions = processInstructionsWithOffset(orsInstructions, offset);
+            const lastInstruction = processedInstructions[processedInstructions.length - 1];
+            
+            processedInstructions.forEach(inst => {
+                const isFirst = inst.isWalkInstruction && inst.stepIndex === 0 && inst.segmentIndex === 0;
+                const isLast = (inst === lastInstruction);
+                
+                let targetMetro;
+                if (isFirst || isLast) {
+                    targetMetro = inst.metro;
+                    log(`ℹ️ ${isFirst ? 'Primera' : 'Última'} "${inst.simplified}" en metro ${targetMetro.toFixed(1)}`, 'info');
+                } else {
+                    targetMetro = inst.metro - offset;
+                    if (targetMetro < 0) return;
+                }
+                
+                const closestIdx = findClosestPointIndex(snappedPointsTemp, targetMetro);
+                if (closestIdx >= 0) {
+                    snappedPointsTemp[closestIdx].instruction = inst.simplified;
+                    snappedPointsTemp[closestIdx].isFirst = isFirst;
+                    snappedPointsTemp[closestIdx].isLast = isLast;
+                }
+            });
+            
+            // 6. Generar avisos anticipados en cruces previos
+            updateProgress(85, 'Generando avisos anticipados...');
+            await sleep(10);
+            let anticipatoryCount = 0;
+            
+            processedInstructions.forEach(inst => {
+                const isFirst = inst.isWalkInstruction && inst.stepIndex === 0 && inst.segmentIndex === 0;
+                const isLast = (inst === lastInstruction);
+                if (isFirst || isLast) return;
+                
+                const msgLower = inst.simplified.toLowerCase();
+                if (!msgLower.includes('gire')) return;
+                
+                let direction = null;
+                if (msgLower.includes('derecha')) direction = 'derecha';
+                else if (msgLower.includes('izquierda')) direction = 'izquierda';
+                if (!direction) return;
+                
+                const originalMetro = inst.metro;
+                const turnIdx = findClosestPointIndex(snappedPointsTemp, originalMetro);
+                if (turnIdx < 0) return;
+                
+                // Buscar el último cruce ANTES del giro (mínimo 15m antes)
+                let prevCrossingIdx = -1;
+                for (let i = turnIdx - 1; i >= 0; i--) {
+                    const distToTurn = haversineDistance(
+                        snappedPointsTemp[i].snappedLat,
+                        snappedPointsTemp[i].snappedLon,
+                        snappedPointsTemp[turnIdx].snappedLat,
+                        snappedPointsTemp[turnIdx].snappedLon
+                    );
+                    
+                    if (distToTurn < 15) continue;
+                    
+                    if (snappedPointsTemp[i].isCrossing) {
+                        prevCrossingIdx = i;
+                        break;
+                    }
+                }
+                
+                if (prevCrossingIdx >= 0 && !snappedPointsTemp[prevCrossingIdx].instruction) {
+                    snappedPointsTemp[prevCrossingIdx].instruction = `En la próxima calle gire a la ${direction}`;
+                    snappedPointsTemp[prevCrossingIdx].isAnticipatory = true;
+                    anticipatoryCount++;
+                    
+                    const distFromTurn = haversineDistance(
+                        snappedPointsTemp[prevCrossingIdx].snappedLat,
+                        snappedPointsTemp[prevCrossingIdx].snappedLon,
+                        snappedPointsTemp[turnIdx].snappedLat,
+                        snappedPointsTemp[turnIdx].snappedLon
+                    );
+                    log(`🎯 Metro ${snappedPointsTemp[prevCrossingIdx].metro.toFixed(0)}: aviso anticipado (${Math.round(distFromTurn)}m antes del giro)`, 'special');
+                }
+            });
+            
+            log(`✅ ${anticipatoryCount} avisos anticipados generados`, 'success');
+            
+            // 7. Guardar resultado y mostrar
+            updateProgress(100, 'Finalizado');
+            snappedPoints = snappedPointsTemp;
+            
+            // Estadísticas
+            const totalDistance = snappedPoints[snappedPoints.length - 1].metro;
+            const uniqueEdges = new Set(snappedPoints.map(p => p.edgeId).filter(Boolean)).size;
+            
+            document.getElementById('statDistance').textContent = 
+                totalDistance >= 1000 ? (totalDistance / 1000).toFixed(2) + ' km' : totalDistance.toFixed(1) + ' m';
+            document.getElementById('statSnapped').textContent = snappedPoints.length.toLocaleString();
+            document.getElementById('statCrossings').textContent = crossingsDetected;
+            document.getElementById('statInstructions').textContent = orsInstructions.length;
+            document.getElementById('statAnticipatory').textContent = anticipatoryCount;
+            document.getElementById('statEdges').textContent = uniqueEdges;
+            
+            // Mapa
+            renderMap();
+            
+            // Tabla
+            renderTable(snappedPoints);
+            applyFilters();
+            
+            document.getElementById('resultsCard').classList.remove('hidden');
+            log(`🎉 Proceso completado`, 'success');
+        }
+        
+        function interpolateRoute(coords, interval) {
+            const points = [{ metro: 0, lat: coords[0].lat, lon: coords[0].lon }];
+            let accumulatedDistance = 0;
+            let nextTarget = interval;
+            
+            for (let i = 0; i < coords.length - 1; i++) {
+                const A = coords[i];
+                const B = coords[i + 1];
+                const segDistance = haversineDistance(A.lat, A.lon, B.lat, B.lon);
+                
+                if (segDistance === 0) continue;
+                
+                const deltaLat = B.lat - A.lat;
+                const deltaLon = B.lon - A.lon;
+                
+                while (nextTarget <= accumulatedDistance + segDistance) {
+                    const distIntoSegment = nextTarget - accumulatedDistance;
+                    const fraction = distIntoSegment / segDistance;
+                    
+                    points.push({
+                        metro: nextTarget,
+                        lat: A.lat + fraction * deltaLat,
+                        lon: A.lon + fraction * deltaLon
+                    });
+                    nextTarget += interval;
+                }
+                
+                accumulatedDistance += segDistance;
+            }
+            
+            // Último punto
+            const last = coords[coords.length - 1];
+            const lastPoint = points[points.length - 1];
+            if (Math.abs(lastPoint.metro - accumulatedDistance) > 0.5) {
+                points.push({ metro: accumulatedDistance, lat: last.lat, lon: last.lon });
+            }
+            
+            return points;
+        }
+        
+        function filterEdgesByBBox(points, allEdges) {
+            // Calcular bounding box de la ruta
+            let minLat = Infinity, maxLat = -Infinity;
+            let minLon = Infinity, maxLon = -Infinity;
+            
+            for (const p of points) {
+                if (p.lat < minLat) minLat = p.lat;
+                if (p.lat > maxLat) maxLat = p.lat;
+                if (p.lon < minLon) minLon = p.lon;
+                if (p.lon > maxLon) maxLon = p.lon;
+            }
+            
+            // Añadir margen de 100 metros
+            const marginLat = 100 / LAT_TO_METERS;
+            const marginLon = 100 / LON_TO_METERS;
+            
+            minLat -= marginLat;
+            maxLat += marginLat;
+            minLon -= marginLon;
+            maxLon += marginLon;
+            
+            // Filtrar edges que toquen el bbox
+            return allEdges.filter(e => {
+                const eMinLat = Math.min(e.lat_inicio, e.lat_fin);
+                const eMaxLat = Math.max(e.lat_inicio, e.lat_fin);
+                const eMinLon = Math.min(e.lon_inicio, e.lon_fin);
+                const eMaxLon = Math.max(e.lon_inicio, e.lon_fin);
+                
+                return !(eMaxLat < minLat || eMinLat > maxLat || eMaxLon < minLon || eMinLon > maxLon);
+            });
+        }
+        
+        function snapPointToEdges(point, edges) {
+            let bestProjection = null;
+            let bestDistance = Infinity;
+            let bestEdgeId = null;
+            
+            const px = point.lon * LON_TO_METERS;
+            const py = point.lat * LAT_TO_METERS;
+            
+            for (const edge of edges) {
+                const ax = edge.lon_inicio * LON_TO_METERS;
+                const ay = edge.lat_inicio * LAT_TO_METERS;
+                const bx = edge.lon_fin * LON_TO_METERS;
+                const by = edge.lat_fin * LAT_TO_METERS;
+                
+                // Proyección perpendicular del punto sobre el segmento
+                const dx = bx - ax;
+                const dy = by - ay;
+                const len2 = dx * dx + dy * dy;
+                
+                let t = 0;
+                if (len2 > 0) {
+                    t = ((px - ax) * dx + (py - ay) * dy) / len2;
+                    t = Math.max(0, Math.min(1, t));
+                }
+                
+                const projX = ax + t * dx;
+                const projY = ay + t * dy;
+                
+                const distance = Math.sqrt((px - projX) ** 2 + (py - projY) ** 2);
+                
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestProjection = {
+                        lat: projY / LAT_TO_METERS,
+                        lon: projX / LON_TO_METERS
+                    };
+                    bestEdgeId = edge.id;
+                }
+            }
+            
+            if (bestProjection && bestDistance < 200) { // 200m máximo razonable
+                return { ...bestProjection, edgeId: bestEdgeId, distance: bestDistance };
+            }
+            
+            // Si no encontró edge cercano, mantener punto original
+            return { lat: point.lat, lon: point.lon, edgeId: null, distance: Infinity };
+        }
+        
+        function processInstructionsWithOffset(instructions, offset) {
+            if (instructions.length === 0) return [];
+            
+            const processed = [...instructions];
+            
+            if (processed.length >= 2 && processed[0].isWalkInstruction) {
+                const firstMetro = processed[0].metro;
+                const secondMetro = processed[1].metro;
+                
+                if (secondMetro - offset <= firstMetro + offset) {
+                    processed.shift();
+                } else {
+                    processed[0].metro = firstMetro;
+                }
+            }
+            
+            return processed;
+        }
+        
+        function findClosestPointIndex(points, targetMetro) {
+            let bestIdx = -1;
+            let minDiff = Infinity;
+            
+            for (let i = 0; i < points.length; i++) {
+                const diff = Math.abs(points[i].metro - targetMetro);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    bestIdx = i;
+                }
+            }
+            
+            return bestIdx;
+        }
+        
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon / 2) ** 2;
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+        
+        function updateProgress(percent, text) {
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').textContent = `${Math.round(percent)}% - ${text}`;
+        }
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // === MAPA ===
+        function renderMap() {
+            if (!map) {
+                map = L.map('map').setView([4.65, -74.05], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
+            }
+            
+            // Limpiar capas previas
+            Object.values(layers).forEach(layer => {
+                if (Array.isArray(layer)) {
+                    layer.forEach(l => map.removeLayer(l));
+                } else if (layer) {
+                    map.removeLayer(layer);
+                }
+            });
+            layers = { originalRoute: null, snappedRoute: null, crossings: [], anticipatory: [], instructions: [] };
+            
+            // Ruta original
+            const originalCoords = snappedPoints.map(p => [p.originalLat, p.originalLon]);
+            layers.originalRoute = L.polyline(originalCoords, {
+                color: '#3b82f6', weight: 4, opacity: 0.5, dashArray: '5 5'
+            }).addTo(map);
+            
+            // Ruta snappeada
+            const snappedCoords = snappedPoints.map(p => [p.snappedLat, p.snappedLon]);
+            layers.snappedRoute = L.polyline(snappedCoords, {
+                color: '#10b981', weight: 5, opacity: 0.9
+            }).addTo(map);
+            
+            // Marcadores de cruces detectados
+            snappedPoints.forEach(p => {
+                if (p.isCrossing) {
+                    const marker = L.circleMarker([p.snappedLat, p.snappedLon], {
+                        radius: 4, color: '#a855f7', fillColor: '#a855f7', fillOpacity: 0.7, weight: 1
+                    }).addTo(map);
+                    layers.crossings.push(marker);
+                }
+            });
+            
+            // Marcadores de instrucciones
+            snappedPoints.forEach(p => {
+                if (p.instruction) {
+                    let color = '#f59e0b';
+                    if (p.isFirst) color = '#60a5fa';
+                    else if (p.isLast) color = '#10b981';
+                    else if (p.isAnticipatory) color = '#ec4899';
+                    
+                    const marker = L.circleMarker([p.snappedLat, p.snappedLon], {
+                        radius: 7, color: color, fillColor: color, fillOpacity: 0.9, weight: 2
+                    }).addTo(map).bindPopup(`<strong>Metro ${p.metro.toFixed(0)}</strong><br>${p.instruction}`);
+                    
+                    if (p.isAnticipatory) layers.anticipatory.push(marker);
+                    else layers.instructions.push(marker);
+                }
+            });
+            
+            // Ajustar vista
+            map.fitBounds(layers.snappedRoute.getBounds(), { padding: [30, 30] });
+        }
+        
+        // === TABLA ===
+        function renderTable(points) {
+            const tbody = document.getElementById('pointsBody');
+            tbody.innerHTML = '';
+            
+            points.forEach(p => {
+                const row = document.createElement('tr');
+                if (p.instruction) row.classList.add('has-instruction');
+                
+                let instructionCell = '';
+                if (p.instruction) {
+                    let className = 'instruction-cell';
+                    if (p.isFirst) className += ' first';
+                    else if (p.isLast) className += ' last';
+                    else if (p.isAnticipatory) className += ' anticipatory';
+                    
+                    const prefix = p.isAnticipatory ? '🔔 ' : '';
+                    instructionCell = `<span class="${className}">${prefix}${escapeHtml(p.instruction)}</span>`;
+                }
+                
+                const crossingCell = p.isCrossing ? '<span class="crossing-badge">✓</span>' : '';
+                
+                row.innerHTML = `
+                    <td class="metro-cell">${p.metro.toFixed(0)}</td>
+                    <td>${p.originalLat.toFixed(7)}</td>
+                    <td>${p.originalLon.toFixed(7)}</td>
+                    <td>${p.snappedLat.toFixed(7)}</td>
+                    <td>${p.snappedLon.toFixed(7)}</td>
+                    <td>${crossingCell}</td>
+                    <td>${instructionCell}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // === FILTROS ===
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('onlyInstructions').addEventListener('change', applyFilters);
+        document.getElementById('onlyCrossings').addEventListener('change', applyFilters);
+        
+        function applyFilters() {
+            const query = document.getElementById('searchInput').value.trim();
+            const onlyInst = document.getElementById('onlyInstructions').checked;
+            const onlyCross = document.getElementById('onlyCrossings').checked;
+            
+            let filtered = [...snappedPoints];
+            
+            if (onlyInst) filtered = filtered.filter(p => p.instruction);
+            if (onlyCross) filtered = filtered.filter(p => p.isCrossing);
+            if (query) filtered = filtered.filter(p => p.metro.toFixed(0).includes(query));
+            
+            renderTable(filtered);
+            
+            const totalInst = snappedPoints.filter(p => p.instruction).length;
+            const shownInst = filtered.filter(p => p.instruction).length;
+            document.getElementById('visibleCount').textContent = 
+                `Mostrando ${filtered.length} de ${snappedPoints.length} puntos (${shownInst} con instrucción)`;
+        }
+        
+        // === EXPORTACIÓN ===
+        document.getElementById('btnDownloadCSV').addEventListener('click', () => {
+            const headers = ['Metro', 'Lat_orig', 'Lon_orig', 'Lat_snap', 'Lon_snap', 'Es_cruce', 'Instruccion', 'Tipo', 'Coord_snap_copiar'];
+            const rows = snappedPoints.map(p => {
+                let tipo = '';
+                if (p.isFirst) tipo = 'PRIMERA';
+                else if (p.isLast) tipo = 'ULTIMA';
+                else if (p.isAnticipatory) tipo = 'ANTICIPADO';
+                else if (p.instruction) tipo = 'ORS';
+                
+                const crossTxt = p.isCrossing ? 'SI' : '';
+                return `${p.metro.toFixed(0)},${p.originalLat.toFixed(8)},${p.originalLon.toFixed(8)},${p.snappedLat.toFixed(8)},${p.snappedLon.toFixed(8)},${crossTxt},"${p.instruction || ''}","${tipo}","${p.snappedLat.toFixed(8)}, ${p.snappedLon.toFixed(8)}"`;
+            });
+            const csv = [headers.join(','), ...rows].join('\n');
+            downloadFile(csv, 'ruta-snapped.csv', 'text/csv;charset=utf-8');
+            log('📥 CSV descargado', 'success');
+        });
+        
+        document.getElementById('btnDownloadTSV').addEventListener('click', () => {
+            const headers = ['Metro', 'Lat_orig', 'Lon_orig', 'Lat_snap', 'Lon_snap', 'Es_cruce', 'Instruccion', 'Tipo', 'Coord_snap_copiar'];
+            const rows = snappedPoints.map(p => {
+                let tipo = '';
+                if (p.isFirst) tipo = 'PRIMERA';
+                else if (p.isLast) tipo = 'ULTIMA';
+                else if (p.isAnticipatory) tipo = 'ANTICIPADO';
+                else if (p.instruction) tipo = 'ORS';
+                
+                const crossTxt = p.isCrossing ? 'SI' : '';
+                return `${p.metro.toFixed(0)}\t${p.originalLat.toFixed(8)}\t${p.originalLon.toFixed(8)}\t${p.snappedLat.toFixed(8)}\t${p.snappedLon.toFixed(8)}\t${crossTxt}\t${p.instruction || ''}\t${tipo}\t${p.snappedLat.toFixed(8)}, ${p.snappedLon.toFixed(8)}`;
+            });
+            const tsv = [headers.join('\t'), ...rows].join('\n');
+            downloadFile(tsv, 'ruta-snapped.tsv', 'text/tab-separated-values;charset=utf-8');
+            log('📥 TSV descargado', 'success');
+        });
+        
+        document.getElementById('btnCopyTable').addEventListener('click', async () => {
+            const headers = 'Metro\tLat_orig\tLon_orig\tLat_snap\tLon_snap\tEs_cruce\tInstruccion\tTipo\tCoord_snap_copiar';
+            const rows = snappedPoints.map(p => {
+                let tipo = '';
+                if (p.isFirst) tipo = 'PRIMERA';
+                else if (p.isLast) tipo = 'ULTIMA';
+                else if (p.isAnticipatory) tipo = 'ANTICIPADO';
+                else if (p.instruction) tipo = 'ORS';
+                
+                const crossTxt = p.isCrossing ? 'SI' : '';
+                return `${p.metro.toFixed(0)}\t${p.originalLat.toFixed(8)}\t${p.originalLon.toFixed(8)}\t${p.snappedLat.toFixed(8)}\t${p.snappedLon.toFixed(8)}\t${crossTxt}\t${p.instruction || ''}\t${tipo}\t${p.snappedLat.toFixed(8)}, ${p.snappedLon.toFixed(8)}`;
+            });
+            const text = [headers, ...rows].join('\n');
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                log('📋 Copiado al portapapeles', 'success');
+                alert('✅ Tabla copiada.\n\nCtrl+V en Excel.');
+            } catch (err) {
+                log('❌ Error al copiar: ' + err.message, 'error');
+            }
+        });
+        
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob(['\uFEFF' + content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function log(message, type = 'info') {
+            const logSection = document.getElementById('logSection');
+            logSection.classList.remove('hidden');
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            const time = new Date().toLocaleTimeString();
+            entry.textContent = `[${time}] ${message}`;
+            logSection.appendChild(entry);
+            logSection.scrollTop = logSection.scrollHeight;
+        }
+        
+        function escapeHtml(str) {
+            return String(str).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+        }
+    </script>
+</body>
+</html>
