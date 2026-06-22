@@ -1,1261 +1,2022 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snapping de Ruta al Grafo</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GPS Navigator Pro</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/NoSleep.min.js"></script>
+
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary: #2563eb;
+            --danger: #dc2626;
+            --success: #16a34a;
+            --bg: #000000;
+            --card: #000000;
+            --line: #2a2a2a;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --accent: #f59e0b;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            overscroll-behavior-y: contain; 
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #0a0a0a;
-            color: #e2e8f0;
-            padding: 20px;
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+            background: var(--bg);
+            color: var(--text);
         }
-        .container { max-width: 1600px; margin: 0 auto; }
-        h1 { font-size: 1.6rem; margin-bottom: 10px; }
-        h2 { font-size: 1.1rem; margin: 20px 0 10px; color: #60a5fa; }
-        
-        .card {
-            background: #111;
-            border: 1px solid #2a2a2a;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .file-input-wrapper {
-            border: 2px dashed #475569;
-            border-radius: 8px;
-            padding: 30px;
+
+        .container { max-width: 900px; margin: 0 auto; }
+
+        h1 {
+            font-size: 1.5rem;
             text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 15px;
+            margin: 8px 0 14px;
         }
-        
-        .file-input-wrapper:hover {
-            border-color: #60a5fa;
-            background: #1a1a1a;
+
+        .dashboard, .card, table, .music-panel, .map-panel {
+            border-radius: 10px;
         }
-        
-        .file-input-wrapper.dragover {
-            border-color: #10b981;
-            background: #0f3a2f;
+
+        .dashboard, .music-panel, .map-panel, .card {
+            background: var(--card);
+            padding: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+            margin-bottom: 14px;
         }
-        
-        .file-input-wrapper.edges {
-            border-color: #f59e0b;
-        }
-        
-        .file-input-wrapper.edges:hover {
-            border-color: #fbbf24;
-            background: #1a1814;
-        }
-        
-        input[type="file"] { display: none; }
-        
-        button {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            margin: 5px;
-        }
-        
-        button:hover:not(:disabled) { background: #1d4ed8; }
-        button:disabled { background: #334155; cursor: not-allowed; opacity: 0.5; }
-        .btn-success { background: #16a34a; }
-        .btn-success:hover:not(:disabled) { background: #15803d; }
-        .btn-secondary { background: #475569; }
-        .btn-warning { background: #f59e0b; color: #000; }
-        .btn-warning:hover:not(:disabled) { background: #d97706; }
-        
-        .two-columns {
+
+        .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        @media (max-width: 900px) {
-            .two-columns { grid-template-columns: 1fr; }
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 12px;
-            margin: 15px 0;
         }
-        
-        .stat-box {
-            background: #1a1a1a;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #2a2a2a;
-            text-align: center;
+
+        @media (max-width: 760px) {
+            .grid-2 { grid-template-columns: 1fr; }
         }
-        
-        .stat-label { color: #9ca3af; font-size: 0.85rem; margin-bottom: 5px; }
-        .stat-value { font-size: 1.4rem; font-weight: 700; color: #60a5fa; }
-        .stat-value.green { color: #10b981; }
-        .stat-value.orange { color: #f59e0b; }
-        .stat-value.pink { color: #ec4899; }
-        .stat-value.purple { color: #a855f7; }
-        
-        .config-row {
+
+        .stat-item {
             display: flex;
-            gap: 15px;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+
+        .stat-item strong { text-align: right; }
+
+        .small-note {
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.35;
+            margin-top: 8px;
+        }
+
+        input[type="number"], input[type="range"], select {
+            font: inherit;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            color: white;
+            background: #64748b;
+        }
+
+        .btn-load { background: var(--primary); }
+        .btn-start { background: var(--success); }
+        .btn-stop { background: var(--danger); }
+        .btn-test { background: #64748b; grid-column: span 2; }
+        .btn-secondary { background: #475569; }
+        .btn-small { padding: 8px; font-size: 0.85rem; }
+        .btn-accent { background: var(--accent); }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .field {
+            background: #111111;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            color: #e2e8f0;
+        }
+
+        .field input[type="text"],
+        .field input[type="number"],
+        .field select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            background: #1a1a1a;
+            color: #e2e8f0;
+        }
+
+        .field input[type="checkbox"] { transform: scale(1.1); }
+
+        .row-inline {
+            display: flex;
+            gap: 10px;
             align-items: center;
             flex-wrap: wrap;
-            margin: 15px 0;
-            padding: 15px;
-            background: #1a1a1a;
-            border-radius: 6px;
         }
-        
-        .config-row label {
-            font-weight: 600;
-        }
-        
-        .config-row input[type="number"] {
-            background: #0a0a0a;
-            color: #e2e8f0;
+
+        #map {
+            width: 100%;
+            height: 320px;
+            border-radius: 10px;
             border: 1px solid #2a2a2a;
-            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .playlist-list {
+            max-height: 170px;
+            overflow: auto;
+            border: 1px solid var(--line);
+            border-radius: 8px;
             padding: 8px;
-            width: 80px;
-            font-size: 1rem;
+            background: #0a0a0a;
         }
-        
-        .table-wrapper {
-            max-height: 500px;
-            overflow-y: auto;
-            border: 1px solid #2a2a2a;
-            border-radius: 6px;
-            margin-top: 15px;
+
+        .playlist-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px;
+            border-bottom: 1px solid #2a2a2a;
+            font-size: 0.92rem;
+            cursor: pointer;
         }
-        
+
+        .playlist-item.active { background: #1a2a3a; border-radius: 6px; }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
-        }
-        
-        th {
-            background: #1a1a1a;
-            padding: 10px;
-            text-align: left;
-            border-bottom: 2px solid #2a2a2a;
-            position: sticky;
-            top: 0;
-            color: #60a5fa;
-            font-weight: 700;
-            font-size: 0.8rem;
-        }
-        
-        td {
-            padding: 5px 8px;
-            border-bottom: 1px solid #1a1a1a;
-            font-family: monospace;
-            font-size: 0.78rem;
-        }
-        
-        tr:hover { background: #1a1a1a; }
-        tr.has-instruction { background: #1a1814; }
-        tr.has-instruction:hover { background: #2a2418; }
-        
-        .metro-cell {
-            font-weight: 700;
-            color: #10b981;
-            text-align: right;
-            padding-right: 10px;
-        }
-        
-        .instruction-cell {
-            color: #f59e0b;
-            font-weight: 600;
-            font-family: -apple-system, sans-serif;
-            font-size: 0.82rem;
-        }
-        
-        .instruction-cell.first { color: #60a5fa; }
-        .instruction-cell.last { color: #10b981; }
-        .instruction-cell.anticipatory { color: #ec4899; font-weight: 700; }
-        
-        .crossing-badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            background: #a855f7;
-            color: white;
-        }
-        
-        .actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 15px 0;
-        }
-        
-        .hidden { display: none; }
-        
-        .info-box {
-            background: #1e293b;
-            border-left: 4px solid #3b82f6;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 15px 0;
-            font-size: 0.9rem;
-        }
-        
-        .log {
-            background: #0a0a0a;
-            border: 1px solid #2a2a2a;
-            border-radius: 6px;
-            padding: 15px;
-            max-height: 200px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 0.82rem;
-            color: #9ca3af;
-            margin-top: 15px;
-        }
-        
-        .log-entry { margin: 3px 0; }
-        .log-success { color: #10b981; }
-        .log-error { color: #ef4444; }
-        .log-info { color: #60a5fa; }
-        .log-warn { color: #f59e0b; }
-        .log-special { color: #ec4899; }
-        
-        .file-status {
+            background: #000000;
+            overflow: hidden;
             margin-top: 8px;
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 0.85rem;
         }
-        
-        .file-status.loaded {
-            background: #0f3a2f;
-            border: 1px solid #10b981;
-            color: #10b981;
-        }
-        
-        .file-status.empty {
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            color: #9ca3af;
-        }
-        
-        #map {
-            height: 450px;
-            border-radius: 6px;
-            border: 1px solid #2a2a2a;
-        }
-        
-        .legend {
-            background: rgba(17, 17, 17, 0.9);
+
+        th, td {
+            text-align: left;
             padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #2a2a2a;
-            font-size: 0.85rem;
+            border-bottom: 1px solid #2a2a2a;
+            font-size: 0.86rem;
+            vertical-align: top;
         }
-        
-        .legend-item {
+
+        th { background: #111111; }
+
+        .history {
+            max-height: 160px;
+            overflow: auto;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 8px;
+            background: #0a0a0a;
+            font-size: 0.9rem;
+            line-height: 1.45;
+        }
+
+        .history-item { padding: 6px 0; border-bottom: 1px solid #2a2a2a; }
+        .pill { display: inline-block; padding: 3px 8px; border-radius: 999px; background: #1e293b; color: #e2e8f0; font-size: 0.78rem; font-weight: 700; }
+        .btn-active { background: #1d4ed8 !important; box-shadow: inset 0 3px 6px rgba(0,0,0,0.5); transform: translateY(1px); outline: 2px solid #60a5fa; }
+        .muted { color: var(--muted); }
+        .footer-help { margin-top: 10px; font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
+
+        .list-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        @media (max-width: 760px) { .list-actions { grid-template-columns: 1fr 1fr; } }
+
+        dialog {
+            background: #111111;
+            color: #e2e8f0;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.75);
+        }
+        dialog h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 8px;
+        }
+        dialog .dialog-field {
+            margin-bottom: 12px;
+        }
+        dialog label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            color: var(--muted);
+        }
+        dialog select, dialog input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid var(--line);
+            color: #e2e8f0;
+            border-radius: 6px;
+            font: inherit;
+        }
+        dialog .dialog-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+        }
+        .btn-dialog-ok { background: var(--primary); }
+        .btn-dialog-cancel { background: #334155; }
+
+        .points-list-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #0a0a0a;
+            margin: 8px 0 10px;
+        }
+
+        .point-item {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin: 4px 0;
+            padding: 10px;
+            border-bottom: 1px solid #2a2a2a;
+            transition: background 0.2s;
+            cursor: pointer;
         }
-        
-        .legend-line {
-            width: 20px;
-            height: 3px;
+
+        .point-item:last-child {
+            border-bottom: none;
         }
-        
-        .legend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
+
+        .point-item.highlighted {
+            background: #1a3a5a;
         }
-        
-        .progress-container {
-            margin: 15px 0;
+
+        .point-number {
+            color: var(--muted);
+            font-weight: 700;
+            min-width: 30px;
+            font-size: 0.9rem;
         }
-        
-        .progress-bar {
-            height: 8px;
-            background: #2a2a2a;
+
+        .point-link {
+            color: #3b82f6;
+            text-decoration: underline;
+            cursor: pointer;
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .point-link:hover {
+            color: #60a5fa;
+        }
+
+        .point-msg {
+            color: var(--text);
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .point-delete {
+            background: var(--danger);
+            color: white;
+            border: none;
             border-radius: 4px;
-            overflow: hidden;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 700;
         }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3b82f6, #10b981);
-            transition: width 0.2s;
-            width: 0%;
+
+        .point-delete:hover {
+            background: #b91c1c;
         }
-        
-        .progress-text {
+
+        .waypoints-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+        }
+
+        .waypoint-item {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .waypoint-item input {
+            flex: 1;
+        }
+
+        .waypoint-controls {
+            display: flex;
+            gap: 4px;
+        }
+
+        .waypoint-btn {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            background: #475569;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .waypoint-btn:hover {
+            background: #64748b;
+        }
+
+        .btn-add-waypoint {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
             font-size: 0.85rem;
-            color: #9ca3af;
-            margin-top: 4px;
+            margin-top: 8px;
+        }
+
+        .btn-add-waypoint:hover {
+            background: #1d4ed8;
+        }
+
+        textarea#inputData {
+            width: 100%;
+            min-height: 165px;
+            margin: 8px 0 10px;
+            border: 1px solid #2a2a2a;
+            padding: 10px;
+            resize: vertical;
+            font: inherit;
+            background: #000000;
+            color: #e2e8f0;
+            display: none;
+        }
+
+        textarea#inputData.show-raw {
+            display: block;
+        }
+
+        #lockButton {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            padding: 10px 16px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        #lockOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #lockOverlay.active {
+            display: flex;
+        }
+
+        .lock-icon {
+            font-size: 80px;
+            color: #800000;
+            margin-bottom: 20px;
+            user-select: none;
+        }
+
+        .lock-text {
+            color: #800000;
+            font-size: 14px;
+            opacity: 0.7;
+            user-select: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(128, 0, 0, 0.95);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎯 Snapping de Ruta al Grafo</h1>
-        <p>Proyecta cada punto de la ruta ORS sobre las calles exactas del grafo. Sin parámetros de tolerancia.</p>
-        
-        <div class="info-box">
-            <strong>📋 Cómo funciona:</strong>
-            <ol style="margin-left: 20px; margin-top: 8px;">
-                <li>Cargas el GeoJSON de ORS (tu ruta)</li>
-                <li>Cargas los archivos con edges (generados por el optimizador v3)</li>
-                <li>El algoritmo proyecta cada punto de la ruta sobre el edge más cercano</li>
-                <li>Identifica cruces exactos por donde pasa la ruta</li>
-                <li>Genera avisos anticipados "En la próxima calle gire..." en los cruces previos</li>
-                <li>Exportas la tabla a Excel</li>
-            </ol>
+<button id="lockButton" onclick="lockScreen()">🔒 Bloquear</button>
+
+<div id="lockOverlay">
+    <div class="lock-icon">🔒</div>
+    <div class="lock-text">Pantalla bloqueada</div>
+</div>
+
+<div class="toast" id="toast">Pantalla bloqueada. Toca 3 veces para desbloquear</div>
+
+<div class="container">
+    <h1>GPS Navigator</h1>
+
+    <div class="dashboard" id="status-panel">
+        <div class="stat-item"><span>Estado:</span> <strong id="status">Esperando...</strong></div>
+        <div class="stat-item"><span>Lat / Lon:</span> <span><span id="lat">-</span> / <span id="lon">-</span></span></div>
+        <div class="stat-item"><span>Precisión:</span> <span id="acc">-</span> m</div>
+        <div class="stat-item"><span>Velocidad actual:</span> <span id="speed">-</span></div>
+        <div class="stat-item"><span>Velocidad media:</span> <span id="avgSpeed">-</span></div>
+        <div class="stat-item"><span>Distancia recorrida:</span> <span id="distanceTravelled">-</span></div>
+        <div class="stat-item"><span>Tiempo de recorrido:</span> <span id="tripTime">-</span></div>
+    </div>
+
+    <div class="card" id="ors-panel">
+        <strong>Rutas Automáticas (OpenRouteService)</strong>
+        <div class="small-note" style="margin-bottom: 8px;">Fija los puntos escribiendo coordenadas o haz clic en los botones de abajo para capturarlos interactivamente desde el mapa.</div>
+        <div class="field-row">
+            <div class="field" style="grid-column: span 2;">
+                <label for="orsApiKeyInput">API Key de OpenRouteService</label>
+                <div style="display:flex; gap:8px; margin-top:4px;">
+                    <input type="password" id="orsApiKeyInput" placeholder="Pega aquí tu API key..." style="flex:1; padding:8px; border:1px solid #2a2a2a; border-radius:6px; background:#1a1a1a; color:#e2e8f0; font:inherit;" />
+                    <button class="btn-secondary btn-small" onclick="saveOrsKey()" style="white-space:nowrap;">💾 Guardar</button>
+                </div>
+                <div class="small-note">Se guarda localmente en tu dispositivo. Nunca sale del navegador.</div>
+            </div>
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <label for="orsOrigin">Origen (Lat, Lon)</label>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <input type="text" id="orsOrigin" placeholder="Ej: 4.6534,-74.0543" style="flex:1;" />
+                    <button class="btn-secondary btn-small" onclick="clearField('orsOrigin')" style="padding:6px;" title="Limpiar">✕</button>
+                </div>
+                <button class="btn-secondary btn-small" id="btnPickOrigin" onclick="startPicking('origin')" style="width:100%; margin-top:6px; padding:4px;">📍 Capturar en Mapa</button>
+                <div class="small-note" id="gpsOriginHint" style="display:none; color:var(--accent); margin-top:4px;">⚡ Se usará tu ubicación GPS actual como origen</div>
+            </div>
+            <div class="field">
+                <label for="orsDestination">Destino (Lat, Lon)</label>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <input type="text" id="orsDestination" placeholder="Ej: 4.6612,-74.0611" style="flex:1;" />
+                    <button class="btn-secondary btn-small" onclick="clearField('orsDestination')" style="padding:6px;" title="Limpiar">✕</button>
+                </div>
+                <button class="btn-secondary btn-small" id="btnPickDest" onclick="startPicking('destination')" style="width:100%; margin-top:6px; padding:4px;">📍 Capturar en Mapa</button>
+            </div>
         </div>
         
+        <div class="waypoints-section">
+            <strong style="font-size:0.95rem;">Puntos intermedios (Waypoints)</strong>
+            <div class="small-note" style="margin-bottom:8px;">Añade paradas opcionales entre origen y destino. Puedes reordenarlas libremente.</div>
+            <div id="waypointsList"></div>
+            <button class="btn-add-waypoint" onclick="addWaypoint()">+ Añadir punto intermedio</button>
+        </div>
+        
+        <div class="field-row" style="margin-top:12px;">
+            <div class="field">
+                <label for="orsProfile">Tipo de Ruta</label>
+                <select id="orsProfile">
+                    <option value="cycling-regular">Ciclismo regular</option>
+                    <option value="cycling-road">Ciclismo en carretera</option>
+                    <option value="cycling-mountain">Ciclismo de montaña</option>
+                    <option value="cycling-electric">Bicicleta eléctrica</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="orsPreference">Preferencia de ruta</label>
+                <select id="orsPreference">
+                    <option value="recommended">Recomendada</option>
+                    <option value="shortest">Más corta</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn-accent" onclick="calculateORSRoute()" style="width:100%; padding:10px; margin-top:4px;">⚡ Calcular Ruta</button>
+    </div>
+
+    <div class="grid-2">
         <div class="card">
-            <h2>1. Cargar archivos</h2>
-            
-            <div class="two-columns">
-                <div>
-                    <div class="file-input-wrapper" id="dropZone">
-                        <p style="font-size: 1rem; margin-bottom: 8px;">📁 <strong>GeoJSON de ORS</strong></p>
-                        <p style="color: #9ca3af; font-size: 0.85rem;">Descargado de maps.openrouteservice.org</p>
-                        <input type="file" id="fileInput" accept=".geojson,.json">
-                    </div>
-                    <div id="orsStatus" class="file-status empty">Sin ruta cargada</div>
+            <div class="row-inline" style="justify-content: space-between;">
+                <strong>Configuración general</strong>
+            </div>
+
+            <div class="field-row">
+                <div class="field">
+                    <label for="radius">Radio de aviso (metros)</label>
+                    <input type="number" id="radius" value="25" min="1" step="1" />
                 </div>
-                
-                <div>
-                    <div class="file-input-wrapper edges" id="dropZoneEdges">
-                        <p style="font-size: 1rem; margin-bottom: 8px;">🗺️ <strong>Archivos con edges</strong> (múltiples)</p>
-                        <p style="color: #9ca3af; font-size: 0.85rem;">Archivos generados por optimizador v3</p>
-                        <input type="file" id="fileInputEdges" accept=".geojson,.json" multiple>
-                    </div>
-                    <div id="edgesStatus" class="file-status empty">Sin edges cargados</div>
+                <div class="field">
+                    <label for="voiceSelect">Voz del GPS</label>
+                    <select id="voiceSelect"></select>
                 </div>
             </div>
-            
-            <div class="config-row hidden" id="configRow">
-                <label for="intervalInput">Intervalo (metros):</label>
-                <input type="number" id="intervalInput" value="1" min="0.1" step="0.1">
-                
-                <label for="offsetInput" style="margin-left: 20px;">Mover instrucciones atrás (m):</label>
-                <input type="number" id="offsetInput" value="5" min="0" step="1">
-                
-                <button id="btnProcess" class="btn-warning">🚀 Procesar con snapping</button>
-            </div>
-            
-            <div class="progress-container hidden" id="progressContainer">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
+
+            <div class="field-row">
+                <div class="field">
+                    <label for="voiceVolume">Volumen de voz</label>
+                    <input type="range" id="voiceVolume" min="0" max="1" step="0.05" value="1" />
                 </div>
-                <div class="progress-text" id="progressText">0%</div>
+                <div class="field">
+                    <label for="globalVolume">Volumen de música</label>
+                    <input type="range" id="globalVolume" min="0" max="1" step="0.05" value="1" />
+                </div>
             </div>
-            
-            <div class="log hidden" id="logSection"></div>
+
+            <div class="field-row">
+                <div class="field">
+                    <label><input type="checkbox" id="sequentialMode" /> Ruta secuencial inteligente</label>
+                    <div class="small-note">Desmarcado (Flexible): Verifica todos los puntos pendientes.</div>
+                </div>
+                <div class="field">
+                    <label><input type="checkbox" id="repeatStats" /> Repetir punto ESTADISTICAS</label>
+                </div>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="accThreshold">Aviso precisión GPS (metros)</label>
+                    <input type="number" id="accThreshold" value="50" min="10" step="5" />
+                </div>
+                <div class="field">
+                    <label><input type="checkbox" id="saveState" checked /> Guardar configuración automática</label>
+                </div>
+            </div>
         </div>
-        
-        <div class="card hidden" id="resultsCard">
-            <h2>2. Estadísticas</h2>
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <div class="stat-label">Distancia total</div>
-                    <div class="stat-value green" id="statDistance">0 m</div>
+
+        <div class="music-panel">
+            <div class="row-inline" style="justify-content: space-between;">
+                <strong>Música local</strong>
+            </div>
+            <input type="file" id="musicFiles" accept="audio/*" multiple style="margin-top: 8px; margin-bottom: 8px;"/>
+            <div class="list-actions">
+                <button class="btn-secondary" onclick="playMusic()">▶️ Play</button>
+                <button class="btn-secondary" onclick="pauseMusic()">⏸️ Pausa</button>
+                <button class="btn-secondary" onclick="nextTrack()">⏭️ Siguiente</button>
+                <button class="btn-secondary" onclick="prevTrack()">⏮️ Anterior</button>
+                <button id="btnShuffle" class="btn-secondary" onclick="toggleShuffle()">🔀 Aleatorio</button>
+                <button id="btnRepeat" class="btn-secondary" onclick="toggleRepeat()">🔁 Repetir</button>
+            </div>
+            <div class="field-row" style="margin-top: 10px;">
+                <div class="field">
+                    <label>Volumen</label>
+                    <input type="range" id="musicVolume" min="0" max="1" step="0.05" value="0.85" />
                 </div>
-                <div class="stat-box">
-                    <div class="stat-label">Puntos snappeados</div>
-                    <div class="stat-value" id="statSnapped">0</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Cruces detectados</div>
-                    <div class="stat-value purple" id="statCrossings">0</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Instrucciones ORS</div>
-                    <div class="stat-value orange" id="statInstructions">0</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Avisos anticipados</div>
-                    <div class="stat-value pink" id="statAnticipatory">0</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Edges usados</div>
-                    <div class="stat-value" id="statEdges">0</div>
+                <div class="field">
+                    <label>Estado</label>
+                    <div id="musicStatus" class="small-note">Sin archivos</div>
                 </div>
             </div>
-            
-            <h2>3. Mapa de visualización</h2>
-            <div id="map"></div>
-            <div class="legend" style="margin-top: 10px; display: inline-block;">
-                <div class="legend-item">
-                    <div class="legend-line" style="background: #3b82f6;"></div>
-                    <span>Ruta original ORS</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-line" style="background: #10b981;"></div>
-                    <span>Ruta snappeada (sobre calles)</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-dot" style="background: #a855f7;"></div>
-                    <span>Cruces detectados</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-dot" style="background: #ec4899;"></div>
-                    <span>Avisos anticipados</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-dot" style="background: #f59e0b;"></div>
-                    <span>Instrucciones ORS</span>
-                </div>
-            </div>
-            
-            <h2>4. Exportar</h2>
-            <div class="actions">
-                <button id="btnDownloadCSV" class="btn-success">📥 Descargar CSV</button>
-                <button id="btnDownloadTSV" class="btn-success">📥 Descargar TSV</button>
-                <button id="btnCopyTable" class="btn-secondary">📋 Copiar tabla</button>
-            </div>
-            
-            <h2>5. Filtrar puntos</h2>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
-                <div style="flex: 1; min-width: 250px;">
-                    <input type="text" id="searchInput" placeholder="Buscar por metro (ej: 500)"
-                        style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #e2e8f0; font-size: 1rem;">
-                </div>
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 15px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px;">
-                    <input type="checkbox" id="onlyInstructions" style="width: 18px; height: 18px;">
-                    <span style="font-weight: 600;">Solo con instrucción</span>
-                </label>
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 15px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px;">
-                    <input type="checkbox" id="onlyCrossings" style="width: 18px; height: 18px;">
-                    <span style="font-weight: 600;">Solo cruces</span>
-                </label>
-            </div>
-            
-            <h2>6. Tabla de puntos snappeados</h2>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Metro</th>
-                            <th>Lat orig</th>
-                            <th>Lon orig</th>
-                            <th>Lat snap</th>
-                            <th>Lon snap</th>
-                            <th>Cruce</th>
-                            <th>Instrucción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pointsBody"></tbody>
-                </table>
-            </div>
-            <p style="margin-top: 10px; color: #9ca3af; font-size: 0.85rem;" id="visibleCount"></p>
+            <div class="playlist-list" id="playlist"></div>
         </div>
     </div>
 
-    <script>
-        // === ESTADO GLOBAL ===
-        let orsRoute = null;          // Ruta original de ORS
-        let orsInstructions = [];     // Instrucciones extraídas
-        let edges = [];               // Todos los edges cargados
-        let crossings = [];           // Todos los cruces cargados
-        let snappedPoints = [];       // Resultado final
+    <div class="map-panel">
+        <div class="row-inline" style="justify-content: space-between; margin-bottom: 8px;">
+            <strong>Mapa interactivo</strong>
+            <div>
+                <button class="btn-secondary btn-small" onclick="centerMap()">📍 Centrar</button>
+                <button class="btn-secondary btn-small" id="btnFollow" onclick="toggleFollow()">Seguir: ON</button>
+            </div>
+        </div>
+        <div id="map"></div>
+    </div>
+
+    <div class="card">
+        <strong>Puntos / avisos</strong>
+        <div class="small-note" style="margin-top:8px;">Variables disponibles en mensajes: <code>${velocidad}</code> · <code>${promedio}</code> · <code>${distancia}</code> · <code>${tiempo}</code> · <code>${hora}</code></div>
+        <div style="margin-top:8px;">
+            <button class="btn-secondary btn-small" onclick="toggleRawMode()">📝 Ver/Editar texto original</button>
+        </div>
+        <textarea id="inputData" placeholder="Pega aquí tus puntos..."></textarea>
+        <div id="pointsListContainer" class="points-list-container"></div>
+        <div class="controls">
+            <button class="btn-load" onclick="loadPoints()">Cargar avisos</button>
+            <button class="btn-start" onclick="startNav()">Iniciar Nav</button>
+            <button class="btn-stop" onclick="stopNav()">Detener</button>
+            <button class="btn-secondary" onclick="resetPoints()">↺ Reiniciar puntos</button>
+            <button class="btn-test" onclick="testVoice()">Probar Voz</button>
+        </div>
+        <div id="pointsCounter" class="small-note" style="margin-bottom:6px;"></div>
+        <table id="pointsTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Mensaje</th>
+                    <th>Dist</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="pointsBody"></tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <strong>Historial</strong>
+        <div id="history" class="history"></div>
+    </div>
+</div>
+
+<dialog id="pointDialog">
+    <h3>Configurar Punto Nuevo</h3>
+    <div class="dialog-field">
+        <label for="modalSelect">Seleccionar mensaje predefinido:</label>
+        <select id="modalSelect">
+            <option value="">-- Selecciona una opción o escribe abajo --</option>
+            <option value="Gire a la derecha">1. Gire a la derecha</option>
+            <option value="Gire a la izquierda">2. Gire a la izquierda</option>
+            <option value="Continúe recto">3. Continúe recto</option>
+            <option value="Manténgase a la derecha">4. Manténgase a la derecha</option>
+            <option value="Manténgase a la izquierda">5. Manténgase a la izquierda</option>
+            <option value="En la próxima calle gire a la derecha">6. En la próxima calle gire a la derecha</option>
+            <option value="En la próxima calle gire a la izquierda">7. En la próxima calle gire a la izquierda</option>
+            <option value="Continúe recto y llegara a su destino">8. Continúe recto y llegara a su destino</option>
+            <option value="Tome la primera a la derecha">9. Tome la primera a la derecha</option>
+            <option value="Tome la primera a la izquierda">10. Tome la primera a la izquierda</option>
+            <option value="Tome la segunda a la derecha">11. Tome la segunda a la derecha</option>
+            <option value="Tome la segunda a la izquierda">12. Tome la segunda a la izquierda</option>
+            <option value="Llegó a su destino">13. Llegó a su destino</option>
+            <option disabled>──────────────</option>
+            <option value="ESTADISTICAS">14. estadísticas</option>
+            <option value="${velocidad}">15. ${velocidad}</option>
+            <option value="${promedio}">16. ${promedio}</option>
+            <option value="${distancia}">17. ${distancia}</option>
+            <option value="${tiempo}">18. ${tiempo}</option>
+            <option value="${hora}">19. ${hora}</option>
+        </select>
+    </div>
+    <div class="dialog-field">
+        <label for="modalText">O escribe un mensaje personalizado:</label>
+        <input type="text" id="modalText" value="" placeholder="Completamente vacío por defecto" />
+    </div>
+    <div class="dialog-buttons">
+        <button class="btn-dialog-cancel" onclick="cancelPointModal()">Cancelar</button>
+        <button class="btn-dialog-ok" onclick="acceptPointModal()">Guardar Punto</button>
+    </div>
+</dialog>
+
+<script>
+    let points = [];
+    let watchId = null;
+    let map = null;
+    let userMarker = null;
+    let routeLine = null;
+    let pointMarkers = [];
+    let musicPlaylist = [];
+    let currentTrackIndex = -1;
+    let shuffleMode = false;
+    let repeatMode = false;
+    let currentAudio = null;
+    let currentSpeech = false;
+    let routePath = [];
+    let waypoints = [];
+    let waypointMarkers = [];
+    
+    let lastPosition = null;
+    let totalDistanceMeters = 0;
+    let startTime = null;
+    let totalPausedMs = 0;
+    let pauseStartTime = null;
+    let latestAccuracy = null;
+    let currentPositionSpeedKmh = 0;
+    let lastAccuracyWarn = 0;
+    let orsRouteLine = null;
+    let originMarker = null;
+    let destinationMarker = null;
+    let _editingPointIdx = null;
+    
+    let voices = [];
+    let isFollowing = true;
+    let highlightedPointIdx = null;
+
+    let pendingClickLatLng = null;
+    let pickingMode = null;
+    let pickingWaypointIdx = null;
+    
+    let noSleep = null;
+    try { noSleep = new NoSleep(); } catch(e) { console.warn("NoSleep no disponible:", e); }
+    
+    const synth = window.speechSynthesis;
+
+    let isScreenLocked = false;
+    let tapCount = 0;
+    let tapTimer = null;
+    const TAP_INTERVAL = 500;
+
+    function metersToKm(m) { return (m / 1000).toFixed(2); }
+    function formatKm(m) {
+        const km = m / 1000;
+        return km >= 10 ? km.toFixed(1) + " kilómetros" : km.toFixed(2) + " kilómetros";
+    }
+    function formatSpeedKmh(ms) {
+        if (ms == null || isNaN(ms)) return "-";
+        return (ms * 3.6).toFixed(0) + " km/h";
+    }
+    function formatDuration(ms) {
+        if (!ms || ms < 0) return "-";
+        const totalSec = Math.floor(ms / 1000);
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+        if (h > 0) return `${h}h ${m}m ${s}s`;
+        if (m > 0) return `${m} minutos`;
+        return `${s} segundos`;
+    }
+    function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    function escapeHtml(str) {
+        return String(str).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    }
+
+    function logHistory(text) {
+        const box = document.getElementById('history');
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.textContent = `[${new Date().toLocaleTimeString('es-CO')}] ${text}`;
+        box.prepend(item);
+    }
+
+    function toggleFollow() {
+        isFollowing = !isFollowing;
+        document.getElementById('btnFollow').innerText = `Seguir: ${isFollowing ? 'ON' : 'OFF'}`;
+        if (isFollowing) centerMap();
+    }
+
+    function centerMap() {
+        if (lastPosition && map) {
+            map.setView([lastPosition.coords.latitude, lastPosition.coords.longitude], Math.max(map.getZoom(), 16));
+            if (!isFollowing) {
+                isFollowing = true;
+                document.getElementById('btnFollow').innerText = `Seguir: ON`;
+            }
+        }
+    }
+
+    function clearField(fieldId) {
+        document.getElementById(fieldId).value = '';
+        if (fieldId === 'orsOrigin' && originMarker) {
+            map.removeLayer(originMarker);
+            originMarker = null;
+        }
+        if (fieldId === 'orsDestination' && destinationMarker) {
+            map.removeLayer(destinationMarker);
+            destinationMarker = null;
+        }
+        updateGPSOriginHint();
+    }
+
+    function updateGPSOriginHint() {
+        const originVal = document.getElementById('orsOrigin').value.trim();
+        const destVal = document.getElementById('orsDestination').value.trim();
+        const hint = document.getElementById('gpsOriginHint');
         
-        let map = null;
-        let layers = {
-            originalRoute: null,
-            snappedRoute: null,
-            crossings: [],
-            anticipatory: [],
-            instructions: []
-        };
+        if (!originVal && destVal && watchId !== null) {
+            hint.style.display = 'block';
+        } else {
+            hint.style.display = 'none';
+        }
+    }
+
+    function startPicking(mode) {
+        const btnOrigin = document.getElementById('btnPickOrigin');
+        const btnDest = document.getElementById('btnPickDest');
+
+        if (pickingMode === mode) {
+            pickingMode = null;
+            pickingWaypointIdx = null;
+            btnOrigin.innerText = "📍 Capturar en Mapa";
+            btnOrigin.style.background = "";
+            btnDest.innerText = "📍 Capturar en Mapa";
+            btnDest.style.background = "";
+            renderWaypoints();
+            return;
+        }
+
+        pickingMode = mode;
+        pickingWaypointIdx = null;
         
-        // === CONSTANTES DE CONVERSIÓN (Bogotá) ===
-        const LAT_TO_METERS = 111000;
-        const LON_TO_METERS = 110640; // cos(4.65°) * 111000
+        if (mode === 'origin') {
+            btnOrigin.innerText = "⌛ Toca el mapa...";
+            btnOrigin.style.background = "var(--accent)";
+            btnDest.innerText = "📍 Capturar en Mapa";
+            btnDest.style.background = "";
+        } else if (mode === 'destination') {
+            btnDest.innerText = "⌛ Toca el mapa...";
+            btnDest.style.background = "var(--accent)";
+            btnOrigin.innerText = "📍 Capturar en Mapa";
+            btnOrigin.style.background = "";
+        }
+        renderWaypoints();
+    }
+
+    function startPickingWaypoint(idx) {
+        pickingMode = 'waypoint';
+        pickingWaypointIdx = idx;
         
-        // === CARGA DE ARCHIVOS ===
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const dropZoneEdges = document.getElementById('dropZoneEdges');
-        const fileInputEdges = document.getElementById('fileInputEdges');
+        const btnOrigin = document.getElementById('btnPickOrigin');
+        const btnDest = document.getElementById('btnPickDest');
+        btnOrigin.innerText = "📍 Capturar en Mapa";
+        btnOrigin.style.background = "";
+        btnDest.innerText = "📍 Capturar en Mapa";
+        btnDest.style.background = "";
         
-        // Setup drag & drop ORS
-        dropZone.addEventListener('click', () => fileInput.click());
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
+        renderWaypoints();
+    }
+
+    function resetPickingButtons() {
+        pickingMode = null;
+        pickingWaypointIdx = null;
+        document.getElementById('btnPickOrigin').innerText = "📍 Capturar en Mapa";
+        document.getElementById('btnPickOrigin').style.background = "";
+        document.getElementById('btnPickDest').innerText = "📍 Capturar en Mapa";
+        document.getElementById('btnPickDest').style.background = "";
+        renderWaypoints();
+    }
+
+    function initMap() {
+        map = L.map('map').setView([4.65, -74.05], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+        routeLine = L.polyline([], { color: '#3b82f6', weight: 4 }).addTo(map);
+        orsRouteLine = L.polyline([], { color: '#f59e0b', weight: 3, dashArray: '8 4', opacity: 0.8 }).addTo(map);
+
+        const originIcon = L.divIcon({
+            html: '<div style="background:#16a34a;width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.7);"></div>',
+            className: '',
+            iconSize: [22, 22],
+            iconAnchor: [11, 11]
         });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) loadORSFile(e.dataTransfer.files[0]);
+        const destIcon = L.divIcon({
+            html: '<div style="background:#dc2626;width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.7);"></div>',
+            className: '',
+            iconSize: [22, 22],
+            iconAnchor: [11, 11]
         });
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) loadORSFile(e.target.files[0]);
+
+        map.on('dragstart', () => {
+            isFollowing = false;
+            document.getElementById('btnFollow').innerText = `Seguir: OFF`;
         });
-        
-        // Setup drag & drop edges
-        dropZoneEdges.addEventListener('click', () => fileInputEdges.click());
-        dropZoneEdges.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZoneEdges.classList.add('dragover');
-        });
-        dropZoneEdges.addEventListener('dragleave', () => dropZoneEdges.classList.remove('dragover'));
-        dropZoneEdges.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZoneEdges.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) loadEdgesFiles(Array.from(e.dataTransfer.files));
-        });
-        fileInputEdges.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) loadEdgesFiles(Array.from(e.target.files));
-        });
-        
-        async function loadORSFile(file) {
-            log('Cargando ruta ORS...', 'info');
-            try {
-                const text = await file.text();
-                const geojson = JSON.parse(text);
+
+        map.on('click', function(e) {
+            if (pickingMode) {
+                const coordStr = `${e.latlng.lat.toFixed(6)},${e.latlng.lng.toFixed(6)}`;
                 
-                if (!geojson.features || geojson.features.length === 0) {
-                    throw new Error('Sin features');
+                if (pickingMode === 'origin') {
+                    document.getElementById('orsOrigin').value = coordStr;
+                    if (originMarker) map.removeLayer(originMarker);
+                    originMarker = L.marker(e.latlng, { icon: originIcon }).addTo(map).bindPopup('📍 Origen');
+                    startPicking('destination');
+                    updateGPSOriginHint();
+                } else if (pickingMode === 'destination') {
+                    document.getElementById('orsDestination').value = coordStr;
+                    if (destinationMarker) map.removeLayer(destinationMarker);
+                    destinationMarker = L.marker(e.latlng, { icon: destIcon }).addTo(map).bindPopup('🏁 Destino');
+                    resetPickingButtons();
+                    updateGPSOriginHint();
+                } else if (pickingMode === 'waypoint' && pickingWaypointIdx !== null) {
+                    waypoints[pickingWaypointIdx] = coordStr;
+                    resetPickingButtons();
+                    renderWaypoints();
+                    redrawWaypointMarkers();
                 }
-                
-                const feature = geojson.features[0];
-                const coords = feature.geometry?.coordinates;
-                if (!coords || coords.length < 2) {
-                    throw new Error('Sin coordenadas válidas');
-                }
-                
-                orsRoute = coords.map(c => ({ lon: c[0], lat: c[1] }));
-                orsInstructions = extractORSInstructions(feature);
-                
-                const statusEl = document.getElementById('orsStatus');
-                statusEl.className = 'file-status loaded';
-                statusEl.innerHTML = `✅ <strong>${orsRoute.length}</strong> puntos · <strong>${orsInstructions.length}</strong> instrucciones`;
-                
-                log(`✅ Ruta ORS cargada: ${orsRoute.length} puntos, ${orsInstructions.length} instrucciones`, 'success');
-                checkReadyToProcess();
-                
-            } catch (error) {
-                log(`❌ Error: ${error.message}`, 'error');
-            }
-        }
-        
-        async function loadEdgesFiles(files) {
-            log(`Cargando ${files.length} archivo(s) de edges...`, 'info');
-            
-            edges = [];
-            crossings = [];
-            
-            for (const file of files) {
-                try {
-                    const text = await file.text();
-                    const data = JSON.parse(text);
-                    
-                    let edgesCount = 0;
-                    let crossingsCount = 0;
-                    
-                    if (data.edges && Array.isArray(data.edges)) {
-                        data.edges.forEach(e => {
-                            if (typeof e.lat_inicio === 'number') {
-                                edges.push(e);
-                                edgesCount++;
-                            }
-                        });
-                    }
-                    
-                    if (data.cruces && Array.isArray(data.cruces)) {
-                        data.cruces.forEach(c => {
-                            if (typeof c.lat === 'number') {
-                                crossings.push(c);
-                                crossingsCount++;
-                            }
-                        });
-                    }
-                    
-                    log(`✅ ${file.name}: ${edgesCount} edges, ${crossingsCount} cruces`, 'success');
-                    
-                } catch (error) {
-                    log(`❌ Error en ${file.name}: ${error.message}`, 'error');
-                }
-            }
-            
-            const statusEl = document.getElementById('edgesStatus');
-            if (edges.length > 0) {
-                statusEl.className = 'file-status loaded';
-                statusEl.innerHTML = `✅ <strong>${edges.length.toLocaleString()}</strong> edges · <strong>${crossings.length.toLocaleString()}</strong> cruces de ${files.length} archivo(s)`;
-            } else {
-                statusEl.className = 'file-status empty';
-                statusEl.textContent = 'No se pudieron cargar edges';
-            }
-            
-            checkReadyToProcess();
-        }
-        
-        function checkReadyToProcess() {
-            if (orsRoute && edges.length > 0) {
-                document.getElementById('configRow').classList.remove('hidden');
-            }
-        }
-        
-        // === EXTRACCIÓN DE INSTRUCCIONES ORS ===
-        function extractORSInstructions(feature) {
-            const instructions = [];
-            const segments = feature.properties?.segments || [];
-            
-            segments.forEach((segment, segIdx) => {
-                const steps = segment.steps || [];
-                steps.forEach((step, stepIdx) => {
-                    const waypointIndex = step.way_points?.[0] || 0;
-                    const coord = feature.geometry.coordinates[waypointIndex];
-                    if (!coord) return;
-                    
-                    const originalInstruction = step.instruction || '';
-                    const simplified = simplifyInstruction(originalInstruction);
-                    
-                    let accumulatedDistance = 0;
-                    for (let i = 0; i < waypointIndex; i++) {
-                        const A = feature.geometry.coordinates[i];
-                        const B = feature.geometry.coordinates[i + 1];
-                        if (A && B) {
-                            accumulatedDistance += haversineDistance(A[1], A[0], B[1], B[0]);
-                        }
-                    }
-                    
-                    instructions.push({
-                        originalInstruction,
-                        simplified,
-                        metro: accumulatedDistance,
-                        lat: coord[1],
-                        lon: coord[0],
-                        isWalkInstruction: originalInstruction.toLowerCase().startsWith('camina hacia'),
-                        segmentIndex: segIdx,
-                        stepIndex: stepIdx
-                    });
-                });
-            });
-            
-            return instructions;
-        }
-        
-        function simplifyInstruction(instruction) {
-            const lower = instruction.toLowerCase();
-            if (lower.startsWith('camina hacia')) return instruction;
-            
-            const patterns = [
-                /gire a la (derecha|izquierda)/i,
-                /gire (hacia la derecha|hacia la izquierda)/i,
-                /continúe recto/i,
-                /continúe/i,
-                /manténgase a la (derecha|izquierda)/i,
-                /tome la (primera|segunda|tercera) a la (derecha|izquierda)/i,
-                /en la rotonda/i,
-                /llegó a su destino/i
-            ];
-            
-            for (const pattern of patterns) {
-                const match = instruction.match(pattern);
-                if (match) return match[0];
-            }
-            
-            const cleaned = instruction.replace(/\s+a\s+[A-ZÁÉÍÓÚÑ].*$/i, '');
-            return cleaned || instruction;
-        }
-        
-        // === ALGORITMO DE SNAPPING ===
-        document.getElementById('btnProcess').addEventListener('click', processWithSnapping);
-        
-        async function processWithSnapping() {
-            if (!orsRoute || edges.length === 0) {
-                alert('Carga la ruta ORS y al menos un archivo de edges');
                 return;
             }
+
+            pendingClickLatLng = e.latlng;
+            _editingPointIdx = null;
+            document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
+            document.getElementById('modalSelect').value = "";
+            document.getElementById('modalText').value = "";
+            document.getElementById('pointDialog').showModal();
+        });
+    }
+
+    function cancelPointModal() {
+        document.getElementById('pointDialog').close();
+        document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
+        pendingClickLatLng = null;
+        _editingPointIdx = null;
+    }
+
+    function acceptPointModal() {
+        const selectVal = document.getElementById('modalSelect').value;
+        const textVal = document.getElementById('modalText').value.trim();
+        
+        let finalMessage = textVal !== "" ? textVal : selectVal;
+
+        if (!finalMessage || finalMessage.trim() === "") {
+            alert('¡Advertencia! No has escrito ni seleccionado nada. El punto no se creará.');
+            return;
+        }
+
+        if (_editingPointIdx !== null) {
+            const idx = _editingPointIdx;
+            if (idx >= 0 && idx < points.length) {
+                const rawMsg = finalMessage.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+                if (rawMsg === 'ESTADISTICAS') {
+                    points[idx].type = 'ESTADISTICAS';
+                    points[idx].msg  = '';
+                } else {
+                    points[idx].type = 'INFO';
+                    points[idx].msg  = finalMessage.trim();
+                }
+                rebuildTextarea();
+                redrawPointMarkers();
+                updateTable();
+                renderPointsList();
+                logHistory(`Pto ${idx + 1} editado: "${points[idx].msg || points[idx].type}".`);
+            }
+            _editingPointIdx = null;
+            document.getElementById('pointDialog').close();
+            document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
+            return;
+        }
+
+        if (pendingClickLatLng) {
+            const line = `${pendingClickLatLng.lat.toFixed(6)},${pendingClickLatLng.lng.toFixed(6)},${finalMessage.trim()}`;
+            const textarea = document.getElementById('inputData');
+            textarea.value = textarea.value.trim() ? textarea.value.trim() + '\n' + line : line;
+            loadPoints(true);
+        }
+
+        document.getElementById('pointDialog').close();
+        document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
+        pendingClickLatLng = null;
+    }
+
+    function saveOrsKey() {
+        const val = document.getElementById('orsApiKeyInput').value.trim();
+        if (!val) { alert("El campo está vacío. Escribe tu API key antes de guardar."); return; }
+        localStorage.setItem('ors_api_key', val);
+        alert("Clave guardada correctamente.");
+    }
+
+    function addWaypoint() {
+        waypoints.push('');
+        renderWaypoints();
+        redrawWaypointMarkers();
+    }
+
+    function removeWaypoint(idx) {
+        if (idx < 0 || idx >= waypoints.length) return;
+        waypoints.splice(idx, 1);
+        renderWaypoints();
+        redrawWaypointMarkers();
+    }
+
+    function moveWaypointUp(idx) {
+        if (idx <= 0 || idx >= waypoints.length) return;
+        [waypoints[idx - 1], waypoints[idx]] = [waypoints[idx], waypoints[idx - 1]];
+        renderWaypoints();
+        redrawWaypointMarkers();
+    }
+
+    function moveWaypointDown(idx) {
+        if (idx < 0 || idx >= waypoints.length - 1) return;
+        [waypoints[idx], waypoints[idx + 1]] = [waypoints[idx + 1], waypoints[idx]];
+        renderWaypoints();
+        redrawWaypointMarkers();
+    }
+
+    function updateWaypointValue(idx, value) {
+        waypoints[idx] = value;
+        redrawWaypointMarkers();
+    }
+
+    function renderWaypoints() {
+        const container = document.getElementById('waypointsList');
+        container.innerHTML = '';
+        
+        waypoints.forEach((wp, idx) => {
+            const div = document.createElement('div');
+            div.className = 'waypoint-item';
             
-            const interval = parseFloat(document.getElementById('intervalInput').value) || 1;
-            const offset = parseFloat(document.getElementById('offsetInput').value) || 0;
+            const isCapturing = pickingMode === 'waypoint' && pickingWaypointIdx === idx;
+            const captureBtnText = isCapturing ? '⌛ Toca el mapa...' : '📍';
+            const captureBtnStyle = isCapturing ? 'background:var(--accent);' : '';
             
-            log(`🚀 Iniciando snapping: intervalo ${interval}m, offset ${offset}m`, 'info');
+            div.innerHTML = `
+                <input type="text" value="${escapeHtml(wp)}" placeholder="Ej: 4.6534,-74.0543" 
+                    onchange="updateWaypointValue(${idx}, this.value)" />
+                <button class="waypoint-btn" onclick="startPickingWaypoint(${idx})" 
+                    style="${captureBtnStyle}" title="Capturar en mapa">${captureBtnText}</button>
+                <div class="waypoint-controls">
+                    <button class="waypoint-btn" onclick="moveWaypointUp(${idx})" title="Subir">↑</button>
+                    <button class="waypoint-btn" onclick="moveWaypointDown(${idx})" title="Bajar">↓</button>
+                    <button class="waypoint-btn" onclick="removeWaypoint(${idx})" title="Eliminar" style="background:var(--danger);">✕</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function redrawWaypointMarkers() {
+        if (!map) return;
+        waypointMarkers.forEach(m => map.removeLayer(m));
+        waypointMarkers = [];
+        
+        const waypointIcon = L.divIcon({
+            html: '<div style="background:#f59e0b;width:18px;height:18px;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.5);"></div>',
+            className: '',
+            iconSize: [18, 18],
+            iconAnchor: [9, 9]
+        });
+        
+        waypoints.forEach((wpStr, idx) => {
+            if (!wpStr) return;
+            const coords = wpStr.split(',').map(c => parseFloat(c.trim()));
+            if (coords.length !== 2 || isNaN(coords[0]) || isNaN(coords[1])) return;
             
-            document.getElementById('progressContainer').classList.remove('hidden');
-            updateProgress(0, 'Preparando datos...');
+            const marker = L.marker([coords[0], coords[1]], { icon: waypointIcon })
+                .addTo(map)
+                .bindPopup(`Waypoint ${idx + 1}`);
+            waypointMarkers.push(marker);
+        });
+    }
+
+    async function calculateORSRoute() {
+        const orsApiKey = localStorage.getItem('ors_api_key') || '';
+        if (!orsApiKey) {
+            alert("Primero debes guardar tu API key de OpenRouteService en el campo de arriba.");
+            return;
+        }
+
+        let originVal = document.getElementById('orsOrigin').value.trim();
+        const destVal = document.getElementById('orsDestination').value.trim();
+        const profile = document.getElementById('orsProfile').value;
+
+        if (!originVal && watchId !== null && lastPosition) {
+            originVal = `${lastPosition.coords.latitude.toFixed(6)},${lastPosition.coords.longitude.toFixed(6)}`;
+            document.getElementById('orsOrigin').value = originVal;
+            logHistory("Usando ubicación GPS actual como origen automático.");
+        }
+
+        if (!originVal || !destVal) {
+            alert("Por favor, introduce las coordenadas de origen y destino (o inicia la navegación para usar GPS como origen).");
+            return;
+        }
+
+        const originCoords = originVal.split(',').map(c => parseFloat(c.trim()));
+        const destCoords = destVal.split(',').map(c => parseFloat(c.trim()));
+
+        if (originCoords.length !== 2 || isNaN(originCoords[0]) || isNaN(originCoords[1]) ||
+            destCoords.length !== 2 || isNaN(destCoords[0]) || isNaN(destCoords[1])) {
+            alert("El formato de origen o destino es inválido. Debe ser: latitud,longitud");
+            return;
+        }
+
+        const coordinates = [
+            [originCoords[1], originCoords[0]]
+        ];
+        
+        waypoints.forEach(wpStr => {
+            if (!wpStr) return;
+            const coords = wpStr.split(',').map(c => parseFloat(c.trim()));
+            if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+                coordinates.push([coords[1], coords[0]]);
+            }
+        });
+        
+        coordinates.push([destCoords[1], destCoords[0]]);
+
+        const url = `https://api.openrouteservice.org/v2/directions/${profile}/geojson`;
+        
+        const bodyData = {
+            coordinates: coordinates,
+            language: "es",
+            preference: document.getElementById('orsPreference').value
+        };
+
+        try {
+            logHistory("Solicitando ruta automática a OpenRouteService...");
             
-            // 1. Interpolar puntos cada X metros en la ruta original
-            await sleep(10);
-            const interpolatedPoints = interpolateRoute(orsRoute, interval);
-            log(`✅ ${interpolatedPoints.length} puntos interpolados`, 'success');
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
+                    'Content-Type': 'application/json',
+                    'Authorization': orsApiKey
+                },
+                body: JSON.stringify(bodyData)
+            });
+
+            if (!response.ok) throw new Error(`Error en el servidor ORS: ${response.status}`);
             
-            // 2. Filtrar edges por bounding box de la ruta (optimización)
-            updateProgress(10, 'Filtrando edges relevantes...');
-            await sleep(10);
-            const relevantEdges = filterEdgesByBBox(interpolatedPoints, edges);
-            log(`✅ ${relevantEdges.length} edges relevantes de ${edges.length} totales`, 'success');
+            const data = await response.json();
+            if (!data.features || data.features.length === 0) {
+                alert("No se encontró ninguna ruta válida para los puntos indicados.");
+                return;
+            }
+
+            const feature = data.features[0];
+            const routeCoordinates = feature.geometry.coordinates;
+            const segments = feature.properties.segments;
+
+            let plainTextLines = [];
+
+            if (segments && segments.length > 0) {
+                segments.forEach(segment => {
+                    if (segment.steps) {
+                        segment.steps.forEach(step => {
+                            const startIdx = step.way_points[0];
+                            const stepCoord = routeCoordinates[startIdx];
+                            const instruction = step.instruction;
+
+                            if (stepCoord && instruction) {
+                                plainTextLines.push(`${stepCoord[1].toFixed(6)},${stepCoord[0].toFixed(6)},${instruction.trim()},ORS`);
+                            }
+                        });
+                    }
+                });
+            }
+
+            if (plainTextLines.length === 0) {
+                alert("Ruta recibida pero no se pudieron extraer pasos o instrucciones utilizables.");
+                return;
+            }
+
+            const textarea = document.getElementById('inputData');
+            const existingContent = textarea.value.trim();
+            const newContent = plainTextLines.join('\n');
             
-            // 3. Snapping: proyectar cada punto sobre el edge más cercano
-            updateProgress(20, 'Aplicando snapping...');
-            const snappedPointsTemp = [];
-            const batchSize = Math.max(1, Math.floor(interpolatedPoints.length / 50));
+            if (existingContent) {
+                textarea.value = existingContent + '\n' + newContent;
+                logHistory(`Ruta de ORS agregada al final de los puntos existentes.`);
+            } else {
+                textarea.value = newContent;
+            }
             
-            for (let i = 0; i < interpolatedPoints.length; i++) {
-                const point = interpolatedPoints[i];
-                const snapped = snapPointToEdges(point, relevantEdges);
+            loadPoints(true);
+
+            const leafletCoords = routeCoordinates.map(c => [c[1], c[0]]);
+            if (orsRouteLine) {
+                orsRouteLine.setLatLngs(leafletCoords);
+            }
+            if (leafletCoords.length > 0 && map) {
+                map.fitBounds(L.polyline(leafletCoords).getBounds());
+            }
+
+            logHistory("Ruta de ORS cargada exitosamente.");
+            alert(`¡Ruta calculada con éxito! Se han importado ${plainTextLines.length} puntos de guía en español.`);
+
+        } catch (error) {
+            console.error(error);
+            logHistory(`Error al calcular ruta: ${error.message}`);
+            alert(`Error al conectar con OpenRouteService: ${error.message}\nVerifica que tu 'orsApiKey' esté configurada correctamente.`);
+        }
+    }
+
+    function refreshVoices() {
+        let rawVoices = synth.getVoices().filter(v => {
+            const lang = (v.lang || '').toLowerCase();
+            return lang.startsWith('es');
+        });
+        rawVoices.sort((a, b) => {
+            if (a.localService && !b.localService) return -1;
+            if (!a.localService && b.localService) return 1;
+            return 0;
+        });
+
+        voices = rawVoices;
+        const select = document.getElementById('voiceSelect');
+        const previous = select.value;
+        select.innerHTML = '';
+
+        if (!voices.length) {
+            select.innerHTML = '<option value="">Cargando voces...</option>';
+            return;
+        }
+
+        voices.forEach((voice, idx) => {
+            const opt = document.createElement('option');
+            opt.value = String(idx);
+            opt.textContent = `${voice.name} (${voice.lang})`;
+            select.appendChild(opt);
+        });
+
+        const saved = localStorage.getItem('gps_voice_idx');
+        if (saved && voices[parseInt(saved, 10)]) select.value = saved;
+        else if (previous && voices[parseInt(previous, 10)]) select.value = previous;
+        else select.value = '0';
+    }
+
+    document.getElementById('voiceSelect').addEventListener('change', function() {
+        localStorage.setItem('gps_voice_idx', this.value);
+    });
+
+    synth.onvoiceschanged = refreshVoices;
+    setTimeout(refreshVoices, 300);
+
+    function applyAccentCorrections(text) {
+        const corrections = {
+            "estadisticas": "estadísticas",
+            "kilometros": "kilómetros",
+            "rapido": "rápido",
+            "precaucion": "precaución",
+            "atencion": "atención",
+            "proximo": "próximo",
+            "camara": "cámara"
+        };
+        let corrected = text;
+        for (const [wrong, right] of Object.entries(corrections)) {
+            const regex = new RegExp(`\\b${wrong}\\b`, 'gi');
+            corrected = corrected.replace(regex, right);
+        }
+        return corrected;
+    }
+
+    function numToWordsEs(n) {
+        const ones = ['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve',
+                      'diez','once','doce','trece','catorce','quince','dieciséis','diecisiete',
+                      'dieciocho','diecinueve'];
+        const tens = ['','diez','veinte','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'];
+        const hundreds = ['','ciento','doscientos','trescientos','cuatrocientos','quinientos',
+                          'seiscientos','setecientos','ochocientos','novecientos'];
+        if (n < 0)    return 'menos ' + numToWordsEs(-n);
+        if (n === 0)  return 'cero';
+        if (n === 100) return 'cien';
+        if (n < 20)   return ones[n];
+        if (n < 30)   return n === 20 ? 'veinte' : 'veinti' + ones[n - 20];
+        if (n < 100) {
+            const t = Math.floor(n / 10), u = n % 10;
+            return u === 0 ? tens[t] : tens[t] + ' y ' + ones[u];
+        }
+        if (n < 1000) {
+            const h = Math.floor(n / 100), rest = n % 100;
+            return rest === 0 ? hundreds[h] : hundreds[h] + ' ' + numToWordsEs(rest);
+        }
+        return String(n);
+    }
+
+    function applyNumbersToWords(text) {
+        return text.replace(/(?<![.\d])(\d+)(?![.\d])/g, (match) => {
+            const n = parseInt(match, 10);
+            return (n >= 0 && n <= 999) ? numToWordsEs(n) : match;
+        });
+    }
+
+    function speak(text, onDone) {
+        const textToRead = applyAccentCorrections(applyNumbersToWords(text));
+        const utterance = new SpeechSynthesisUtterance(textToRead);
+        const voice = voices[parseInt(document.getElementById('voiceSelect').value || '0', 10)];
+        if (voice) utterance.voice = voice;
+        utterance.volume = parseFloat(document.getElementById('voiceVolume').value || '1');
+
+        if (currentAudio && !currentAudio.paused) {
+            currentAudio.pause();
+            currentAudio.dataset.wasPlaying = '1';
+        }
+
+        currentSpeech = true;
+        synth.cancel();
+
+        utterance.onend = () => {
+            currentSpeech = false;
+            if (currentAudio && currentAudio.dataset.wasPlaying === '1') {
+                currentAudio.play().catch(() => {});
+                delete currentAudio.dataset.wasPlaying;
+            }
+            if (typeof onDone === 'function') onDone();
+        };
+
+        utterance.onerror = utterance.onend;
+        synth.speak(utterance);
+    }
+
+    function testVoice() {
+        speak("Probando estadísticas. 40 kilometros. Atención.");
+    }
+
+    function currentStats() {
+        const now = new Date();
+        const elapsed = startTime ? (Date.now() - startTime - totalPausedMs) : 0;
+        const avgSpeed = elapsed > 0 ? ((totalDistanceMeters / (elapsed / 1000)) * 3.6) : 0;
+        const currSpeed = currentPositionSpeedKmh || 0;
+        
+        let h = now.getHours();
+        let m = now.getMinutes();
+        if (h > 12) h -= 12;
+        if (h === 0) h = 12;
+        const timeText = m === 0 ? `${h} en punto` : `${h} y ${m}`;
+
+        return {
+            timeText,
+            currSpeedText: Math.round(currSpeed),
+            avgSpeedText: Math.round(avgSpeed),
+            distanceText: totalDistanceMeters / 1000,
+            tripMinutesText: Math.max(1, Math.round(elapsed / 60000)),
+            accuracyText: latestAccuracy != null ? Math.round(latestAccuracy) : 0
+        };
+    }
+
+    function buildStatsMessage() {
+        const s = currentStats();
+        return `Son las ${s.timeText}. Velocidad actual ${s.currSpeedText} kilómetros por hora. Velocidad media ${s.avgSpeedText} kilómetros por hora. Distancia recorrida ${s.distanceText.toFixed(1)} kilómetros. Tiempo de viaje ${s.tripMinutesText} minutos. Precisión del GPS ${s.accuracyText} metros.`;
+    }
+
+    function parseLine(line) {
+        const trimmed = line.trim();
+        if (!trimmed) return null;
+
+        const firstComma = trimmed.indexOf(',');
+        if (firstComma === -1) return null;
+        const secondComma = trimmed.indexOf(',', firstComma + 1);
+        if (secondComma === -1) return null;
+
+        const latStr = trimmed.substring(0, firstComma).trim();
+        const lonStr = trimmed.substring(firstComma + 1, secondComma).trim();
+        const rest   = trimmed.substring(secondComma + 1).trim();
+
+        const lat = parseFloat(latStr);
+        const lon = parseFloat(lonStr);
+        if (isNaN(lat) || isNaN(lon) || !rest) return null;
+
+        let messagePart = rest;
+        let sourcePart = 'MANUAL';
+        
+        const lastComma = rest.lastIndexOf(',');
+        if (lastComma !== -1) {
+            const potentialSource = rest.substring(lastComma + 1).trim().toUpperCase();
+            if (potentialSource === 'ORS' || potentialSource === 'MANUAL') {
+                messagePart = rest.substring(0, lastComma).trim();
+                sourcePart = potentialSource;
+            }
+        }
+
+        const rawRest = messagePart.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+
+        let type = 'INFO';
+        let msg  = '';
+
+        if (rawRest === 'ESTADISTICAS') {
+            type = 'ESTADISTICAS';
+        } else {
+            msg = messagePart;
+        }
+
+        return { 
+            lat, 
+            lon, 
+            type, 
+            msg, 
+            triggered: false, 
+            anticipated: false, 
+            source: sourcePart
+        };
+    }
+
+    function loadPoints(skipConfirm) {
+        if (!skipConfirm) {
+            const hasProgress = watchId !== null && points.some(p => p.triggered);
+            if (hasProgress) {
+                if (!confirm('Estás en medio de una ruta activa. ¿Cargar nuevos puntos y perder el progreso actual?')) return false;
+            }
+        }
+        const text = document.getElementById('inputData').value;
+        points = text.split('\n').map(line => parseLine(line)).filter(p => p !== null);
+        updateTable();
+        redrawPointMarkers();
+        renderPointsList();
+        return true;
+    }
+
+    function renderPointsList() {
+        const container = document.getElementById('pointsListContainer');
+        container.innerHTML = '';
+        
+        points.forEach((p, idx) => {
+            const div = document.createElement('div');
+            div.className = 'point-item';
+            div.id = `point-item-${idx}`;
+            
+            const coordStr = `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
+            const streetViewUrl = `https://www.google.com/maps/@${p.lat},${p.lon},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192`;
+            
+            const numberSpan = document.createElement('span');
+            numberSpan.className = 'point-number';
+            numberSpan.textContent = `${idx + 1}.`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.className = 'point-link';
+            linkElement.href = streetViewUrl;
+            linkElement.target = '_blank';
+            linkElement.textContent = coordStr;
+            
+            linkElement.addEventListener('click', function(e) {
+                e.stopPropagation();
+                highlightPointOnMap(idx);
+            });
+            
+            const msgSpan = document.createElement('span');
+            msgSpan.className = 'point-msg';
+            msgSpan.textContent = p.msg || p.type;
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'point-delete';
+            deleteBtn.innerHTML = '✕';
+            deleteBtn.title = 'Eliminar';
+            deleteBtn.onclick = function(e) {
+                e.stopPropagation();
+                deletePointFromList(idx);
+            };
+            
+            div.appendChild(numberSpan);
+            div.appendChild(linkElement);
+            div.appendChild(msgSpan);
+            div.appendChild(deleteBtn);
+            
+            div.addEventListener('click', function(e) {
+                if (e.target !== linkElement && e.target !== deleteBtn) {
+                    highlightPointOnMap(idx);
+                }
+            });
+            
+            container.appendChild(div);
+        });
+        
+        if (points.length === 0) {
+            container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--muted);">No hay puntos cargados</div>';
+        }
+    }
+
+    function highlightPointOnMap(idx) {
+        if (idx < 0 || idx >= points.length) return;
+        if (map && pointMarkers[idx]) {
+            map.setView([points[idx].lat, points[idx].lon], Math.max(map.getZoom(), 16));
+            pointMarkers[idx].openPopup();
+        }
+    }
+
+    function highlightPointInList(idx) {
+        document.querySelectorAll('.point-item.highlighted').forEach(el => {
+            el.classList.remove('highlighted');
+        });
+        
+        const item = document.getElementById(`point-item-${idx}`);
+        if (item) {
+            item.classList.add('highlighted');
+            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        highlightedPointIdx = idx;
+    }
+
+    function deletePointFromList(idx) {
+        if (idx < 0 || idx >= points.length) return;
+        const label = points[idx].msg || points[idx].type;
+        if (!confirm(`¿Eliminar el Pto ${idx + 1}: "${label}"?`)) return;
+        if (map) map.closePopup();
+        logHistory(`Pto ${idx + 1} eliminado: "${label}".`);
+        points.splice(idx, 1);
+        rebuildTextarea();
+        redrawPointMarkers();
+        updateTable();
+        renderPointsList();
+    }
+
+    function toggleRawMode() {
+        const textarea = document.getElementById('inputData');
+        const listContainer = document.getElementById('pointsListContainer');
+        
+        if (textarea.classList.contains('show-raw')) {
+            textarea.classList.remove('show-raw');
+            listContainer.style.display = 'block';
+        } else {
+            textarea.classList.add('show-raw');
+            listContainer.style.display = 'none';
+        }
+    }
+
+    function updateTable() {
+        const tbody = document.getElementById('pointsBody');
+        tbody.innerHTML = '';
+        const currentLat = lastPosition?.coords.latitude;
+        const currentLon = lastPosition?.coords.longitude;
+
+        points.forEach((p, idx) => {
+            let dist = '-';
+            if (typeof currentLat === 'number' && typeof currentLon === 'number') {
+                dist = Math.round(getDistance(currentLat, currentLon, p.lat, p.lon)) + ' m';
+            }
+            const row = document.createElement('tr');
+            const n = idx + 1;
+            row.innerHTML = `<td style="color:var(--muted);font-size:0.8rem;">${n}</td><td>${escapeHtml(p.msg || p.type)}</td><td>${escapeHtml(dist)}</td><td>${p.triggered ? '✅' : '⏳'}</td><td style="white-space:nowrap"><button onclick="editPoint(${idx})" title="Editar pto ${n}" style="padding:3px 6px;background:#2563eb;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.75rem;">✏️</button> <button onclick="deletePoint(${idx})" title="Eliminar pto ${n}" style="padding:3px 6px;background:#dc2626;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.75rem;">🗑️</button></td>`;
+            tbody.appendChild(row);
+        });
+
+        const triggered = points.filter(p => p.triggered).length;
+        const counter = document.getElementById('pointsCounter');
+        if (counter) counter.textContent = points.length ? `${triggered} / ${points.length} puntos activados` : '';
+    }
+
+    function resetPoints() {
+        points.forEach(p => {
+            p.triggered = false;
+            p.anticipated = false;
+        });
+        updateTable();
+        renderPointsList();
+        logHistory("Puntos reiniciados.");
+    }
+
+    function triggerPoint(p) {
+        p.triggered = true;
+        const stats = currentStats();
+        let spoken = p.type === 'ESTADISTICAS' ? buildStatsMessage() : replaceVariables(p.msg || '', stats);
+        
+        speak(spoken);
+        logHistory(`Punto activado: ${p.msg || p.type}`);
+        updateTable();
+        renderPointsList();
+    }
+
+    function replaceVariables(msg, stats) {
+        return msg.replaceAll('${hora}', stats.timeText)
+                  .replaceAll('${velocidad}', stats.currSpeedText)
+                  .replaceAll('${promedio}', stats.avgSpeedText)
+                  .replaceAll('${distancia}', stats.distanceText.toFixed(1))
+                  .replaceAll('${tiempo}', stats.tripMinutesText);
+    }
+
+    function rebuildTextarea() {
+        document.getElementById('inputData').value = points.map(p => {
+            if (p.type === 'ESTADISTICAS') {
+                return `${p.lat.toFixed(6)},${p.lon.toFixed(6)},ESTADISTICAS${p.source === 'ORS' ? ',ORS' : ''}`;
+            }
+            return `${p.lat.toFixed(6)},${p.lon.toFixed(6)},${p.msg}${p.source === 'ORS' ? ',ORS' : ''}`;
+        }).join('\n');
+    }
+
+    function editPoint(idx) {
+        if (idx < 0 || idx >= points.length) return;
+        if (map) map.closePopup();
+        _editingPointIdx = idx;
+        const p = points[idx];
+        document.getElementById('pointDialog').querySelector('h3').textContent = `Editar Pto ${idx + 1}`;
+        document.getElementById('modalSelect').value = "";
+        document.getElementById('modalText').value = p.type === 'ESTADISTICAS' ? 'ESTADISTICAS' : (p.msg || '');
+        document.getElementById('pointDialog').showModal();
+    }
+
+    function deletePoint(idx) {
+        if (idx < 0 || idx >= points.length) return;
+        const label = points[idx].msg || points[idx].type;
+        if (!confirm(`¿Eliminar el Pto ${idx + 1}: "${label}"?`)) return;
+        if (map) map.closePopup();
+        logHistory(`Pto ${idx + 1} eliminado: "${label}".`);
+        points.splice(idx, 1);
+        rebuildTextarea();
+        redrawPointMarkers();
+        updateTable();
+        renderPointsList();
+    }
+
+    function startNav() {
+        if (watchId !== null) {
+            logHistory("La navegación ya está activa. Detén primero antes de reiniciar.");
+            return;
+        }
+        if (!navigator.geolocation) return alert("Geolocalización no soportada.");
+        
+        if (noSleep) noSleep.enable().catch(() => {});
+        
+        document.getElementById('status').innerText = "Navegando...";
+        if (startTime === null) {
+            startTime = Date.now();
+            totalPausedMs = 0;
+            pauseStartTime = null;
+        } else if (pauseStartTime !== null) {
+            totalPausedMs += Date.now() - pauseStartTime;
+            pauseStartTime = null;
+        }
+        logHistory("Navegación iniciada.");
+        updateGPSOriginHint();
+
+        watchId = navigator.geolocation.watchPosition((pos) => {
+            const { latitude, longitude, accuracy, speed } = pos.coords;
+            const radius = parseInt(document.getElementById('radius').value || '40', 10);
+            
+            currentPositionSpeedKmh = speed != null && !isNaN(speed) ? (speed * 3.6) : 0;
+            latestAccuracy = accuracy;
+
+            const accThreshold = parseInt(document.getElementById('accThreshold').value || '50', 10);
+            const nowMs = Date.now();
+            if (accuracy > accThreshold && nowMs - lastAccuracyWarn > 60000) {
+                lastAccuracyWarn = nowMs;
+                speak(`Señal GPS débil. Precisión ${Math.round(accuracy)} metros.`);
+            }
+
+            if (lastPosition) {
+                const stepDist = getDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, latitude, longitude);
+                if (stepDist > 0 && stepDist < 500) { 
+                    totalDistanceMeters += stepDist;
+                }
+            }
+            lastPosition = pos;
+
+            updateStatusPanel(latitude, longitude, accuracy, speed || 0);
+            updateGPSOriginHint();
+
+            routePath.push([latitude, longitude]);
+            if (routeLine) routeLine.setLatLngs(routePath);
+            
+            if (userMarker) userMarker.setLatLng([latitude, longitude]);
+            else if (map) userMarker = L.marker([latitude, longitude]).addTo(map).bindPopup("Tú");
+
+            if (isFollowing && map) map.setView([latitude, longitude]);
+
+            const sequential = document.getElementById('sequentialMode').checked;
+            
+            const speedMs = currentPositionSpeedKmh / 3.6;
+            const reactionTimeSeconds = 10;
+            const minAnticipationDistance = 50;
+            const anticipationDistance = Math.max(
+                speedMs * reactionTimeSeconds,
+                minAnticipationDistance
+            );
+            
+            if (sequential) {
+                const idx = points.findIndex(p => !p.triggered);
+                if (idx >= 0) {
+                    const dist = getDistance(latitude, longitude, points[idx].lat, points[idx].lon);
+                    
+                    if (dist <= radius) {
+                        triggerPoint(points[idx]);
+                    } else if (dist <= anticipationDistance && !points[idx].anticipated && 
+                        (points[idx].source === 'ORS' || points[idx].type === 'ESTADISTICAS')) {
+                        points[idx].anticipated = true;
+                        const advanceMsg = points[idx].type === 'ESTADISTICAS'
+                            ? 'Prepárate, estadísticas próximamente'
+                            : `Prepárate: ${points[idx].msg || ''}`;
+                        speak(advanceMsg);
+                        logHistory(`Alerta anticipada: ${points[idx].msg || points[idx].type} (${Math.round(dist)}m)`);
+                    }
+                }
+            } else {
+                // MODO FLEXIBLE: Procesar solo el punto más cercano no activado
+                let closestPoint = null;
+                let closestDist = Infinity;
                 
-                snappedPointsTemp.push({
-                    metro: point.metro,
-                    originalLat: point.lat,
-                    originalLon: point.lon,
-                    snappedLat: snapped.lat,
-                    snappedLon: snapped.lon,
-                    edgeId: snapped.edgeId,
-                    snapDistance: snapped.distance,
-                    instruction: null,
-                    isFirst: false,
-                    isLast: false,
-                    isAnticipatory: false,
-                    isCrossing: false,
-                    crossingId: null
+                points.forEach((p) => {
+                    if (!p.triggered) {
+                        const dist = getDistance(latitude, longitude, p.lat, p.lon);
+                        if (dist < closestDist) {
+                            closestDist = dist;
+                            closestPoint = p;
+                        }
+                    }
                 });
                 
-                if (i % batchSize === 0) {
-                    const progress = 20 + (i / interpolatedPoints.length) * 40;
-                    updateProgress(progress, `Snapping punto ${i + 1}/${interpolatedPoints.length}...`);
-                    await sleep(0);
-                }
-            }
-            
-            log(`✅ Snapping completado: ${snappedPointsTemp.length} puntos proyectados`, 'success');
-            
-            // 4. Detectar cruces (donde la ruta snappeada pasa por un cruce)
-            updateProgress(65, 'Detectando cruces...');
-            await sleep(10);
-            let crossingsDetected = 0;
-            
-            for (const point of snappedPointsTemp) {
-                for (const crossing of crossings) {
-                    const dist = haversineDistance(point.snappedLat, point.snappedLon, crossing.lat, crossing.lon);
-                    if (dist < 5) { // 5 metros es muy preciso después del snapping
-                        point.isCrossing = true;
-                        point.crossingId = `${crossing.lat.toFixed(5)}_${crossing.lon.toFixed(5)}`;
-                        crossingsDetected++;
-                        break;
+                if (closestPoint) {
+                    if (closestDist <= radius) {
+                        triggerPoint(closestPoint);
+                    } else if (closestDist <= anticipationDistance && !closestPoint.anticipated && 
+                        (closestPoint.source === 'ORS' || closestPoint.type === 'ESTADISTICAS')) {
+                        closestPoint.anticipated = true;
+                        const advanceMsg = closestPoint.type === 'ESTADISTICAS'
+                            ? 'Prepárate, estadísticas próximamente'
+                            : `Prepárate: ${closestPoint.msg || ''}`;
+                        speak(advanceMsg);
+                        logHistory(`Alerta anticipada: ${closestPoint.msg || closestPoint.type} (${Math.round(closestDist)}m)`);
                     }
                 }
             }
-            
-            log(`✅ ${crossingsDetected} cruces detectados sobre la ruta`, 'success');
-            
-            // 5. Asignar instrucciones ORS con offset
-            updateProgress(75, 'Asignando instrucciones...');
-            await sleep(10);
-            
-            const processedInstructions = processInstructionsWithOffset(orsInstructions, offset);
-            const lastInstruction = processedInstructions[processedInstructions.length - 1];
-            
-            processedInstructions.forEach(inst => {
-                const isFirst = inst.isWalkInstruction && inst.stepIndex === 0 && inst.segmentIndex === 0;
-                const isLast = (inst === lastInstruction);
-                
-                let targetMetro;
-                if (isFirst || isLast) {
-                    targetMetro = inst.metro;
-                    log(`ℹ️ ${isFirst ? 'Primera' : 'Última'} "${inst.simplified}" en metro ${targetMetro.toFixed(1)}`, 'info');
-                } else {
-                    targetMetro = inst.metro - offset;
-                    if (targetMetro < 0) return;
-                }
-                
-                const closestIdx = findClosestPointIndex(snappedPointsTemp, targetMetro);
-                if (closestIdx >= 0) {
-                    snappedPointsTemp[closestIdx].instruction = inst.simplified;
-                    snappedPointsTemp[closestIdx].isFirst = isFirst;
-                    snappedPointsTemp[closestIdx].isLast = isLast;
-                }
-            });
-            
-            // 6. Generar avisos anticipados en cruces previos
-            updateProgress(85, 'Generando avisos anticipados...');
-            await sleep(10);
-            let anticipatoryCount = 0;
-            
-            processedInstructions.forEach(inst => {
-                const isFirst = inst.isWalkInstruction && inst.stepIndex === 0 && inst.segmentIndex === 0;
-                const isLast = (inst === lastInstruction);
-                if (isFirst || isLast) return;
-                
-                const msgLower = inst.simplified.toLowerCase();
-                if (!msgLower.includes('gire')) return;
-                
-                let direction = null;
-                if (msgLower.includes('derecha')) direction = 'derecha';
-                else if (msgLower.includes('izquierda')) direction = 'izquierda';
-                if (!direction) return;
-                
-                const originalMetro = inst.metro;
-                const turnIdx = findClosestPointIndex(snappedPointsTemp, originalMetro);
-                if (turnIdx < 0) return;
-                
-                // Buscar el último cruce ANTES del giro (mínimo 15m antes)
-                let prevCrossingIdx = -1;
-                for (let i = turnIdx - 1; i >= 0; i--) {
-                    const distToTurn = haversineDistance(
-                        snappedPointsTemp[i].snappedLat,
-                        snappedPointsTemp[i].snappedLon,
-                        snappedPointsTemp[turnIdx].snappedLat,
-                        snappedPointsTemp[turnIdx].snappedLon
-                    );
-                    
-                    if (distToTurn < 15) continue;
-                    
-                    if (snappedPointsTemp[i].isCrossing) {
-                        prevCrossingIdx = i;
-                        break;
+
+            if (document.getElementById('repeatStats').checked) {
+                points.forEach(p => {
+                    if (p.type === 'ESTADISTICAS' && p.triggered) {
+                        const dist = getDistance(latitude, longitude, p.lat, p.lon);
+                        if (dist > radius * 1.5) {
+                            p.triggered = false;
+                            p.anticipated = false;
+                        }
                     }
-                }
-                
-                if (prevCrossingIdx >= 0 && !snappedPointsTemp[prevCrossingIdx].instruction) {
-                    snappedPointsTemp[prevCrossingIdx].instruction = `En la próxima calle gire a la ${direction}`;
-                    snappedPointsTemp[prevCrossingIdx].isAnticipatory = true;
-                    anticipatoryCount++;
-                    
-                    const distFromTurn = haversineDistance(
-                        snappedPointsTemp[prevCrossingIdx].snappedLat,
-                        snappedPointsTemp[prevCrossingIdx].snappedLon,
-                        snappedPointsTemp[turnIdx].snappedLat,
-                        snappedPointsTemp[turnIdx].snappedLon
-                    );
-                    log(`🎯 Metro ${snappedPointsTemp[prevCrossingIdx].metro.toFixed(0)}: aviso anticipado (${Math.round(distFromTurn)}m antes del giro)`, 'special');
-                }
+                });
+            }
+
+        }, (err) => {
+            let errMsg = 'Error de GPS desconocido.';
+            if (err.code === 1) errMsg = 'Permiso de ubicación denegado.';
+            else if (err.code === 2) errMsg = 'Señal GPS no disponible.';
+            else if (err.code === 3) errMsg = 'Tiempo de espera del GPS agotado.';
+            document.getElementById('status').innerText = 'Error GPS: ' + errMsg;
+            speak(errMsg);
+            logHistory('Error GPS: ' + errMsg);
+        }, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
+    }
+
+    function stopNav() {
+        if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+            pauseStartTime = Date.now();
+            synth.cancel();
+            document.getElementById('status').innerText = "Detenido";
+            
+            if (noSleep) noSleep.disable();
+            
+            logHistory("Navegación detenida.");
+            updateGPSOriginHint();
+        }
+    }
+
+    function updateStatusPanel(lat, lon, accuracy, speedMps) {
+        document.getElementById('lat').innerText = lat.toFixed(5);
+        document.getElementById('lon').innerText = lon.toFixed(5);
+        document.getElementById('acc').innerText = Math.round(accuracy);
+        document.getElementById('speed').innerText = formatSpeedKmh(speedMps);
+
+        if (startTime) {
+            const elapsed = Date.now() - startTime - totalPausedMs;
+            const avg = elapsed > 0 ? (totalDistanceMeters / (elapsed / 1000)) : 0;
+            document.getElementById('avgSpeed').innerText = (avg * 3.6).toFixed(0) + " km/h";
+            document.getElementById('distanceTravelled').innerText = formatKm(totalDistanceMeters);
+            document.getElementById('tripTime').innerText = formatDuration(elapsed);
+        }
+    }
+
+    function redrawPointMarkers() {
+        if (!map) return;
+        pointMarkers.forEach(m => map.removeLayer(m));
+        pointMarkers = [];
+        points.forEach((p, idx) => {
+            const marker = L.marker([p.lat, p.lon]).addTo(map);
+            const n = idx + 1;
+            marker.bindPopup(
+                `<strong>Pto ${n}</strong><br>${escapeHtml(p.msg || p.type)}<br>` +
+                `<div style="margin-top:6px;display:flex;gap:6px;">` +
+                `<button onclick="editPoint(${idx})" style="padding:4px 10px;background:#2563eb;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.82rem;">✏️ Editar</button>` +
+                `<button onclick="deletePoint(${idx})" style="padding:4px 10px;background:#dc2626;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.82rem;">🗑️ Eliminar</button>` +
+                `</div>`
+            );
+            
+            marker.on('click', function() {
+                highlightPointInList(idx);
             });
             
-            log(`✅ ${anticipatoryCount} avisos anticipados generados`, 'success');
-            
-            // 7. Guardar resultado y mostrar
-            updateProgress(100, 'Finalizado');
-            snappedPoints = snappedPointsTemp;
-            
-            // Estadísticas
-            const totalDistance = snappedPoints[snappedPoints.length - 1].metro;
-            const uniqueEdges = new Set(snappedPoints.map(p => p.edgeId).filter(Boolean)).size;
-            
-            document.getElementById('statDistance').textContent = 
-                totalDistance >= 1000 ? (totalDistance / 1000).toFixed(2) + ' km' : totalDistance.toFixed(1) + ' m';
-            document.getElementById('statSnapped').textContent = snappedPoints.length.toLocaleString();
-            document.getElementById('statCrossings').textContent = crossingsDetected;
-            document.getElementById('statInstructions').textContent = orsInstructions.length;
-            document.getElementById('statAnticipatory').textContent = anticipatoryCount;
-            document.getElementById('statEdges').textContent = uniqueEdges;
-            
-            // Mapa
-            renderMap();
-            
-            // Tabla
-            renderTable(snappedPoints);
-            applyFilters();
-            
-            document.getElementById('resultsCard').classList.remove('hidden');
-            log(`🎉 Proceso completado`, 'success');
-        }
-        
-        function interpolateRoute(coords, interval) {
-            const points = [{ metro: 0, lat: coords[0].lat, lon: coords[0].lon }];
-            let accumulatedDistance = 0;
-            let nextTarget = interval;
-            
-            for (let i = 0; i < coords.length - 1; i++) {
-                const A = coords[i];
-                const B = coords[i + 1];
-                const segDistance = haversineDistance(A.lat, A.lon, B.lat, B.lon);
-                
-                if (segDistance === 0) continue;
-                
-                const deltaLat = B.lat - A.lat;
-                const deltaLon = B.lon - A.lon;
-                
-                while (nextTarget <= accumulatedDistance + segDistance) {
-                    const distIntoSegment = nextTarget - accumulatedDistance;
-                    const fraction = distIntoSegment / segDistance;
-                    
-                    points.push({
-                        metro: nextTarget,
-                        lat: A.lat + fraction * deltaLat,
-                        lon: A.lon + fraction * deltaLon
-                    });
-                    nextTarget += interval;
-                }
-                
-                accumulatedDistance += segDistance;
-            }
-            
-            // Último punto
-            const last = coords[coords.length - 1];
-            const lastPoint = points[points.length - 1];
-            if (Math.abs(lastPoint.metro - accumulatedDistance) > 0.5) {
-                points.push({ metro: accumulatedDistance, lat: last.lat, lon: last.lon });
-            }
-            
-            return points;
-        }
-        
-        function filterEdgesByBBox(points, allEdges) {
-            // Calcular bounding box de la ruta
-            let minLat = Infinity, maxLat = -Infinity;
-            let minLon = Infinity, maxLon = -Infinity;
-            
-            for (const p of points) {
-                if (p.lat < minLat) minLat = p.lat;
-                if (p.lat > maxLat) maxLat = p.lat;
-                if (p.lon < minLon) minLon = p.lon;
-                if (p.lon > maxLon) maxLon = p.lon;
-            }
-            
-            // Añadir margen de 100 metros
-            const marginLat = 100 / LAT_TO_METERS;
-            const marginLon = 100 / LON_TO_METERS;
-            
-            minLat -= marginLat;
-            maxLat += marginLat;
-            minLon -= marginLon;
-            maxLon += marginLon;
-            
-            // Filtrar edges que toquen el bbox
-            return allEdges.filter(e => {
-                const eMinLat = Math.min(e.lat_inicio, e.lat_fin);
-                const eMaxLat = Math.max(e.lat_inicio, e.lat_fin);
-                const eMinLon = Math.min(e.lon_inicio, e.lon_fin);
-                const eMaxLon = Math.max(e.lon_inicio, e.lon_fin);
-                
-                return !(eMaxLat < minLat || eMinLat > maxLat || eMaxLon < minLon || eMinLon > maxLon);
-            });
-        }
-        
-        function snapPointToEdges(point, edges) {
-            let bestProjection = null;
-            let bestDistance = Infinity;
-            let bestEdgeId = null;
-            
-            const px = point.lon * LON_TO_METERS;
-            const py = point.lat * LAT_TO_METERS;
-            
-            for (const edge of edges) {
-                const ax = edge.lon_inicio * LON_TO_METERS;
-                const ay = edge.lat_inicio * LAT_TO_METERS;
-                const bx = edge.lon_fin * LON_TO_METERS;
-                const by = edge.lat_fin * LAT_TO_METERS;
-                
-                // Proyección perpendicular del punto sobre el segmento
-                const dx = bx - ax;
-                const dy = by - ay;
-                const len2 = dx * dx + dy * dy;
-                
-                let t = 0;
-                if (len2 > 0) {
-                    t = ((px - ax) * dx + (py - ay) * dy) / len2;
-                    t = Math.max(0, Math.min(1, t));
-                }
-                
-                const projX = ax + t * dx;
-                const projY = ay + t * dy;
-                
-                const distance = Math.sqrt((px - projX) ** 2 + (py - projY) ** 2);
-                
-                if (distance < bestDistance) {
-                    bestDistance = distance;
-                    bestProjection = {
-                        lat: projY / LAT_TO_METERS,
-                        lon: projX / LON_TO_METERS
-                    };
-                    bestEdgeId = edge.id;
-                }
-            }
-            
-            if (bestProjection && bestDistance < 200) { // 200m máximo razonable
-                return { ...bestProjection, edgeId: bestEdgeId, distance: bestDistance };
-            }
-            
-            // Si no encontró edge cercano, mantener punto original
-            return { lat: point.lat, lon: point.lon, edgeId: null, distance: Infinity };
-        }
-        
-        function processInstructionsWithOffset(instructions, offset) {
-            if (instructions.length === 0) return [];
-            
-            const processed = [...instructions];
-            
-            if (processed.length >= 2 && processed[0].isWalkInstruction) {
-                const firstMetro = processed[0].metro;
-                const secondMetro = processed[1].metro;
-                
-                if (secondMetro - offset <= firstMetro + offset) {
-                    processed.shift();
-                } else {
-                    processed[0].metro = firstMetro;
-                }
-            }
-            
-            return processed;
-        }
-        
-        function findClosestPointIndex(points, targetMetro) {
-            let bestIdx = -1;
-            let minDiff = Infinity;
-            
-            for (let i = 0; i < points.length; i++) {
-                const diff = Math.abs(points[i].metro - targetMetro);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    bestIdx = i;
-                }
-            }
-            
-            return bestIdx;
-        }
-        
-        function haversineDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371000;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) ** 2 +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon / 2) ** 2;
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
-        }
-        
-        function updateProgress(percent, text) {
-            document.getElementById('progressFill').style.width = percent + '%';
-            document.getElementById('progressText').textContent = `${Math.round(percent)}% - ${text}`;
-        }
-        
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-        
-        // === MAPA ===
-        function renderMap() {
-            if (!map) {
-                map = L.map('map').setView([4.65, -74.05], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© OpenStreetMap'
-                }).addTo(map);
-            }
-            
-            // Limpiar capas previas
-            Object.values(layers).forEach(layer => {
-                if (Array.isArray(layer)) {
-                    layer.forEach(l => map.removeLayer(l));
-                } else if (layer) {
-                    map.removeLayer(layer);
-                }
-            });
-            layers = { originalRoute: null, snappedRoute: null, crossings: [], anticipatory: [], instructions: [] };
-            
-            // Ruta original
-            const originalCoords = snappedPoints.map(p => [p.originalLat, p.originalLon]);
-            layers.originalRoute = L.polyline(originalCoords, {
-                color: '#3b82f6', weight: 4, opacity: 0.5, dashArray: '5 5'
-            }).addTo(map);
-            
-            // Ruta snappeada
-            const snappedCoords = snappedPoints.map(p => [p.snappedLat, p.snappedLon]);
-            layers.snappedRoute = L.polyline(snappedCoords, {
-                color: '#10b981', weight: 5, opacity: 0.9
-            }).addTo(map);
-            
-            // Marcadores de cruces detectados
-            snappedPoints.forEach(p => {
-                if (p.isCrossing) {
-                    const marker = L.circleMarker([p.snappedLat, p.snappedLon], {
-                        radius: 4, color: '#a855f7', fillColor: '#a855f7', fillOpacity: 0.7, weight: 1
-                    }).addTo(map);
-                    layers.crossings.push(marker);
-                }
-            });
-            
-            // Marcadores de instrucciones
-            snappedPoints.forEach(p => {
-                if (p.instruction) {
-                    let color = '#f59e0b';
-                    if (p.isFirst) color = '#60a5fa';
-                    else if (p.isLast) color = '#10b981';
-                    else if (p.isAnticipatory) color = '#ec4899';
-                    
-                    const marker = L.circleMarker([p.snappedLat, p.snappedLon], {
-                        radius: 7, color: color, fillColor: color, fillOpacity: 0.9, weight: 2
-                    }).addTo(map).bindPopup(`<strong>Metro ${p.metro.toFixed(0)}</strong><br>${p.instruction}`);
-                    
-                    if (p.isAnticipatory) layers.anticipatory.push(marker);
-                    else layers.instructions.push(marker);
-                }
-            });
-            
-            // Ajustar vista
-            map.fitBounds(layers.snappedRoute.getBounds(), { padding: [30, 30] });
-        }
-        
-        // === TABLA ===
-        function renderTable(points) {
-            const tbody = document.getElementById('pointsBody');
-            tbody.innerHTML = '';
-            
-            points.forEach(p => {
-                const row = document.createElement('tr');
-                if (p.instruction) row.classList.add('has-instruction');
-                
-                let instructionCell = '';
-                if (p.instruction) {
-                    let className = 'instruction-cell';
-                    if (p.isFirst) className += ' first';
-                    else if (p.isLast) className += ' last';
-                    else if (p.isAnticipatory) className += ' anticipatory';
-                    
-                    const prefix = p.isAnticipatory ? '🔔 ' : '';
-                    instructionCell = `<span class="${className}">${prefix}${escapeHtml(p.instruction)}</span>`;
-                }
-                
-                const crossingCell = p.isCrossing ? '<span class="crossing-badge">✓</span>' : '';
-                
-                row.innerHTML = `
-                    <td class="metro-cell">${p.metro.toFixed(0)}</td>
-                    <td>${p.originalLat.toFixed(7)}</td>
-                    <td>${p.originalLon.toFixed(7)}</td>
-                    <td>${p.snappedLat.toFixed(7)}</td>
-                    <td>${p.snappedLon.toFixed(7)}</td>
-                    <td>${crossingCell}</td>
-                    <td>${instructionCell}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-        
-        // === FILTROS ===
-        document.getElementById('searchInput').addEventListener('input', applyFilters);
-        document.getElementById('onlyInstructions').addEventListener('change', applyFilters);
-        document.getElementById('onlyCrossings').addEventListener('change', applyFilters);
-        
-        function applyFilters() {
-            const query = document.getElementById('searchInput').value.trim();
-            const onlyInst = document.getElementById('onlyInstructions').checked;
-            const onlyCross = document.getElementById('onlyCrossings').checked;
-            
-            let filtered = [...snappedPoints];
-            
-            if (onlyInst) filtered = filtered.filter(p => p.instruction);
-            if (onlyCross) filtered = filtered.filter(p => p.isCrossing);
-            if (query) filtered = filtered.filter(p => p.metro.toFixed(0).includes(query));
-            
-            renderTable(filtered);
-            
-            const totalInst = snappedPoints.filter(p => p.instruction).length;
-            const shownInst = filtered.filter(p => p.instruction).length;
-            document.getElementById('visibleCount').textContent = 
-                `Mostrando ${filtered.length} de ${snappedPoints.length} puntos (${shownInst} con instrucción)`;
-        }
-        
-        // === EXPORTACIÓN ===
-        document.getElementById('btnDownloadCSV').addEventListener('click', () => {
-            const headers = ['Metro', 'Lat_orig', 'Lon_orig', 'Lat_snap', 'Lon_snap', 'Es_cruce', 'Instruccion', 'Tipo', 'Coord_snap_copiar'];
-            const rows = snappedPoints.map(p => {
-                let tipo = '';
-                if (p.isFirst) tipo = 'PRIMERA';
-                else if (p.isLast) tipo = 'ULTIMA';
-                else if (p.isAnticipatory) tipo = 'ANTICIPADO';
-                else if (p.instruction) tipo = 'ORS';
-                
-                const crossTxt = p.isCrossing ? 'SI' : '';
-                return `${p.metro.toFixed(0)},${p.originalLat.toFixed(8)},${p.originalLon.toFixed(8)},${p.snappedLat.toFixed(8)},${p.snappedLon.toFixed(8)},${crossTxt},"${p.instruction || ''}","${tipo}","${p.snappedLat.toFixed(8)}, ${p.snappedLon.toFixed(8)}"`;
-            });
-            const csv = [headers.join(','), ...rows].join('\n');
-            downloadFile(csv, 'ruta-snapped.csv', 'text/csv;charset=utf-8');
-            log('📥 CSV descargado', 'success');
+            pointMarkers.push(marker);
         });
-        
-        document.getElementById('btnDownloadTSV').addEventListener('click', () => {
-            const headers = ['Metro', 'Lat_orig', 'Lon_orig', 'Lat_snap', 'Lon_snap', 'Es_cruce', 'Instruccion', 'Tipo', 'Coord_snap_copiar'];
-            const rows = snappedPoints.map(p => {
-                let tipo = '';
-                if (p.isFirst) tipo = 'PRIMERA';
-                else if (p.isLast) tipo = 'ULTIMA';
-                else if (p.isAnticipatory) tipo = 'ANTICIPADO';
-                else if (p.instruction) tipo = 'ORS';
-                
-                const crossTxt = p.isCrossing ? 'SI' : '';
-                return `${p.metro.toFixed(0)}\t${p.originalLat.toFixed(8)}\t${p.originalLon.toFixed(8)}\t${p.snappedLat.toFixed(8)}\t${p.snappedLon.toFixed(8)}\t${crossTxt}\t${p.instruction || ''}\t${tipo}\t${p.snappedLat.toFixed(8)}, ${p.snappedLon.toFixed(8)}`;
-            });
-            const tsv = [headers.join('\t'), ...rows].join('\n');
-            downloadFile(tsv, 'ruta-snapped.tsv', 'text/tab-separated-values;charset=utf-8');
-            log('📥 TSV descargado', 'success');
+    }
+
+    function createAudioFromFile(file) { return { url: URL.createObjectURL(file), name: file.name }; }
+    function loadPlaylistFromInput(files) {
+        musicPlaylist.forEach(t => { if (t.url) URL.revokeObjectURL(t.url); });
+        musicPlaylist = Array.from(files).map(createAudioFromFile);
+        currentTrackIndex = musicPlaylist.length ? 0 : -1;
+        renderPlaylist();
+        document.getElementById('musicStatus').textContent = 'Playlist cargada';
+    }
+    function renderPlaylist() {
+        const box = document.getElementById('playlist');
+        box.innerHTML = '';
+        musicPlaylist.forEach((track, idx) => {
+            const div = document.createElement('div');
+            div.className = 'playlist-item' + (idx === currentTrackIndex ? ' active' : '');
+            div.innerHTML = `<span>${escapeHtml(track.name)}</span>`;
+            div.onclick = () => { currentTrackIndex = idx; playCurrentTrack(); };
+            box.appendChild(div);
         });
-        
-        document.getElementById('btnCopyTable').addEventListener('click', async () => {
-            const headers = 'Metro\tLat_orig\tLon_orig\tLat_snap\tLon_snap\tEs_cruce\tInstruccion\tTipo\tCoord_snap_copiar';
-            const rows = snappedPoints.map(p => {
-                let tipo = '';
-                if (p.isFirst) tipo = 'PRIMERA';
-                else if (p.isLast) tipo = 'ULTIMA';
-                else if (p.isAnticipatory) tipo = 'ANTICIPADO';
-                else if (p.instruction) tipo = 'ORS';
-                
-                const crossTxt = p.isCrossing ? 'SI' : '';
-                return `${p.metro.toFixed(0)}\t${p.originalLat.toFixed(8)}\t${p.originalLon.toFixed(8)}\t${p.snappedLat.toFixed(8)}\t${p.snappedLon.toFixed(8)}\t${crossTxt}\t${p.instruction || ''}\t${tipo}\t${p.snappedLat.toFixed(8)}, ${p.snappedLon.toFixed(8)}`;
-            });
-            const text = [headers, ...rows].join('\n');
+    }
+    function getMusicVolume() {
+        return parseFloat(document.getElementById('globalVolume').value || '1') * parseFloat(document.getElementById('musicVolume').value || '1');
+    }
+    function playCurrentTrack() {
+        if (currentTrackIndex < 0 || currentTrackIndex >= musicPlaylist.length) return;
+        if (currentAudio) currentAudio.pause();
+        currentAudio = new Audio(musicPlaylist[currentTrackIndex].url);
+        currentAudio.volume = getMusicVolume();
+        currentAudio.loop = repeatMode;
+        currentAudio.onended = () => {
+            if (shuffleMode && musicPlaylist.length > 1) {
+                let next = currentTrackIndex;
+                while (next === currentTrackIndex) next = Math.floor(Math.random() * musicPlaylist.length);
+                currentTrackIndex = next; playCurrentTrack();
+            } else if (!repeatMode) nextTrack();
+            else playCurrentTrack();
+        };
+        currentAudio.play().then(() => {
+            document.getElementById('musicStatus').textContent = `Música: ${musicPlaylist[currentTrackIndex].name}`;
+            renderPlaylist();
+        }).catch(() => {});
+    }
+    function playMusic() {
+        if (!musicPlaylist.length && document.getElementById('musicFiles').files.length) loadPlaylistFromInput(document.getElementById('musicFiles').files);
+        if (!currentAudio) playCurrentTrack(); else currentAudio.play();
+    }
+    function pauseMusic() { if (currentAudio) currentAudio.pause(); }
+    function nextTrack() { if (!musicPlaylist.length) return; currentTrackIndex = (currentTrackIndex + 1) % musicPlaylist.length; playCurrentTrack(); }
+    function prevTrack() { if (!musicPlaylist.length) return; currentTrackIndex = (currentTrackIndex - 1 + musicPlaylist.length) % musicPlaylist.length; playCurrentTrack(); }
+    function toggleShuffle() {
+        shuffleMode = !shuffleMode;
+        document.getElementById('btnShuffle').classList.toggle('btn-active', shuffleMode);
+        saveConfigToLocalStorage();
+    }
+    function toggleRepeat() {
+        repeatMode = !repeatMode;
+        if (currentAudio) currentAudio.loop = repeatMode;
+        document.getElementById('btnRepeat').classList.toggle('btn-active', repeatMode);
+        saveConfigToLocalStorage();
+    }
+    document.getElementById('musicFiles').addEventListener('change', function() { if (this.files.length) loadPlaylistFromInput(this.files); });
+    document.getElementById('musicVolume').addEventListener('input', function() { if (currentAudio) currentAudio.volume = getMusicVolume(); });
+    document.getElementById('globalVolume').addEventListener('input', function() { if (currentAudio) currentAudio.volume = getMusicVolume(); });
+
+    function saveConfigToLocalStorage() {
+        const saveStateChecked = document.getElementById('saveState').checked;
+        if (!saveStateChecked) return;
+
+        const config = {
+            radius: document.getElementById('radius').value,
+            voiceVolume: document.getElementById('voiceVolume').value,
+            globalVolume: document.getElementById('globalVolume').value,
+            sequentialMode: document.getElementById('sequentialMode').checked,
+            repeatStats: document.getElementById('repeatStats').checked,
+            accThreshold: document.getElementById('accThreshold').value,
+            musicVolume: document.getElementById('musicVolume').value,
+            shuffleMode: shuffleMode,
+            repeatMode: repeatMode
+        };
+
+        localStorage.setItem('gps_config', JSON.stringify(config));
+    }
+
+    function loadConfigFromLocalStorage() {
+        const savedConfig = localStorage.getItem('gps_config');
+        if (!savedConfig) return;
+
+        try {
+            const config = JSON.parse(savedConfig);
             
-            try {
-                await navigator.clipboard.writeText(text);
-                log('📋 Copiado al portapapeles', 'success');
-                alert('✅ Tabla copiada.\n\nCtrl+V en Excel.');
-            } catch (err) {
-                log('❌ Error al copiar: ' + err.message, 'error');
+            if (config.radius !== undefined) document.getElementById('radius').value = config.radius;
+            if (config.voiceVolume !== undefined) document.getElementById('voiceVolume').value = config.voiceVolume;
+            if (config.globalVolume !== undefined) document.getElementById('globalVolume').value = config.globalVolume;
+            if (config.sequentialMode !== undefined) document.getElementById('sequentialMode').checked = config.sequentialMode;
+            if (config.repeatStats !== undefined) document.getElementById('repeatStats').checked = config.repeatStats;
+            if (config.accThreshold !== undefined) document.getElementById('accThreshold').value = config.accThreshold;
+            if (config.musicVolume !== undefined) document.getElementById('musicVolume').value = config.musicVolume;
+            
+            if (config.shuffleMode !== undefined) {
+                shuffleMode = config.shuffleMode;
+                document.getElementById('btnShuffle').classList.toggle('btn-active', shuffleMode);
             }
-        });
+            if (config.repeatMode !== undefined) {
+                repeatMode = config.repeatMode;
+                document.getElementById('btnRepeat').classList.toggle('btn-active', repeatMode);
+            }
+
+            if (currentAudio) currentAudio.volume = getMusicVolume();
+        } catch (e) {
+            console.error("Error al cargar configuración:", e);
+        }
+    }
+
+    document.getElementById('radius').addEventListener('input', saveConfigToLocalStorage);
+    document.getElementById('voiceVolume').addEventListener('input', saveConfigToLocalStorage);
+    document.getElementById('globalVolume').addEventListener('input', saveConfigToLocalStorage);
+    document.getElementById('sequentialMode').addEventListener('change', saveConfigToLocalStorage);
+    document.getElementById('repeatStats').addEventListener('change', saveConfigToLocalStorage);
+    document.getElementById('accThreshold').addEventListener('input', saveConfigToLocalStorage);
+    document.getElementById('musicVolume').addEventListener('input', saveConfigToLocalStorage);
+    document.getElementById('saveState').addEventListener('change', function() {
+        if (this.checked) saveConfigToLocalStorage();
+    });
+
+    function lockScreen() {
+        isScreenLocked = true;
+        document.getElementById('lockOverlay').classList.add('active');
+        document.getElementById('lockButton').style.display = 'none';
+        logHistory("Pantalla bloqueada");
+    }
+
+    function unlockScreen() {
+        isScreenLocked = false;
+        document.getElementById('lockOverlay').classList.remove('active');
+        document.getElementById('lockButton').style.display = 'block';
+        tapCount = 0;
+        logHistory("Pantalla desbloqueada");
+    }
+
+    function showToast() {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2000);
+    }
+
+    document.getElementById('lockOverlay').addEventListener('click', function(e) {
+        if (!isScreenLocked) return;
         
-        function downloadFile(content, filename, mimeType) {
-            const blob = new Blob(['\uFEFF' + content], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
+        tapCount++;
+        
+        if (tapCount === 1) {
+            tapTimer = setTimeout(() => {
+                if (tapCount < 3) {
+                    showToast();
+                }
+                tapCount = 0;
+            }, TAP_INTERVAL);
         }
         
-        function log(message, type = 'info') {
-            const logSection = document.getElementById('logSection');
-            logSection.classList.remove('hidden');
-            
-            const entry = document.createElement('div');
-            entry.className = `log-entry log-${type}`;
-            const time = new Date().toLocaleTimeString();
-            entry.textContent = `[${time}] ${message}`;
-            logSection.appendChild(entry);
-            logSection.scrollTop = logSection.scrollHeight;
+        if (tapCount === 3) {
+            clearTimeout(tapTimer);
+            unlockScreen();
         }
-        
-        function escapeHtml(str) {
-            return String(str).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+    });
+
+    document.addEventListener('click', function(e) {
+        if (isScreenLocked && !e.target.closest('#lockOverlay')) {
+            e.stopPropagation();
+            e.preventDefault();
+            showToast();
         }
-    </script>
+    }, true);
+
+    document.addEventListener('touchstart', function(e) {
+        if (isScreenLocked && !e.target.closest('#lockOverlay')) {
+            e.stopPropagation();
+            e.preventDefault();
+            showToast();
+        }
+    }, true);
+
+    initMap();
+    renderWaypoints();
+    renderPointsList();
+    
+    loadConfigFromLocalStorage();
+    
+    const savedKey = localStorage.getItem('ors_api_key');
+    if (savedKey) document.getElementById('orsApiKeyInput').value = savedKey;
+</script>
 </body>
 </html>
