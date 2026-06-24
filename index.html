@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/NoSleep.min.js"></script>
+<!-- 🆕 LIBRERÍA KDBUSH PARA INDEXACIÓN ESPACIAL RÁPIDA -->
 <script src="https://unpkg.com/kdbush@3.0.0/dist/kdbush.min.js"></script>
 <style>
 :root { --primary:#2563eb; --danger:#dc2626; --success:#16a34a; --bg:#000; --card:#000; --line:#2a2a2a; --text:#e2e8f0; --muted:#94a3b8; --accent:#f59e0b; }
@@ -79,7 +80,6 @@ textarea#inputData.show-raw { display:block; }
 .edges-status { padding:10px; border-radius:8px; margin:10px 0; font-size:0.9rem; font-weight:600; }
 .edges-status.loaded { background:#052e16; color:#4ade80; border:1px solid #16a34a; }
 .edges-status.not-loaded { background:#450a0a; color:#fca5a5; border:1px solid #dc2626; }
-.edges-status.downloading { background:#1e3a8a; color:#93c5fd; border:1px solid #3b82f6; }
 </style>
 </head>
 <body>
@@ -183,13 +183,13 @@ textarea#inputData.show-raw { display:block; }
 <div class="field-row" style="margin-top:12px;">
 <div class="field" style="grid-column: span 2;">
 <label>📂 Mapa local de Bogotá (edges)</label>
-<div id="edgesStatus" class="edges-status not-loaded">⚠️ Verificando mapa...</div>
+<div id="edgesStatus" class="edges-status not-loaded">⚠️ Mapa no cargado. Carga el archivo manualmente.</div>
 <div style="display:flex; gap:8px; align-items:center; margin-top:4px;">
 <input type="file" id="edgesFileInput" accept=".json" onchange="handleEdgesFileInput(event)" style="flex:1;" />
 <button class="btn-secondary btn-small" onclick="clearEdgesCache()" style="white-space:nowrap;">🗑️ Borrar</button>
 </div>
 <div class="small-note">
-El mapa se descarga automáticamente. Si falla, descarga de <a href="https://github.com/egomando-byte/GPS-PRO/releases/tag/V1.0" target="_blank" style="color:#3b82f6;">GitHub Releases</a> y cárgalo manualmente.
+Descarga el archivo de <a href="https://github.com/egomando-byte/GPS-PRO/releases/tag/V1.0" target="_blank" style="color:#3b82f6;">GitHub Releases</a> y cárgalo aquí.
 </div>
 </div>
 </div>
@@ -355,31 +355,8 @@ async function checkEdgesInCache() {
         console.error("Error verificando caché:", e);
     }
     
-    logHistory("⏳ Intentando descargar mapa automáticamente...");
-    updateEdgesStatus('downloading');
-    
-    try {
-        const response = await fetch(EDGES_URL);
-        if (response.ok) {
-            const text = await response.text();
-            edgesData = JSON.parse(text);
-            const cache = await caches.open(CACHE_NAME);
-            await cache.put(EDGES_URL, new Response(text, { 
-                headers: {'Content-Type':'application/json'} 
-            }));
-            logHistory("✅ Mapa descargado y guardado en caché");
-            buildCrossingsIndex();
-            updateEdgesStatus(true);
-            return true;
-        } else {
-            throw new Error(`HTTP ${response.status}`);
-        }
-    } catch(e) {
-        logHistory(`⚠️ Descarga automática falló: ${e.message}`);
-        logHistory("📂 Por favor carga el archivo manualmente");
-        updateEdgesStatus(false);
-        return false;
-    }
+    updateEdgesStatus(false);
+    return false;
 }
 
 async function loadEdgesFromFile(file) {
@@ -442,15 +419,12 @@ function updateEdgesStatus(status) {
     const el = document.getElementById('edgesStatus');
     if (!el) return;
     
-    if (status === 'downloading') {
-        el.className = 'edges-status downloading';
-        el.textContent = '⏳ Descargando mapa automáticamente...';
-    } else if (status === true && edgesData) {
+    if (status === true && edgesData) {
         el.className = 'edges-status loaded';
         el.textContent = `✅ Mapa cargado: ${(edgesData.cruces||[]).length.toLocaleString()} cruces. Detección de intersecciones activa.`;
     } else {
         el.className = 'edges-status not-loaded';
-        el.textContent = '⚠️ Mapa no cargado. Descarga manual requerida.';
+        el.textContent = '⚠️ Mapa no cargado. Carga el archivo manualmente.';
     }
 }
 
@@ -1283,7 +1257,7 @@ if (savedKey) document.getElementById('orsApiKeyInput').value = savedKey;
 
 checkEdgesInCache().then(loaded => {
     if (loaded) logHistory("🚀 Sistema listo con mapa cargado");
-    else logHistory("⚠️ Descarga automática falló. Carga el archivo manualmente.");
+    else logHistory("⚠️ Carga el archivo de edges manualmente.");
 });
 </script>
 </body>
