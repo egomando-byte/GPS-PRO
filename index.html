@@ -3,95 +3,141 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GPS Navigator Pro - Fase 16 Final</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<title>GPS Navigator Pro</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/NoSleep.min.js"></script>
 <script>
-// kdbush v3.0.0 - Fast 2D spatial index for points
-(function(global,factory){typeof exports==='object'&&typeof module!=='undefined'?module.exports=factory():typeof define==='function'&&define.amd?define(factory):(global=global||self,global.kdbush=factory())}(this,function(){'use strict';var t=64,e=64;function n(t,e,n,r,o){this.nodeSize=t,this.points=e,this.ids=r||new Uint16Array(e.length),this.coords=n||new Float32Array(2*e.length),o&&this._build()}function r(t,r,o,i,s,a){for(var u=0;o<i;){var h=o+l(o,i),c=t.ids[o],f=t.ids[i];t.coords[2*h]>t.coords[2*i]&&(t.ids[o]=f,t.ids[i]=c,c=f);var g=t.coords[2*o],d=t.coords[2*o+1],p=t.coords[2*i],v=t.coords[2*i+1];if(u++,2*u>r)break;var m=t.coords[2*h],y=t.coords[2*h+1];m<g&&(t.coords[2*h]=g,t.coords[2*h+1]=d,g=m,d=y),m>p&&(t.coords[2*h]=p,t.coords[2*h+1]=v,p=m,v=y)}if(o+l(o,i)<i){var x=t.ids[o+l(o,i)];t.ids[o+l(o,i)]=t.ids[i],t.ids[i]=x}}function o(t,n,o,i,s){var a=i-o+1;if(a<=t)return void r(t,n,o,i,s);for(var u=o+l(o,i);t.coords[2*u]>t.coords[2*(o+l(o,i))+1]&&!(t.coords[2*u+1]>t.coords[2*(o+l(o,i))]);)u++;for(var h=o+l(o,i)+1;h<i;h++)t.coords[2*h]<t.coords[2*u]&&h!==u&&(t.ids[h]=t.ids[u],t.ids[u]=t.ids[h],t.coords[2*h]=t.coords[2*u],t.coords[2*h+1]=t.coords[2*u+1],t.coords[2*u]=t.coords[2*h],t.coords[2*u+1]=t.coords[2*h+1])}function i(t,n,r,a,u){for(var h=0,c=r;c<a;){var f=c+l(c,a),g=t.ids[c],d=t.ids[a];t.coords[2*f]>t.coords[2*a]&&(t.ids[c]=d,t.ids[a]=g,g=d);var p=t.coords[2*c],v=t.coords[2*c+1],m=t.coords[2*a],y=t.coords[2*a+1];if(h++,2*h>n)break;var x=t.coords[2*f],b=t.coords[2*f+1];x<p&&(t.coords[2*f]=p,t.coords[2*f+1]=v,p=x,v=b),x>m&&(t.coords[2*f]=m,t.coords[2*f+1]=y,m=x,y=b)}if(c+l(c,a)<a){var w=t.ids[c+l(c,a)];t.ids[c+l(c,a)]=t.ids[a],t.ids[a]=w}}function s(t,e,n,r,i){if(i-n<=e){o(t,e,n,r,i);return}var a=n+l(n,r),u=t.ids[n],h=t.ids[r];t.coords[2*a]>t.coords[2*r]&&(t.ids[n]=h,t.ids[r]=u,u=h);var c=t.coords[2*n],f=t.coords[2*n+1],g=t.coords[2*r],d=t.coords[2*r+1],p=n+1,v=r-1;for(;;){for(;p<=v&&t.coords[2*p]<=c;)p++;for(;p<=v&&t.coords[2*p]>=g;)p++;if(p>v)break;var m=t.ids[p];t.ids[p]=t.ids[v],t.ids[v]=m;var y=t.coords[2*p];t.coords[2*p]=t.coords[2*v],t.coords[2*v]=y;var x=t.coords[2*p+1];t.coords[2*p+1]=t.coords[2*v+1],t.coords[2*v+1]=x,p++,v--}var b=t.coords[2*a],w=t.coords[2*a+1];c>b&&(t.coords[2*n]=b,t.coords[2*n+1]=w,b=c,w=f),g<b&&(t.coords[2*r]=b,t.coords[2*r+1]=w,b=g,w=d),t.coords[2*a]=b,t.coords[2*a+1]=w;var A=p-1;g>c&&(s(t,e,n,A,i),s(t,e,p,r,i))}function a(t,e,n,r,o,i,u,h){for(var c=n;c<r;){var f=c+l(c,r),g=t.ids[c],d=t.ids[r];t.coords[2*f+1]>t.coords[2*r+1]&&(t.ids[c]=d,t.ids[r]=g,g=d);var p=t.coords[2*c],v=t.coords[2*c+1],m=t.coords[2*r],y=t.coords[2*r+1];if(t.coords[2*f],t.coords[2*f+1],t.coords[2*f+1]<t.coords[2*r+1]){var x=t.coords[2*f];t.coords[2*f]=t.coords[2*r],t.coords[2*r]=x;var b=t.coords[2*f+1];t.coords[2*f+1]=t.coords[2*r+1],t.coords[2*r+1]=b}}t.ids[c]=t.ids[r],t.ids[r]=g;var w=t.coords[2*c];t.coords[2*c]=t.coords[2*r],t.coords[2*r]=w;var A=t.coords[2*c+1];t.coords[2*c+1]=t.coords[2*r+1],t.coords[2*r+1]=A}}function u(t,e,n,r,o,i,u,h){for(var c=n;c<r;){var f=c+l(c,r),g=t.ids[c],d=t.ids[r];t.coords[2*f+1]>t.coords[2*r+1]&&(t.ids[c]=d,t.ids[r]=g,g=d);var p=t.coords[2*c],v=t.coords[2*c+1],m=t.coords[2*r],y=t.coords[2*r+1];if(t.coords[2*f],t.coords[2*f+1],t.coords[2*f+1]<t.coords[2*r+1]){var x=t.coords[2*f];t.coords[2*f]=t.coords[2*r],t.coords[2*r]=x;var b=t.coords[2*f+1];t.coords[2*f+1]=t.coords[2*r+1],t.coords[2*r+1]=b}}t.ids[c]=t.ids[r],t.ids[r]=g;var w=t.coords[2*c];t.coords[2*c]=t.coords[2*r],t.coords[2*r]=w;var A=t.coords[2*c+1];t.coords[2*c+1]=t.coords[2*r+1],t.coords[2*r+1]=A}}function h(t,e,n,r,i,s,a){if(i-n<=e){o(t,e,n,r,i);return}var u=n+l(n,i),h=t.ids[n],c=t.ids[i];t.coords[2*u+1]>t.coords[2*i+1]&&(t.ids[n]=c,t.ids[i]=h,h=c);var f=t.coords[2*n],g=t.coords[2*n+1],d=t.coords[2*i],p=t.coords[2*i+1],v=n+1,m=i-1;for(;;){for(;v<=m&&t.coords[2*v+1]<=g;)v++;for(;v<=m&&t.coords[2*v+1]>=p;)v++;if(v>m)break;var y=t.ids[v];t.ids[v]=t.ids[m],t.ids[m]=y;var x=t.coords[2*v];t.coords[2*v]=t.coords[2*m],t.coords[2*m]=x;var b=t.coords[2*v+1];t.coords[2*v+1]=t.coords[2*m+1],t.coords[2*m+1]=b,v++,m--}var w=t.coords[2*u],A=t.coords[2*u+1];g>A&&(t.coords[2*n]=A,t.coords[2*n+1]=w,A=g,w=f),p>A&&(t.coords[2*i]=A,t.coords[2*i+1]=w,A=p,w=d),t.coords[2*u]=w,t.coords[2*u+1]=A;var k=v-1;p>g&&(h(t,e,n,k,i,s,a),h(t,e,v,i,i,s,a))}function c(t,e,n,r,i,s,a){if(i-n<=e){o(t,e,n,r,i);return}var u=n+l(n,i),h=t.ids[n],c=t.ids[i];t.coords[2*u+1]>t.coords[2*i+1]&&(t.ids[n]=c,t.ids[i]=h,h=c);var f=t.coords[2*n],g=t.coords[2*n+1],d=t.coords[2*i],p=t.coords[2*i+1],v=n+1,m=i-1;for(;;){for(;v<=m&&t.coords[2*v+1]<=g;)v++;for(;v<=m&&t.coords[2*v+1]>=p;)v++;if(v>m)break;var y=t.ids[v];t.ids[v]=t.ids[m],t.ids[m]=y;var x=t.coords[2*v];t.coords[2*v]=t.coords[2*m],t.coords[2*m]=x;var b=t.coords[2*v+1];t.coords[2*v+1]=t.coords[2*m+1],t.coords[2*m+1]=b,v++,m--}var w=t.coords[2*u],A=t.coords[2*u+1];g>A&&(t.coords[2*n]=A,t.coords[2*n+1]=w,A=g,w=f),p>A&&(t.coords[2*i]=A,t.coords[2*i+1]=w,A=p,w=d),t.coords[2*u]=w,t.coords[2*u+1]=A;var k=v-1;p>g&&(c(t,e,n,k,i,s,a),c(t,e,v,i,i,s,a))}function f(t,e,n,r,i){if(i-n<=e){o(t,e,n,r,i);return}var a=n+l(n,i),u=t.ids[n],h=t.ids[i];t.coords[2*a+1]>t.coords[2*i+1]&&(t.ids[n]=h,t.ids[i]=u,u=h);var c=t.coords[2*n],f=t.coords[2*n+1],g=t.coords[2*i],d=t.coords[2*i+1],p=n+1,v=i-1;for(;;){for(;p<=v&&t.coords[2*p+1]<=f;)p++;for(;p<=v&&t.coords[2*p+1]>=d;)p++;if(p>v)break;var m=t.ids[p];t.ids[p]=t.ids[v],t.ids[v]=m;var y=t.coords[2*p];t.coords[2*p]=t.coords[2*v],t.coords[2*v]=y;var x=t.coords[2*p+1];t.coords[2*p+1]=t.coords[2*v+1],t.coords[2*v+1]=x,p++,v--}var b=t.coords[2*a],w=t.coords[2*a+1];f>w&&(t.coords[2*n]=w,t.coords[2*n+1]=b,w=f,b=c),d>w&&(t.coords[2*i]=w,t.coords[2*i+1]=b,w=d,b=g),t.coords[2*a]=b,t.coords[2*a+1]=w;var A=p-1;d>f&&(f(t,e,n,A,i),f(t,e,p,r,i))}function l(t,e){return t+e>>1}return n.prototype={_build:function(){var e=this.ids,n=this.coords,r=this.points.length;if(!(r<=this.nodeSize))for(var o=0,i=0,s=r-1;i<s;){var a=i+l(i,s);e[a]>e[s]&&(e[i]=e[s],e[s]=e[a]);var u=n[2*i],h=n[2*i+1],c=n[2*s],f=n[2*s+1];u>c&&(n[2*i]=c,n[2*i+1]=f,c=u,f=h),n[2*a]>c&&(n[2*a]=c,n[2*a+1]=f),n[2*a]<u&&(n[2*a]=u,n[2*a+1]=h);var g=i+1,d=s-1;for(;;){for(;g<=d&&n[2*g]<=u;)g++;for(;g<=d&&n[2*g]>=c;)g++;if(g>d)break;var p=e[g];e[g]=e[d],e[d]=p;var v=n[2*g];n[2*g]=n[2*d],n[2*d]=v;var m=n[2*g+1];n[2*g+1]=n[2*d+1],n[2*d+1]=m,g++,d--}var y=g-1;c>u&&(o?h(t,this.nodeSize,i,y,s):s(this,this.nodeSize,i,y,s),o?h(t,this.nodeSize,g,s,s):s(this,this.nodeSize,g,s,s)),o=!o}},range:function(t,e,n,r){for(var o=this.ids,i=this.coords,s=[],a=[0,i.length/2-1,0];a.length;){var u=a.pop(),h=a.pop(),c=a.pop();if(!(h<c)){var f=c+l(c,h);if(i[2*f]>=t&&i[2*f]<=n&&i[2*f+1]>=e&&i[2*f+1]<=r&&s.push(o[f]),c!==h){var g=i[2*f],d=i[2*f+1];(t<=g||e<=d)&&a.push(c,f-1,1-c%2),(n>=g&&r>=d||n>=g&&r>=d)&&a.push(f+1,h,1-c%2)}}}return s},within:function(t,e,n){for(var r=this.ids,o=this.ids,i=this.coords,s=[],a=[0,i.length/2-1,0],u=n*n;a.length;){var h=a.pop(),c=a.pop(),f=a.pop();if(!(c<f)){var g=f+l(f,c),d=i[2*g]-t,p=i[2*g+1]-e;d*d+p*p<=u&&s.push(r[g]),f!==c&&(d*d<=u||p*p<=u)&&(a.push(f,g-1,1-f%2),a.push(g+1,c,1-f%2))}}return s}},n}));
+// =========================================================
+// 🌳 KDBUSH INCRUSTADO DIRECTAMENTE (sin CDN externo)
+// =========================================================
+(function(g,f){typeof exports==='object'&&typeof module!=='undefined'?module.exports=f():typeof define==='function'&&define.amd?define(f):(g=g||self,g.kdbush=f())})(this,function(){'use strict';function sortKD(ids,coords,nodeSize,left,right,depth){if(right-left<=nodeSize)return;const m=(left+right)>>1;select(ids,coords,m,left,right,depth);sortKD(ids,coords,nodeSize,left,m-1,depth+1);sortKD(ids,coords,nodeSize,m+1,right,depth+1)}function select(ids,coords,k,left,right,depth){while(right>left){if(right-left>600){const n=right-left+1;const m=k-left+1;const z=Math.log(n);const s=0.5*Math.exp(2*z/3);const sd=0.5*Math.sqrt(z*s*(n-s)/n)*(m-n/2<0?-1:1);const newLeft=Math.max(left,Math.floor(k-m*s/n+sd));const newRight=Math.min(right,Math.floor(k+(n-m)*s/n+sd));select(ids,coords,k,newLeft,newRight,depth)}const t=coords[2*k+(depth%2)];let i=left;let j=right;swapItem(ids,coords,left,k);if(coords[2*right+(depth%2)]>t){swapItem(ids,coords,left,right)}while(i<j){swapItem(ids,coords,i,j);i++;j--;while(coords[2*i+(depth%2)]<t)i++;while(coords[2*j+(depth%2)]>t)j--}if(coords[2*left+(depth%2)]===t){swapItem(ids,coords,left,j)}else{j++;swapItem(ids,coords,j,right)}if(j<=k)left=j+1;if(k<=j)right=j-1}}}function swapItem(ids,coords,i,j){swap(ids,i,j);swap(coords,2*i,2*j);swap(coords,2*i+1,2*j+1)}function swap(arr,i,j){const tmp=arr[i];arr[i]=arr[j];arr[j]=tmp}function range(ids,coords,minX,minY,maxX,maxY,nodeSize){const stack=[0,ids.length-1,0];const result=[];while(stack.length){const axis=stack.pop();const right=stack.pop();const left=stack.pop();if(right-left<=nodeSize){for(let i=left;i<=right;i++){const x=coords[2*i];const y=coords[2*i+1];if(x>=minX&&x<=maxX&&y>=minY&&y<=maxY)result.push(ids[i])}continue}const m=Math.floor((left+right)/2);const x=coords[2*m];const y=coords[2*m+1];if(x>=minX&&x<=maxX&&y>=minY&&y<=maxY)result.push(ids[m]);if(axis===0?minX<=x:minY<=y)stack.push(left,m-1,(axis+1)%2);if(axis===0?maxX>=x:maxY>=y)stack.push(m+1,right,(axis+1)%2)}return result}function within(ids,coords,qx,qy,r,nodeSize){const stack=[0,ids.length-1,0];const result=[];const r2=r*r;while(stack.length){const axis=stack.pop();const right=stack.pop();const left=stack.pop();if(right-left<=nodeSize){for(let i=left;i<=right;i++){if(sqDist(coords[2*i],coords[2*i+1],qx,qy)<=r2)result.push(ids[i])}continue}const m=Math.floor((left+right)/2);const x=coords[2*m];const y=coords[2*m+1];if(sqDist(x,y,qx,qy)<=r2)result.push(ids[m]);if(axis===0?qx-r<=x:qy-r<=y)stack.push(left,m-1,(axis+1)%2);if(axis===0?qx+r>=x:qy+r>=y)stack.push(m+1,right,(axis+1)%2)}return result}function sqDist(ax,ay,bx,by){const dx=ax-bx;const dy=ay-by;return dx*dx+dy*dy}const defaultGetX=function(p){return p[0]};const defaultGetY=function(p){return p[1]};class KDBush{constructor(points,getX,getY,nodeSize,ArrayType){this.nodeSize=nodeSize||(nodeSize===0?0:64);this.points=points;const k=points.length;const T=points[0];const useP=!T||typeof T==='object';this.getX=useP?(getX||defaultGetX):null;this.getY=useP?(getY||defaultGetY):null;this.ids=ids=new Int32Array(k);this.coords=coords=new ArrayType(2*k);for(let i=0;i<k;i++){ids[i]=i;coords[2*i]=useP?this.getX(T):T[i];coords[2*i+1]=useP?this.getY(T):T[i];T=useP?points[i+1]:T}sortKD(ids,coords,this.nodeSize,0,ids.length-1,0)}range(minX,minY,maxX,maxY){return range(this.ids,this.coords,minX,minY,maxX,maxY,this.nodeSize)}within(x,y,r){return within(this.ids,this.coords,x,y,r,this.nodeSize)}}return KDBush});
 </script>
 <style>
-:root { --primary:#2563eb; --danger:#dc2626; --success:#16a34a; --bg:#000; --card:#000; --line:#2a2a2a; --text:#e2e8f0; --muted:#94a3b8; --accent:#f59e0b; }
-* { box-sizing:border-box; } html,body { overscroll-behavior-y:contain; }
-body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; margin:0; padding:15px; background:var(--bg); color:var(--text); }
-.container { max-width:900px; margin:0 auto; }
-h1 { font-size:1.5rem; text-align:center; margin:8px 0 14px; }
-.dashboard,.card,table,.music-panel,.map-panel { border-radius:10px; }
-.dashboard,.music-panel,.map-panel,.card { background:var(--card); padding:14px; box-shadow:0 1px 3px rgba(0,0,0,0.10); margin-bottom:14px; border:1px solid var(--line); }
-.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-@media (max-width:760px) { .grid-2 { grid-template-columns:1fr; } }
-.stat-item { display:flex; justify-content:space-between; gap:12px; margin-bottom:6px; font-size:0.95rem; }
-.stat-item strong { text-align:right; }
-.small-note { font-size:0.82rem; color:var(--muted); line-height:1.35; margin-top:8px; }
-input[type="number"],input[type="range"],select,input[type="text"],input[type="password"],input[type="file"] { font:inherit; }
-.controls { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
-button { padding:12px; border:none; border-radius:8px; font-weight:700; cursor:pointer; color:white; background:#64748b; }
-.btn-load { background:var(--primary); } .btn-start { background:var(--success); } .btn-stop { background:var(--danger); }
-.btn-test { background:#64748b; grid-column:span 2; } .btn-secondary { background:#475569; }
-.btn-small { padding:8px; font-size:0.85rem; } .btn-accent { background:var(--accent); }
-.field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0; }
-.field { background:#111; border:1px solid var(--line); border-radius:8px; padding:10px; }
-.field label { display:block; font-size:0.9rem; margin-bottom:6px; color:#e2e8f0; }
-.field input,.field select { width:100%; padding:8px; border:1px solid #2a2a2a; border-radius:6px; background:#1a1a1a; color:#e2e8f0; }
-.field input[type="checkbox"] { transform:scale(1.1); width:auto; }
-.field input[type="file"] { padding:4px; }
-.row-inline { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-#map { width:100%; height:320px; border-radius:10px; border:1px solid #2a2a2a; overflow:hidden; }
-.playlist-list { max-height:170px; overflow:auto; border:1px solid var(--line); border-radius:8px; padding:8px; background:#0a0a0a; }
-.playlist-item { display:flex; justify-content:space-between; gap:10px; padding:8px; border-bottom:1px solid #2a2a2a; font-size:0.92rem; cursor:pointer; }
-.playlist-item.active { background:#1a2a3a; border-radius:6px; }
-table { width:100%; border-collapse:collapse; background:#000; overflow:hidden; margin-top:8px; }
-th,td { text-align:left; padding:10px; border-bottom:1px solid #2a2a2a; font-size:0.86rem; vertical-align:top; }
-th { background:#111; }
-.history { max-height:200px; overflow:auto; border:1px solid var(--line); border-radius:8px; padding:8px; background:#0a0a0a; font-size:0.85rem; line-height:1.45; font-family:monospace; }
-.history-item { padding:4px 0; border-bottom:1px solid #2a2a2a; }
-.btn-active { background:#1d4ed8 !important; box-shadow:inset 0 3px 6px rgba(0,0,0,0.5); transform:translateY(1px); outline:2px solid #60a5fa; }
-.muted { color:var(--muted); }
-.list-actions { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
-@media (max-width:760px) { .list-actions { grid-template-columns:1fr 1fr; } }
-dialog { background:#111; color:#e2e8f0; border:1px solid var(--line); border-radius:12px; padding:20px; max-width:450px; width:90%; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
-dialog::backdrop { background:rgba(0,0,0,0.75); }
-dialog h3 { margin-top:0; font-size:1.2rem; border-bottom:1px solid var(--line); padding-bottom:8px; }
-dialog .dialog-field { margin-bottom:12px; }
-dialog label { display:block; font-size:0.9rem; margin-bottom:4px; color:var(--muted); }
-dialog select,dialog input[type="text"] { width:100%; padding:10px; background:#1a1a1a; border:1px solid var(--line); color:#e2e8f0; border-radius:6px; font:inherit; }
-dialog .dialog-buttons { display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
-.btn-dialog-ok { background:var(--primary); } .btn-dialog-cancel { background:#334155; }
-.points-list-container { max-height:400px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; background:#0a0a0a; margin:8px 0 10px; }
-.point-item { display:flex; align-items:center; gap:8px; padding:10px; border-bottom:1px solid #2a2a2a; transition:background 0.2s; cursor:pointer; }
-.point-item:last-child { border-bottom:none; } .point-item.highlighted { background:#1a3a5a; }
-.point-number { color:var(--muted); font-weight:700; min-width:30px; font-size:0.9rem; }
-.point-link { color:#3b82f6; text-decoration:underline; cursor:pointer; flex:1; font-size:0.9rem; }
-.point-msg { color:var(--text); flex:1; font-size:0.9rem; }
-.point-delete { background:var(--danger); color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:0.8rem; font-weight:700; }
-.waypoints-section { margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
-.waypoint-item { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
-.waypoint-item input { flex:1; } .waypoint-controls { display:flex; gap:4px; }
-.waypoint-btn { padding:4px 8px; font-size:0.75rem; background:#475569; color:white; border:none; border-radius:4px; cursor:pointer; }
-.btn-add-waypoint { background:var(--primary); color:white; border:none; border-radius:6px; padding:8px 12px; cursor:pointer; font-size:0.85rem; margin-top:8px; }
-textarea#inputData { width:100%; min-height:165px; margin:8px 0 10px; border:1px solid #2a2a2a; padding:10px; resize:vertical; font:inherit; background:#000; color:#e2e8f0; display:none; }
-textarea#inputData.show-raw { display:block; }
-#lockButton { position:fixed; top:15px; right:15px; z-index:1000; padding:10px 16px; background:var(--accent); color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.3); }
-#lockOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; justify-content:center; align-items:center; flex-direction:column; }
-#lockOverlay.active { display:flex; }
-.lock-icon { font-size:80px; color:#800000; margin-bottom:20px; user-select:none; }
-.lock-text { color:#800000; font-size:14px; opacity:0.7; user-select:none; }
-.toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(128,0,0,0.95); color:white; padding:12px 24px; border-radius:8px; font-size:14px; z-index:10000; opacity:0; transition:opacity 0.3s; pointer-events:none; }
-.toast.show { opacity:1; }
-.edges-status { padding:10px; border-radius:8px; margin:10px 0; font-size:0.9rem; font-weight:600; }
-.edges-status.loaded { background:#052e16; color:#4ade80; border:1px solid #16a34a; }
-.edges-status.not-loaded { background:#450a0a; color:#fca5a5; border:1px solid #dc2626; }
+:root {
+--primary: #2563eb;
+--danger: #dc2626;
+--success: #16a34a;
+--bg: #000000;
+--card: #000000;
+--line: #2a2a2a;
+--text: #e2e8f0;
+--muted: #94a3b8;
+--accent: #f59e0b;
+}
+* { box-sizing: border-box; }
+html, body { overscroll-behavior-y: contain; }
+body {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+margin: 0;
+padding: 15px;
+background: var(--bg);
+color: var(--text);
+}
+.container { max-width: 900px; margin: 0 auto; }
+h1 { font-size: 1.5rem; text-align: center; margin: 8px 0 14px; }
+.dashboard, .card, table, .music-panel, .map-panel { border-radius: 10px; }
+.dashboard, .music-panel, .map-panel, .card {
+background: var(--card); padding: 14px;
+box-shadow: 0 1px 3px rgba(0,0,0,0.10); margin-bottom: 14px;
+border: 1px solid var(--line);
+}
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+.stat-item { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; font-size: 0.95rem; }
+.stat-item strong { text-align: right; }
+.small-note { font-size: 0.82rem; color: var(--muted); line-height: 1.35; margin-top: 8px; }
+input[type="number"], input[type="range"], select, input[type="text"], input[type="password"], input[type="file"] { font: inherit; }
+.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+button { padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: white; background: #64748b; }
+.btn-load { background: var(--primary); }
+.btn-start { background: var(--success); }
+.btn-stop { background: var(--danger); }
+.btn-test { background: #64748b; grid-column: span 2; }
+.btn-secondary { background: #475569; }
+.btn-small { padding: 8px; font-size: 0.85rem; }
+.btn-accent { background: var(--accent); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+.field { background: #111111; border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+.field label { display: block; font-size: 0.9rem; margin-bottom: 6px; color: #e2e8f0; }
+.field input[type="text"],
+.field input[type="number"],
+.field input[type="password"],
+.field select {
+width: 100%; padding: 8px; border: 1px solid #2a2a2a; border-radius: 6px;
+background: #1a1a1a; color: #e2e8f0;
+}
+.field input[type="checkbox"] { transform: scale(1.1); width: auto; }
+.field input[type="file"] { padding: 4px; }
+.row-inline { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+#map { width: 100%; height: 320px; border-radius: 10px; border: 1px solid #2a2a2a; overflow: hidden; }
+.playlist-list { max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: #0a0a0a; }
+.playlist-item { display: flex; justify-content: space-between; gap: 10px; padding: 8px; border-bottom: 1px solid #2a2a2a; font-size: 0.92rem; cursor: pointer; }
+.playlist-item.active { background: #1a2a3a; border-radius: 6px; }
+table { width: 100%; border-collapse: collapse; background: #000000; overflow: hidden; margin-top: 8px; }
+th, td { text-align: left; padding: 10px; border-bottom: 1px solid #2a2a2a; font-size: 0.86rem; vertical-align: top; }
+th { background: #111111; }
+.history { max-height: 200px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: #0a0a0a; font-size: 0.85rem; line-height: 1.45; font-family: monospace; }
+.history-item { padding: 4px 0; border-bottom: 1px solid #2a2a2a; }
+.btn-active { background: #1d4ed8 !important; box-shadow: inset 0 3px 6px rgba(0,0,0,0.5); transform: translateY(1px); outline: 2px solid #60a5fa; }
+.muted { color: var(--muted); }
+.list-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+@media (max-width: 760px) { .list-actions { grid-template-columns: 1fr 1fr; } }
+dialog {
+background: #111111; color: #e2e8f0; border: 1px solid var(--line);
+border-radius: 12px; padding: 20px; max-width: 450px; width: 90%;
+box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+dialog::backdrop { background: rgba(0, 0, 0, 0.75); }
+dialog h3 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+dialog .dialog-field { margin-bottom: 12px; }
+dialog label { display: block; font-size: 0.9rem; margin-bottom: 4px; color: var(--muted); }
+dialog select, dialog input[type="text"] {
+width: 100%; padding: 10px; background: #1a1a1a;
+border: 1px solid var(--line); color: #e2e8f0; border-radius: 6px; font: inherit;
+}
+dialog .dialog-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.btn-dialog-ok { background: var(--primary); }
+.btn-dialog-cancel { background: #334155; }
+.points-list-container { max-height: 400px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: #0a0a0a; margin: 8px 0 10px; }
+.point-item { display: flex; align-items: center; gap: 8px; padding: 10px; border-bottom: 1px solid #2a2a2a; transition: background 0.2s; cursor: pointer; }
+.point-item:last-child { border-bottom: none; }
+.point-item.highlighted { background: #1a3a5a; }
+.point-number { color: var(--muted); font-weight: 700; min-width: 30px; font-size: 0.9rem; }
+.point-link { color: #3b82f6; text-decoration: underline; cursor: pointer; flex: 1; font-size: 0.9rem; }
+.point-msg { color: var(--text); flex: 1; font-size: 0.9rem; }
+.point-delete { background: var(--danger); color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.8rem; font-weight: 700; }
+.waypoints-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.waypoint-item { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.waypoint-item input { flex: 1; }
+.waypoint-controls { display: flex; gap: 4px; }
+.waypoint-btn { padding: 4px 8px; font-size: 0.75rem; background: #475569; color: white; border: none; border-radius: 4px; cursor: pointer; }
+.btn-add-waypoint { background: var(--primary); color: white; border: none; border-radius: 6px; padding: 8px 12px; cursor: pointer; font-size: 0.85rem; margin-top: 8px; }
+textarea#inputData { width: 100%; min-height: 165px; margin: 8px 0 10px; border: 1px solid #2a2a2a; padding: 10px; resize: vertical; font: inherit; background: #000000; color: #e2e8f0; display: none; }
+textarea#inputData.show-raw { display: block; }
+#lockButton { position: fixed; top: 15px; right: 15px; z-index: 1000; padding: 10px 16px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+#lockOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000000; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
+#lockOverlay.active { display: flex; }
+.lock-icon { font-size: 80px; color: #800000; margin-bottom: 20px; user-select: none; }
+.lock-text { color: #800000; font-size: 14px; opacity: 0.7; user-select: none; }
+.toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(128, 0, 0, 0.95); color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 10000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.toast.show { opacity: 1; }
+.edges-status { padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 0.9rem; font-weight: 600; }
+.edges-status.loaded { background: #052e16; color: #4ade80; border: 1px solid #16a34a; }
+.edges-status.not-loaded { background: #450a0a; color: #fca5a5; border: 1px solid #dc2626; }
 </style>
 </head>
 <body>
 <button id="lockButton" onclick="lockScreen()">🔒 Bloquear</button>
-<div id="lockOverlay"><div class="lock-icon">🔒</div><div class="lock-text">Pantalla bloqueada</div></div>
+<div id="lockOverlay">
+<div class="lock-icon">🔒</div>
+<div class="lock-text">Pantalla bloqueada</div>
+</div>
 <div class="toast" id="toast">Pantalla bloqueada. Toca 3 veces para desbloquear</div>
-
 <div class="container">
-<h1>🚴 GPS Navigator - Fase 16 Final</h1>
-
+<h1>🚴 GPS Navigator - Fase 16</h1>
 <div class="dashboard" id="status-panel">
 <div class="stat-item"><span>Estado:</span> <strong id="status">Esperando...</strong></div>
 <div class="stat-item"><span>Lat / Lon:</span> <span><span id="lat">-</span> / <span id="lon">-</span></span></div>
@@ -101,10 +147,8 @@ textarea#inputData.show-raw { display:block; }
 <div class="stat-item"><span>Distancia recorrida:</span> <span id="distanceTravelled">-</span></div>
 <div class="stat-item"><span>Tiempo de recorrido:</span> <span id="tripTime">-</span></div>
 </div>
-
 <div class="card" id="ors-panel">
 <strong>Rutas Automáticas (OpenRouteService)</strong>
-
 <div class="field-row">
 <div class="field" style="grid-column: span 2;">
 <label for="orsApiKeyInput">API Key de OpenRouteService</label>
@@ -114,7 +158,6 @@ textarea#inputData.show-raw { display:block; }
 </div>
 </div>
 </div>
-
 <div class="field-row">
 <div class="field">
 <label for="orsOrigin">Origen (Lat, Lon)</label>
@@ -133,13 +176,11 @@ textarea#inputData.show-raw { display:block; }
 <button class="btn-secondary btn-small" id="btnPickDest" onclick="startPicking('destination')" style="width:100%; margin-top:6px;">📍 Capturar en Mapa</button>
 </div>
 </div>
-
 <div class="waypoints-section">
 <strong style="font-size:0.95rem;">Puntos intermedios (Waypoints)</strong>
 <div id="waypointsList"></div>
 <button class="btn-add-waypoint" onclick="addWaypoint()">+ Añadir punto intermedio</button>
 </div>
-
 <div class="field-row" style="margin-top:12px;">
 <div class="field">
 <label for="orsProfile">Tipo de Ruta</label>
@@ -159,6 +200,7 @@ textarea#inputData.show-raw { display:block; }
 </div>
 </div>
 
+<!-- 🆕 PARÁMETROS PERSONALIZABLES -->
 <div class="field-row">
 <div class="field">
 <label for="intervaloInput">Intervalo interpolación (m)</label>
@@ -182,6 +224,7 @@ textarea#inputData.show-raw { display:block; }
 </div>
 </div>
 
+<!-- 🆕 CARGAR MAPA LOCAL (EDGES) -->
 <div class="field-row" style="margin-top:12px;">
 <div class="field" style="grid-column: span 2;">
 <label>📂 Mapa local de Bogotá (edges)</label>
@@ -198,7 +241,6 @@ Descarga el archivo de <a href="https://github.com/egomando-byte/GPS-PRO/release
 
 <button class="btn-accent" onclick="calculateORSRoute()" style="width:100%; padding:10px; margin-top:4px;">⚡ Calcular Ruta</button>
 </div>
-
 <div class="grid-2">
 <div class="card">
 <strong>Configuración general</strong>
@@ -219,7 +261,6 @@ Descarga el archivo de <a href="https://github.com/egomando-byte/GPS-PRO/release
 <div class="field"><label><input type="checkbox" id="saveState" checked /> Guardar configuración automática</label></div>
 </div>
 </div>
-
 <div class="music-panel">
 <strong>Música local</strong>
 <input type="file" id="musicFiles" accept="audio/*" multiple style="margin: 8px 0;"/>
@@ -238,7 +279,6 @@ Descarga el archivo de <a href="https://github.com/egomando-byte/GPS-PRO/release
 <div class="playlist-list" id="playlist"></div>
 </div>
 </div>
-
 <div class="map-panel">
 <div class="row-inline" style="justify-content: space-between; margin-bottom: 8px;">
 <strong>Mapa interactivo</strong>
@@ -249,7 +289,6 @@ Descarga el archivo de <a href="https://github.com/egomando-byte/GPS-PRO/release
 </div>
 <div id="map"></div>
 </div>
-
 <div class="card">
 <strong>Puntos / avisos</strong>
 <div class="small-note" style="margin-top:8px;">Variables: <code>${velocidad}</code> · <code>${promedio}</code> · <code>${distancia}</code> · <code>${tiempo}</code> · <code>${hora}</code></div>
@@ -271,7 +310,6 @@ Descarga el archivo de <a href="https://github.com/egomando-byte/GPS-PRO/release
 <tbody id="pointsBody"></tbody>
 </table>
 </div>
-
 <div class="card"><strong>Historial</strong><div id="history" class="history"></div></div>
 </div>
 
@@ -314,31 +352,60 @@ Descarga el archivo de <a href="https://github.com/egomando-byte/GPS-PRO/release
 </dialog>
 
 <script>
-let points=[], watchId=null, map=null, userMarker=null, routeLine=null, pointMarkers=[];
-let musicPlaylist=[], currentTrackIndex=-1, shuffleMode=false, repeatMode=false, currentAudio=null;
-let currentSpeech=false, routePath=[], waypoints=[], waypointMarkers=[];
-let lastPosition=null, totalDistanceMeters=0, startTime=null, totalPausedMs=0, pauseStartTime=null;
-let latestAccuracy=null, currentPositionSpeedKmh=0, lastAccuracyWarn=0;
-let orsRouteLine=null, originMarker=null, destinationMarker=null, _editingPointIdx=null;
-let voices=[], isFollowing=true, highlightedPointIdx=null, pendingClickLatLng=null;
-let pickingMode=null, pickingWaypointIdx=null, noSleep=null;
-try { noSleep = new NoSleep(); } catch(e) {}
+let points = [];
+let watchId = null;
+let map = null;
+let userMarker = null;
+let routeLine = null;
+let pointMarkers = [];
+let musicPlaylist = [];
+let currentTrackIndex = -1;
+let shuffleMode = false;
+let repeatMode = false;
+let currentAudio = null;
+let currentSpeech = false;
+let routePath = [];
+let waypoints = [];
+let waypointMarkers = [];
+let lastPosition = null;
+let totalDistanceMeters = 0;
+let startTime = null;
+let totalPausedMs = 0;
+let pauseStartTime = null;
+let latestAccuracy = null;
+let currentPositionSpeedKmh = 0;
+let lastAccuracyWarn = 0;
+let orsRouteLine = null;
+let originMarker = null;
+let destinationMarker = null;
+let _editingPointIdx = null;
+let voices = [];
+let isFollowing = true;
+let highlightedPointIdx = null;
+let pendingClickLatLng = null;
+let pickingMode = null;
+let pickingWaypointIdx = null;
+let noSleep = null;
+try { noSleep = new NoSleep(); } catch(e) { console.warn("NoSleep no disponible:", e); }
 const synth = window.speechSynthesis;
-let isScreenLocked=false, tapCount=0, tapTimer=null;
-const TAP_INTERVAL=500;
+let isScreenLocked = false;
+let tapCount = 0;
+let tapTimer = null;
+const TAP_INTERVAL = 500;
 
-const LAT_TO_METERS = 111000;
-const LON_TO_METERS = 110640;
 const TIPO_GIRO_LEVE = 12;
 const FUSION_DIST_MAX = 50;
 const WAYTYPE_NOMBRES = {
-    0:'desconocido', 1:'carretera estatal', 2:'carretera', 3:'calle',
-    4:'sendero', 5:'camino', 6:'ciclovía', 7:'sendero peatonal',
-    8:'escaleras', 9:'cruce peatonal', 10:'vía férrea'
+0: 'desconocido', 1: 'carretera estatal', 2: 'carretera', 3: 'calle',
+4: 'sendero', 5: 'camino', 6: 'ciclovía', 7: 'sendero peatonal',
+8: 'escaleras', 9: 'cruce peatonal', 10: 'vía férrea'
 };
 
+// =========================================================
+// 🗺️ EDGES LOCALES + KDBUSH (CACHÉ)
+// =========================================================
 const CACHE_NAME = 'gps-edges-bogota-v1';
-const EDGES_URL = 'https://github.com/egomando-byte/GPS-PRO/releases/download/V1.0/edges-bogota-completo.json';
+const EDGES_URL = 'https://local.cache/edges-bogota-completo.json';
 let edgesData = null;
 let crossingsIndex = null;
 
@@ -356,7 +423,6 @@ async function checkEdgesInCache() {
     } catch(e) {
         console.error("Error verificando caché:", e);
     }
-    
     updateEdgesStatus(false);
     return false;
 }
@@ -381,11 +447,8 @@ async function loadEdgesFromFile(file) {
 function buildCrossingsIndex() {
     if (!edgesData || !edgesData.cruces || edgesData.cruces.length === 0) return;
     logHistory(`🌳 Indexando ${edgesData.cruces.length} cruces con kdbush...`);
-    crossingsIndex = new kdbush(edgesData.cruces.length, undefined, undefined, Float64Array);
-    for (let i = 0; i < edgesData.cruces.length; i++) {
-        crossingsIndex.add(edgesData.cruces[i].lon, edgesData.cruces[i].lat, i);
-    }
-    crossingsIndex.finish();
+    const points = edgesData.cruces.map(c => [c.lon, c.lat]);
+    crossingsIndex = new kdbush(points);
     logHistory(`✅ KDTree listo: ${edgesData.cruces.length} cruces indexados`);
 }
 
@@ -397,7 +460,8 @@ function isNearCrossing(lat, lon, radiusMeters) {
         const c = edgesData.cruces[id];
         const dx = (c.lon - lon) * 110640;
         const dy = (c.lat - lat) * 111000;
-        if (Math.sqrt(dx*dx + dy*dy) <= radiusMeters) return true;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist <= radiusMeters) return true;
     }
     return false;
 }
@@ -411,845 +475,1583 @@ async function clearEdgesCache() {
     if (!confirm('¿Borrar mapa de caché?')) return;
     try {
         await caches.delete(CACHE_NAME);
-        edgesData = null; crossingsIndex = null;
+        edgesData = null;
+        crossingsIndex = null;
         logHistory("🗑️ Caché borrada");
         updateEdgesStatus(false);
     } catch(e) {}
 }
 
-function updateEdgesStatus(status) {
+function updateEdgesStatus(loaded) {
     const el = document.getElementById('edgesStatus');
     if (!el) return;
-    
-    if (status === true && edgesData) {
+    if (loaded && edgesData) {
         el.className = 'edges-status loaded';
-        el.textContent = `✅ Mapa cargado: ${(edgesData.cruces||[]).length.toLocaleString()} cruces. Detección de intersecciones activa.`;
+        el.textContent = `✅ Mapa cargado: ${(edgesData.cruces||[]).length.toLocaleString()} cruces. Detección activa.`;
     } else {
         el.className = 'edges-status not-loaded';
         el.textContent = '⚠️ Mapa no cargado. Carga el archivo manualmente.';
     }
 }
 
+// =========================================================
+// 🚴 LÓGICA COMPLETA DE PYTHON (Fase 16) - CON PARÁMETROS
+// =========================================================
 function haversineDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371000;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+const R = 6371000;
+const dLat = (lat2 - lat1) * Math.PI / 180;
+const dLon = (lon2 - lon1) * Math.PI / 180;
+const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2)**2;
+return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
 function decodePolyline(encoded) {
-    const coords = []; let index = 0, lat = 0, lng = 0;
-    while (index < encoded.length) {
-        let shift = 0, result = 0, b;
-        do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-        lat += (result & 1) ? ~(result >> 1) : (result >> 1);
-        shift = 0; result = 0;
-        do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-        lng += (result & 1) ? ~(result >> 1) : (result >> 1);
-        coords.push({ lat: lat / 1e5, lon: lng / 1e5 });
-    }
-    return coords;
+const coords = [];
+let index = 0, lat = 0, lng = 0;
+while (index < encoded.length) {
+let shift = 0, result = 0;
+let b;
+do {
+b = encoded.charCodeAt(index++) - 63;
+result |= (b & 0x1f) << shift;
+shift += 5;
+} while (b >= 0x20);
+const dlat = (result & 1) ? ~(result >> 1) : (result >> 1);
+lat += dlat;
+shift = 0; result = 0;
+do {
+b = encoded.charCodeAt(index++) - 63;
+result |= (b & 0x1f) << shift;
+shift += 5;
+} while (b >= 0x20);
+const dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
+lng += dlng;
+coords.push({ lat: lat / 1e5, lon: lng / 1e5 });
+}
+return coords;
 }
 
 function simplifyInstruction(instruction, esLeve) {
-    const lower = instruction.toLowerCase();
-    if (lower.startsWith('camina hacia')) return instruction;
-    const patterns = [
-        /gire a la (derecha|izquierda)/i, /gire (hacia la derecha|hacia la izquierda)/i,
-        /continúe recto/i, /continúe/i, /manténgase a la (derecha|izquierda)/i,
-        /tome la (primera|segunda|tercera) a la (derecha|izquierda)/i,
-        /en la rotonda/i, /llegó a su destino/i,
-        /gire ligeramente a la (derecha|izquierda)/i, /gire bastante a la (derecha|izquierda)/i
-    ];
-    for (const pat of patterns) {
-        const m = instruction.match(pat);
-        if (m) {
-            let resultado = m[0];
-            if (esLeve && !resultado.toLowerCase().includes('ligeramente')) {
-                resultado = resultado.replace(/[Gg]ire a la (derecha|izquierda)/, 'Gire levemente a la $1');
-                resultado = resultado.replace(/[Gg]ire hacia la (derecha|izquierda)/, 'Gire levemente hacia la $1');
-            }
-            return resultado;
-        }
-    }
-    const cleaned = instruction.replace(/\s+a\s+[A-ZÁÉÍÓÚÑ].*$/, '');
-    return cleaned || instruction;
+const lower = instruction.toLowerCase();
+if (lower.startsWith('camina hacia')) return instruction;
+const patterns = [
+/gire a la (derecha|izquierda)/i,
+/gire (hacia la derecha|hacia la izquierda)/i,
+/continúe recto/i, /continúe/i,
+/manténgase a la (derecha|izquierda)/i,
+/tome la (primera|segunda|tercera) a la (derecha|izquierda)/i,
+/en la rotonda/i, /llegó a su destino/i,
+/gire ligeramente a la (derecha|izquierda)/i,
+/gire bastante a la (derecha|izquierda)/i
+];
+for (const pat of patterns) {
+const m = instruction.match(pat);
+if (m) {
+let resultado = m[0];
+if (esLeve && !resultado.toLowerCase().includes('ligeramente')) {
+resultado = resultado.replace(/[Gg]ire a la (derecha|izquierda)/, 'Gire levemente a la $1');
+resultado = resultado.replace(/[Gg]ire hacia la (derecha|izquierda)/, 'Gire levemente hacia la $1');
+}
+return resultado;
+}
+}
+const cleaned = instruction.replace(/\s+a\s+[A-ZÁÉÍÓÚÑ].*$/, '');
+return cleaned || instruction;
 }
 
 function getEstadoCombinado(waytype, waycategory) {
-    const esCiclo = waytype === 6 || waytype === 7;
-    const esPuente = (waycategory & 4) !== 0;
-    if (esPuente) return 'PUENTE';
-    if (esCiclo) return 'CICLOVIA';
-    return 'NORMAL';
+const esCiclo = waytype === 6 || waytype === 7;
+const esPuente = (waycategory & 4) !== 0;
+if (esPuente) return 'PUENTE';
+if (esCiclo) return 'CICLOVIA';
+return 'NORMAL';
 }
 
 function aplicarReglasContinueRecto(snapped) {
-    let gruposModificados = 0, continueRectoConLado = 0;
-    const gruposCR = []; let grupoActual = [];
-    for (let i = 0; i < snapped.length; i++) {
-        if (snapped[i].tipo === 'CONTINUE_RECTO') grupoActual.push(i);
-        else if (grupoActual.length > 0) { gruposCR.push(grupoActual); grupoActual = []; }
-    }
-    if (grupoActual.length > 0) gruposCR.push(grupoActual);
-    for (const grupo of gruposCR) {
-        const idxUltimoCR = grupo[grupo.length - 1];
-        let siguienteInst = null;
-        for (let j = idxUltimoCR + 1; j < snapped.length; j++) {
-            if (snapped[j].instruccion !== null && snapped[j].tipo !== 'CONTINUE_RECTO') {
-                siguienteInst = snapped[j].instruccion; break;
-            }
-        }
-        if (!siguienteInst) continue;
-        const sigLower = siguienteInst.toLowerCase();
-        const esGiro = sigLower.includes('gire');
-        let direccion = null;
-        if (esGiro) {
-            if (sigLower.includes('derecha')) direccion = 'derecha';
-            else if (sigLower.includes('izquierda')) direccion = 'izquierda';
-        }
-        if (!esGiro || !direccion) continue;
-        const n = grupo.length;
-        if (n <= 2) {
-            for (const idx of grupo) {
-                snapped[idx].instruccion = `Continúe recto y manténgase a la ${direccion}`;
-                snapped[idx].tipo = 'CONTINUE_RECTO_LADO'; continueRectoConLado++;
-            }
-            gruposModificados++;
-        } else {
-            snapped[grupo[0]].instruccion = `Continúe recto y manténgase a la ${direccion}`;
-            snapped[grupo[0]].tipo = 'CONTINUE_RECTO_LADO'; continueRectoConLado++;
-            snapped[grupo[grupo.length-1]].instruccion = `Continúe recto y manténgase a la ${direccion}`;
-            snapped[grupo[grupo.length-1]].tipo = 'CONTINUE_RECTO_LADO'; continueRectoConLado++;
-            gruposModificados++;
-        }
-    }
-    return { gruposModificados, continueRectoConLado };
+let gruposModificados = 0;
+let continueRectoConLado = 0;
+const gruposCR = [];
+let grupoActual = [];
+for (let i = 0; i < snapped.length; i++) {
+if (snapped[i].tipo === 'CONTINUE_RECTO') {
+grupoActual.push(i);
+} else {
+if (grupoActual.length > 0) {
+gruposCR.push(grupoActual);
+grupoActual = [];
+}
+}
+}
+if (grupoActual.length > 0) {
+gruposCR.push(grupoActual);
+}
+for (const grupo of gruposCR) {
+const idxUltimoCR = grupo[grupo.length - 1];
+let siguienteInst = null;
+for (let j = idxUltimoCR + 1; j < snapped.length; j++) {
+if (snapped[j].instruccion !== null && snapped[j].tipo !== 'CONTINUE_RECTO') {
+siguienteInst = snapped[j].instruccion;
+break;
+}
+}
+if (!siguienteInst) continue;
+const sigLower = siguienteInst.toLowerCase();
+const esGiro = sigLower.includes('gire');
+let direccion = null;
+if (esGiro) {
+if (sigLower.includes('derecha')) direccion = 'derecha';
+else if (sigLower.includes('izquierda')) direccion = 'izquierda';
+}
+if (!esGiro || !direccion) continue;
+const n = grupo.length;
+if (n <= 2) {
+for (const idx of grupo) {
+snapped[idx].instruccion = `Continúe recto y manténgase a la ${direccion}`;
+snapped[idx].tipo = 'CONTINUE_RECTO_LADO';
+continueRectoConLado++;
+}
+gruposModificados++;
+} else {
+const idxPrimero = grupo[0];
+const idxUltimo = grupo[grupo.length - 1];
+snapped[idxPrimero].instruccion = `Continúe recto y manténgase a la ${direccion}`;
+snapped[idxPrimero].tipo = 'CONTINUE_RECTO_LADO';
+continueRectoConLado++;
+snapped[idxUltimo].instruccion = `Continúe recto y manténgase a la ${direccion}`;
+snapped[idxUltimo].tipo = 'CONTINUE_RECTO_LADO';
+continueRectoConLado++;
+gruposModificados++;
+}
+}
+return { gruposModificados, continueRectoConLado };
 }
 
+// 🆕 AHORA RECIBE LOS 4 PARÁMETROS PERSONALIZABLES
 function procesarRutaCompleta(respuestaORS, intervalo, offsetMetros, umbralCR, bufferCR) {
-    const ruta = respuestaORS.routes[0];
-    const coordsRuta = decodePolyline(ruta.geometry);
-    const extras = ruta.extras || {};
-    const waytypeArray = new Array(coordsRuta.length).fill(0);
-    const waycategoryArray = new Array(coordsRuta.length).fill(0);
-    if (extras.waytype?.values) extras.waytype.values.forEach(([s, e, v]) => { for(let i=s; i<=Math.min(e, coordsRuta.length-1); i++) waytypeArray[i]=v; });
-    if (extras.waycategory?.values) extras.waycategory.values.forEach(([s, e, v]) => { for(let i=s; i<=Math.min(e, coordsRuta.length-1); i++) waycategoryArray[i]=v; });
-    
-    const orsInstructions = []; let girosLeves = 0;
-    const segments = ruta.segments || [];
-    for (let segIdx = 0; segIdx < segments.length; segIdx++) {
-        const segment = segments[segIdx];
-        const steps = segment.steps || [];
-        for (let stepIdx = 0; stepIdx < steps.length; stepIdx++) {
-            const step = steps[stepIdx];
-            const wp = step.way_points || [0, 0];
-            const waypointIndex = Array.isArray(wp) ? wp[0] : wp;
-            if (waypointIndex >= coordsRuta.length) continue;
-            const coord = coordsRuta[waypointIndex];
-            const original = step.instruction || '';
-            const tipoORS = step.type != null ? step.type : -1;
-            const esLeve = (tipoORS === TIPO_GIRO_LEVE);
-            if (esLeve) girosLeves++;
-            const simplified = simplifyInstruction(original, esLeve);
-            let acc = 0;
-            for (let i = 0; i < waypointIndex; i++) acc += haversineDistance(coordsRuta[i].lat, coordsRuta[i].lon, coordsRuta[i+1].lat, coordsRuta[i+1].lon);
-            orsInstructions.push({
-                original, simplified, metro: acc, lat: coord.lat, lon: coord.lon,
-                is_walk: original.toLowerCase().startsWith('camina hacia'),
-                segment_idx: segIdx, step_idx: stepIdx, tipo_ors: tipoORS, es_leve: esLeve
-            });
-        }
-    }
-    
-    const interpolated = [{ metro: 0.0, lat: coordsRuta[0].lat, lon: coordsRuta[0].lon, idx_orig: 0 }];
-    let accumulated = 0, nextTarget = intervalo;
-    for (let i = 0; i < coordsRuta.length - 1; i++) {
-        const A = coordsRuta[i], B = coordsRuta[i+1];
-        const segDist = haversineDistance(A.lat, A.lon, B.lat, B.lon);
-        if (segDist === 0) continue;
-        const dLat = B.lat - A.lat, dLon = B.lon - A.lon;
-        while (nextTarget <= accumulated + segDist) {
-            const frac = (nextTarget - accumulated) / segDist;
-            interpolated.push({ metro: nextTarget, lat: A.lat + frac * dLat, lon: A.lon + frac * dLon, idx_orig: i });
-            nextTarget += intervalo;
-        }
-        accumulated += segDist;
-    }
-    const last = coordsRuta[coordsRuta.length - 1];
-    if (Math.abs(interpolated[interpolated.length-1].metro - accumulated) > 0.5)
-        interpolated.push({ metro: accumulated, lat: last.lat, lon: last.lon, idx_orig: coordsRuta.length - 1 });
-    
-    interpolated.forEach(p => {
-        p.waytype = waytypeArray[p.idx_orig] || 0;
-        p.waycategory = waycategoryArray[p.idx_orig] || 0;
-        p.estado = getEstadoCombinado(p.waytype, p.waycategory);
-    });
-    
-    logHistory("🔧 Detectando cruces...");
-    const snapped = interpolated.map(p => ({
-        metro: p.metro, lat_orig: p.lat, lon_orig: p.lon,
-        lat_snap: p.lat, lon_snap: p.lon,
-        waytype: p.waytype, waycategory: p.waycategory, estado: p.estado,
-        is_crossing: isNearCrossing(p.lat, p.lon, 5),
-        instruccion: null, tipo: null,
-        is_first: false, is_last: false, is_anticipatory: false, es_giro_leve: false
-    }));
-    const crossingCount = snapped.filter(p => p.is_crossing).length;
-    logHistory(`   ✅ ${crossingCount} puntos marcados como cruces`);
-    
-    const processedInst = [...orsInstructions];
-    if (processedInst.length >= 2 && processedInst[0].is_walk && processedInst[1].metro - offsetMetros <= processedInst[0].metro + offsetMetros)
-        processedInst.shift();
-    const lastInst = processedInst.length > 0 ? processedInst[processedInst.length - 1] : null;
-    
-    const findClosestIdx = (targetM) => {
-        let left = 0, right = snapped.length - 1;
-        while (left < right) {
-            const mid = Math.floor((left + right) / 2);
-            if (snapped[mid].metro < targetM) left = mid + 1;
-            else right = mid;
-        }
-        if (left > 0) {
-            const distLeft = Math.abs(snapped[left].metro - targetM);
-            const distPrev = Math.abs(snapped[left - 1].metro - targetM);
-            if (distPrev < distLeft) return left - 1;
-        }
-        return left;
-    };
-    
-    processedInst.forEach(inst => {
-        const isFirst = inst.is_walk && inst.step_idx === 0 && inst.segment_idx === 0;
-        const isLast = (inst === lastInst);
-        let target = (isFirst || isLast) ? inst.metro : inst.metro - offsetMetros;
-        if (target < 0) return;
-        const idx = findClosestIdx(target);
-        if (snapped[idx].instruccion === null) {
-            snapped[idx].instruccion = inst.simplified;
-            snapped[idx].is_first = isFirst;
-            snapped[idx].is_last = isLast;
-            snapped[idx].tipo = isFirst ? 'PRIMERA' : (isLast ? 'ULTIMA' : 'ORS');
-            snapped[idx].es_giro_leve = inst.es_leve || false;
-        }
-    });
-    
-    const transiciones = [];
-    for (let i = 1; i < snapped.length; i++) {
-        const prev = snapped[i-1].estado, curr = snapped[i].estado;
-        if (prev === curr) continue;
-        if (curr === 'CICLOVIA' && prev === 'NORMAL')
-            transiciones.push({ idx: i, metro: snapped[i].metro, tipo_trans: 'ENTRADA_CICLO', mensaje: 'Entre a la ciclovía', nombre_via: null });
-        else if (curr === 'NORMAL' && prev === 'CICLOVIA') {
-            const via = WAYTYPE_NOMBRES[snapped[i].waytype] || 'vía';
-            transiciones.push({ idx: i, metro: snapped[i].metro, tipo_trans: 'SALIDA_CICLO', mensaje: `Abandone la ciclovía hacia ${via}`, nombre_via: via });
-        }
-        else if (curr === 'PUENTE')
-            transiciones.push({ idx: i, metro: snapped[i].metro, tipo_trans: 'PUENTE', mensaje: 'Puente', nombre_via: null });
-    }
-    
-    let fusionesCount = 0; const fusionesPorMetro = {};
-    transiciones.forEach(t => {
-        let idxGiro = null, mejorDist = Infinity;
-        for (let i = 0; i < snapped.length; i++) {
-            if (snapped[i].tipo === 'ORS' && (snapped[i].instruccion || '').toLowerCase().includes('gire')) {
-                const dist = Math.abs(snapped[i].metro - t.metro);
-                if (dist <= FUSION_DIST_MAX && dist < mejorDist) { mejorDist = dist; idxGiro = i; }
-            }
-        }
-        if (idxGiro !== null) {
-            const giro = snapped[idxGiro].instruccion;
-            let msg = t.tipo_trans === 'SALIDA_CICLO' ? `${giro} y abandone la ciclovía hacia ${t.nombre_via}` :
-                      t.tipo_trans === 'ENTRADA_CICLO' ? `${giro} y entre a la ciclovía` : `${giro} (puente)`;
-            snapped[idxGiro].instruccion = msg;
-            snapped[idxGiro].tipo = 'FUSION_TRANS';
-            fusionesPorMetro[snapped[idxGiro].metro] = { tipo: t.tipo_trans, nombre_via: t.nombre_via };
-            fusionesCount++;
-        } else if (snapped[t.idx].instruccion === null) {
-            snapped[t.idx].instruccion = t.mensaje;
-            snapped[t.idx].tipo = t.tipo_trans;
-        }
-    });
-    
-    let anticipados = 0;
-    processedInst.forEach(inst => {
-        const isFirst = inst.is_walk && inst.step_idx === 0 && inst.segment_idx === 0;
-        const isLast = (inst === lastInst);
-        if (isFirst || isLast) return;
-        const simpl = inst.simplified.toLowerCase();
-        if (!simpl.includes('gire')) return;
-        let direccion = simpl.includes('derecha') ? 'derecha' : (simpl.includes('izquierda') ? 'izquierda' : null);
-        if (!direccion) return;
-        let verbo = inst.es_leve ? 'gire levemente' : (simpl.includes('ligeramente') ? 'gire ligeramente' : 'gire');
-        const turnIdx = findClosestIdx(inst.metro);
-        if (turnIdx < 0) return;
-        const metroGiro = snapped[turnIdx].metro;
-        let fusionInfo = null;
-        for (const [mStr, info] of Object.entries(fusionesPorMetro)) {
-            if (Math.abs(metroGiro - parseFloat(mStr)) <= FUSION_DIST_MAX) { fusionInfo = info; break; }
-        }
-        
-        let prevIdx = -1;
-        for (let i = turnIdx - 1; i >= 0; i--) {
-            const dTurn = haversineDistance(snapped[i].lat_snap, snapped[i].lon_snap, snapped[turnIdx].lat_snap, snapped[turnIdx].lon_snap);
-            if (dTurn < 15) continue;
-            if (snapped[i].is_crossing && snapped[i].instruccion === null) { prevIdx = i; break; }
-        }
-        
-        if (prevIdx === -1) {
-            for (let i = turnIdx - 1; i >= 0; i--) {
-                const dTurn = haversineDistance(snapped[i].lat_snap, snapped[i].lon_snap, snapped[turnIdx].lat_snap, snapped[turnIdx].lon_snap);
-                if (dTurn >= 15 && dTurn <= 100 && snapped[i].instruccion === null) { prevIdx = i; break; }
-            }
-        }
-        
-        if (prevIdx >= 0 && snapped[prevIdx].instruccion === null) {
-            let msg;
-            if (fusionInfo) {
-                msg = fusionInfo.tipo === 'ENTRADA_CICLO' ? `En la próxima calle ${verbo} a la ${direccion} y entre a la ciclovía` :
-                      fusionInfo.tipo === 'SALIDA_CICLO' ? `En la próxima calle ${verbo} a la ${direccion} abandonando la ciclovía` :
-                      `En la próxima calle ${verbo} a la ${direccion} (puente)`;
-            } else {
-                msg = `En la próxima calle ${verbo} a la ${direccion}`;
-            }
-            snapped[prevIdx].instruccion = msg;
-            snapped[prevIdx].is_anticipatory = true;
-            snapped[prevIdx].tipo = 'ANTICIPADO';
-            anticipados++;
-        }
-    });
-    
-    const metrosConInst = snapped.filter(p => p.instruccion !== null).map(p => p.metro).sort((a, b) => a - b);
-    let continueRectoCount = 0;
-    const insertarCR = (inicio, fin) => {
-        if (fin <= inicio) return;
-        let m = inicio;
-        while (m <= fin) {
-            const idx = findClosestIdx(m);
-            if (snapped[idx].instruccion === null) {
-                snapped[idx].instruccion = 'Continúe recto';
-                snapped[idx].tipo = 'CONTINUE_RECTO';
-                continueRectoCount++;
-            }
-            m += umbralCR;
-        }
-    };
-    for (let i = 0; i < metrosConInst.length - 1; i++) {
-        if (metrosConInst[i+1] - metrosConInst[i] > umbralCR)
-            insertarCR(metrosConInst[i] + bufferCR, metrosConInst[i+1] - bufferCR);
-    }
-    if (metrosConInst.length > 0) {
-        if (metrosConInst[0] > umbralCR) insertarCR(bufferCR, metrosConInst[0] - bufferCR);
-        const metroFinal = snapped[snapped.length-1].metro;
-        if (metroFinal - metrosConInst[metrosConInst.length-1] > umbralCR)
-            insertarCR(metrosConInst[metrosConInst.length-1] + bufferCR, metroFinal - bufferCR);
-    }
-    
-    const { gruposModificados, continueRectoConLado } = aplicarReglasContinueRecto(snapped);
-    const puntosFinales = snapped.filter(p => p.instruccion !== null).map(p => ({
-        lat: p.lat_snap, lon: p.lon_snap, msg: p.instruccion, tipo: p.tipo
-    }));
-    
-    return {
-        puntos: puntosFinales,
-        stats: {
-            distancia: snapped[snapped.length - 1].metro,
-            total: puntosFinales.length,
-            giros_leves: girosLeves,
-            fusiones: fusionesCount,
-            anticipados: anticipados,
-            continue_recto: continueRectoCount,
-            continue_recto_con_lado: continueRectoConLado,
-            edges_cargados: crossingsIndex !== null
-        },
-        routeCoords: coordsRuta
-    };
+const ruta = respuestaORS.routes[0];
+const coordsRuta = decodePolyline(ruta.geometry);
+const extras = ruta.extras || {};
+const waytypeArray = new Array(coordsRuta.length).fill(0);
+const waycategoryArray = new Array(coordsRuta.length).fill(0);
+if (extras.waytype && extras.waytype.values) {
+for (const [start, end, value] of extras.waytype.values) {
+for (let i = start; i <= Math.min(end, coordsRuta.length - 1); i++) {
+waytypeArray[i] = value;
+}
+}
+}
+if (extras.waycategory && extras.waycategory.values) {
+for (const [start, end, value] of extras.waycategory.values) {
+for (let i = start; i <= Math.min(end, coordsRuta.length - 1); i++) {
+waycategoryArray[i] = value;
+}
+}
+}
+const orsInstructions = [];
+let girosLeves = 0;
+const segments = ruta.segments || [];
+for (let segIdx = 0; segIdx < segments.length; segIdx++) {
+const segment = segments[segIdx];
+const steps = segment.steps || [];
+for (let stepIdx = 0; stepIdx < steps.length; stepIdx++) {
+const step = steps[stepIdx];
+const wp = step.way_points || [0, 0];
+const waypointIndex = Array.isArray(wp) ? wp[0] : wp;
+if (waypointIndex >= coordsRuta.length) continue;
+const coord = coordsRuta[waypointIndex];
+const original = step.instruction || '';
+const tipoORS = step.type != null ? step.type : -1;
+const esLeve = (tipoORS === TIPO_GIRO_LEVE);
+if (esLeve) girosLeves++;
+const simplified = simplifyInstruction(original, esLeve);
+let acc = 0;
+for (let i = 0; i < waypointIndex; i++) {
+acc += haversineDistance(coordsRuta[i].lat, coordsRuta[i].lon,
+coordsRuta[i+1].lat, coordsRuta[i+1].lon);
+}
+orsInstructions.push({
+original, simplified, metro: acc,
+lat: coord.lat, lon: coord.lon,
+is_walk: original.toLowerCase().startsWith('camina hacia'),
+segment_idx: segIdx, step_idx: stepIdx,
+tipo_ors: tipoORS, es_leve: esLeve
+});
+}
+}
+// 🆕 USAR INTERVALO PERSONALIZABLE
+const interpolated = [{ metro: 0.0, lat: coordsRuta[0].lat, lon: coordsRuta[0].lon, idx_orig: 0 }];
+let accumulated = 0, nextTarget = intervalo;
+for (let i = 0; i < coordsRuta.length - 1; i++) {
+const A = coordsRuta[i], B = coordsRuta[i+1];
+const segDist = haversineDistance(A.lat, A.lon, B.lat, B.lon);
+if (segDist === 0) continue;
+const dLat = B.lat - A.lat, dLon = B.lon - A.lon;
+while (nextTarget <= accumulated + segDist) {
+const frac = (nextTarget - accumulated) / segDist;
+interpolated.push({
+metro: nextTarget,
+lat: A.lat + frac * dLat,
+lon: A.lon + frac * dLon,
+idx_orig: i
+});
+nextTarget += intervalo;
+}
+accumulated += segDist;
+}
+const last = coordsRuta[coordsRuta.length - 1];
+if (Math.abs(interpolated[interpolated.length-1].metro - accumulated) > 0.5) {
+interpolated.push({ metro: accumulated, lat: last.lat, lon: last.lon, idx_orig: coordsRuta.length - 1 });
+}
+for (const p of interpolated) {
+const idx = p.idx_orig;
+const wt = idx < waytypeArray.length ? waytypeArray[idx] : 0;
+const wc = idx < waycategoryArray.length ? waycategoryArray[idx] : 0;
+p.waytype = wt;
+p.waycategory = wc;
+p.estado = getEstadoCombinado(wt, wc);
+}
+// 🆕 DETECCIÓN DE CRUCES CON KDBUSH
+logHistory("🔧 Detectando cruces...");
+const snapped = interpolated.map(p => ({
+metro: p.metro, lat_orig: p.lat, lon_orig: p.lon,
+lat_snap: p.lat, lon_snap: p.lon,
+waytype: p.waytype, waycategory: p.waycategory,
+estado: p.estado,
+is_crossing: isNearCrossing(p.lat, p.lon, 5),
+instruccion: null, tipo: null,
+is_first: false, is_last: false, is_anticipatory: false,
+es_giro_leve: false
+}));
+const crossingCount = snapped.filter(p => p.is_crossing).length;
+logHistory(`   ✅ ${crossingCount} puntos marcados como cruces`);
+const processedInst = [...orsInstructions];
+if (processedInst.length >= 2 && processedInst[0].is_walk) {
+if (processedInst[1].metro - offsetMetros <= processedInst[0].metro + offsetMetros) {
+processedInst.shift();
+}
+}
+const lastInst = processedInst.length > 0 ? processedInst[processedInst.length - 1] : null;
+const findClosestIdx = (targetM) => {
+let minIdx = 0, minDist = Infinity;
+for (let i = 0; i < snapped.length; i++) {
+const d = Math.abs(snapped[i].metro - targetM);
+if (d < minDist) { minDist = d; minIdx = i; }
+}
+return minIdx;
+};
+for (const inst of processedInst) {
+const isFirst = inst.is_walk && inst.step_idx === 0 && inst.segment_idx === 0;
+const isLast = (inst === lastInst);
+let target = inst.metro;
+if (!isFirst && !isLast) target = inst.metro - offsetMetros;
+if (target < 0) continue;
+const idx = findClosestIdx(target);
+if (snapped[idx].instruccion === null) {
+snapped[idx].instruccion = inst.simplified;
+snapped[idx].is_first = isFirst;
+snapped[idx].is_last = isLast;
+snapped[idx].tipo = isFirst ? 'PRIMERA' : (isLast ? 'ULTIMA' : 'ORS');
+snapped[idx].es_giro_leve = inst.es_leve || false;
+}
+}
+const transiciones = [];
+for (let i = 1; i < snapped.length; i++) {
+const estadoPrev = snapped[i-1].estado;
+const estadoActual = snapped[i].estado;
+if (estadoPrev === estadoActual) continue;
+if (estadoActual === 'CICLOVIA' && estadoPrev === 'NORMAL') {
+transiciones.push({
+idx: i, metro: snapped[i].metro,
+tipo_trans: 'ENTRADA_CICLO', mensaje: 'Entre a la ciclovía',
+nombre_via: null
+});
+} else if (estadoActual === 'NORMAL' && estadoPrev === 'CICLOVIA') {
+const nombreVia = WAYTYPE_NOMBRES[snapped[i].waytype] || 'vía';
+transiciones.push({
+idx: i, metro: snapped[i].metro,
+tipo_trans: 'SALIDA_CICLO',
+mensaje: `Abandone la ciclovía hacia ${nombreVia}`,
+nombre_via: nombreVia
+});
+} else if (estadoActual === 'PUENTE') {
+transiciones.push({
+idx: i, metro: snapped[i].metro,
+tipo_trans: 'PUENTE', mensaje: 'Puente',
+nombre_via: null
+});
+}
+}
+let fusionesCount = 0;
+const fusionesPorMetro = {};
+for (const t of transiciones) {
+const metroTrans = t.metro;
+let idxGiroCercano = null;
+let mejorDist = Infinity;
+for (let i = 0; i < snapped.length; i++) {
+if (snapped[i].tipo === 'ORS' && (snapped[i].instruccion || '').toLowerCase().includes('gire')) {
+const dist = Math.abs(snapped[i].metro - metroTrans);
+if (dist <= FUSION_DIST_MAX && dist < mejorDist) {
+mejorDist = dist;
+idxGiroCercano = i;
+}
+}
+}
+if (idxGiroCercano !== null) {
+const instGiro = snapped[idxGiroCercano].instruccion;
+const metroGiro = snapped[idxGiroCercano].metro;
+let mensajeFusion;
+if (t.tipo_trans === 'SALIDA_CICLO') {
+mensajeFusion = `${instGiro} y abandone la ciclovía hacia ${t.nombre_via}`;
+} else if (t.tipo_trans === 'ENTRADA_CICLO') {
+mensajeFusion = `${instGiro} y entre a la ciclovía`;
+} else {
+mensajeFusion = `${instGiro} (puente)`;
+}
+snapped[idxGiroCercano].instruccion = mensajeFusion;
+snapped[idxGiroCercano].tipo = 'FUSION_TRANS';
+fusionesPorMetro[metroGiro] = {
+tipo: t.tipo_trans,
+nombre_via: t.nombre_via
+};
+fusionesCount++;
+} else {
+if (snapped[t.idx].instruccion === null) {
+snapped[t.idx].instruccion = t.mensaje;
+snapped[t.idx].tipo = t.tipo_trans;
+}
+}
+}
+// 🆕 AVISOS ANTICIPADOS CON RESPALDO (OPCIÓN A)
+let anticipados = 0;
+for (const inst of processedInst) {
+const isFirst = inst.is_walk && inst.step_idx === 0 && inst.segment_idx === 0;
+const isLast = (inst === lastInst);
+if (isFirst || isLast) continue;
+const simpl = inst.simplified.toLowerCase();
+if (!simpl.includes('gire')) continue;
+let direccion = null;
+if (simpl.includes('derecha')) direccion = 'derecha';
+else if (simpl.includes('izquierda')) direccion = 'izquierda';
+if (!direccion) continue;
+const esLeve = inst.es_leve || false;
+let verbo;
+if (esLeve) verbo = 'gire levemente';
+else if (simpl.includes('ligeramente')) verbo = 'gire ligeramente';
+else verbo = 'gire';
+const turnIdx = findClosestIdx(inst.metro);
+if (turnIdx < 0) continue;
+const metroGiro = snapped[turnIdx].metro;
+let fusionInfo = null;
+for (const [metroFusionStr, info] of Object.entries(fusionesPorMetro)) {
+if (Math.abs(metroGiro - parseFloat(metroFusionStr)) <= FUSION_DIST_MAX) {
+fusionInfo = info;
+break;
+}
+}
+// Intento 1: buscar cruce real (si hay edges cargados)
+let prevIdx = -1;
+for (let i = turnIdx - 1; i >= 0; i--) {
+const dTurn = haversineDistance(
+snapped[i].lat_snap, snapped[i].lon_snap,
+snapped[turnIdx].lat_snap, snapped[turnIdx].lon_snap
+);
+if (dTurn < 15) continue;
+if (snapped[i].is_crossing && snapped[i].instruccion === null) {
+prevIdx = i;
+break;
+}
+}
+// 🆕 Intento 2 (RESPALDO): si no hay cruces, buscar punto libre entre 15m y 100m
+if (prevIdx === -1) {
+for (let i = turnIdx - 1; i >= 0; i--) {
+const dTurn = haversineDistance(
+snapped[i].lat_snap, snapped[i].lon_snap,
+snapped[turnIdx].lat_snap, snapped[turnIdx].lon_snap
+);
+if (dTurn >= 15 && dTurn <= 100 && snapped[i].instruccion === null) {
+prevIdx = i;
+break;
+}
+}
+}
+if (prevIdx >= 0 && snapped[prevIdx].instruccion === null) {
+let mensajeAviso;
+if (fusionInfo) {
+if (fusionInfo.tipo === 'ENTRADA_CICLO') {
+mensajeAviso = `En la próxima calle ${verbo} a la ${direccion} y entre a la ciclovía`;
+} else if (fusionInfo.tipo === 'SALIDA_CICLO') {
+mensajeAviso = `En la próxima calle ${verbo} a la ${direccion} abandonando la ciclovía`;
+} else {
+mensajeAviso = `En la próxima calle ${verbo} a la ${direccion} (puente)`;
+}
+} else {
+mensajeAviso = `En la próxima calle ${verbo} a la ${direccion}`;
+}
+snapped[prevIdx].instruccion = mensajeAviso;
+snapped[prevIdx].is_anticipatory = true;
+snapped[prevIdx].tipo = 'ANTICIPADO';
+anticipados++;
+}
+}
+// 🆕 USAR UMBRAL Y BUFFER PERSONALIZABLES
+const metrosConInst = snapped
+.map((p, i) => ({ metro: p.metro, idx: i }))
+.filter(p => snapped[p.idx].instruccion !== null)
+.sort((a, b) => a.metro - b.metro)
+.map(p => p.metro);
+let continueRectoCount = 0;
+for (let i = 0; i < metrosConInst.length - 1; i++) {
+const metroAnterior = metrosConInst[i];
+const metroSiguiente = metrosConInst[i + 1];
+const distancia = metroSiguiente - metroAnterior;
+if (distancia > umbralCR) {
+const inicioZona = metroAnterior + bufferCR;
+const finZona = metroSiguiente - bufferCR;
+if (finZona > inicioZona) {
+let metroActual = inicioZona;
+while (metroActual <= finZona) {
+const idxInsertar = findClosestIdx(metroActual);
+if (snapped[idxInsertar].instruccion === null) {
+snapped[idxInsertar].instruccion = 'Continúe recto';
+snapped[idxInsertar].tipo = 'CONTINUE_RECTO';
+continueRectoCount++;
+}
+metroActual += umbralCR;
+}
+}
+}
+}
+if (metrosConInst.length > 0) {
+const primeraInstruccion = metrosConInst[0];
+if (primeraInstruccion > umbralCR) {
+const inicioZona = bufferCR;
+const finZona = primeraInstruccion - bufferCR;
+if (finZona > inicioZona) {
+let metroActual = inicioZona;
+while (metroActual <= finZona) {
+const idxInsertar = findClosestIdx(metroActual);
+if (snapped[idxInsertar].instruccion === null) {
+snapped[idxInsertar].instruccion = 'Continúe recto';
+snapped[idxInsertar].tipo = 'CONTINUE_RECTO';
+continueRectoCount++;
+}
+metroActual += umbralCR;
+}
+}
+}
+}
+if (metrosConInst.length > 0) {
+const ultimaInstruccion = metrosConInst[metrosConInst.length - 1];
+const metroFinal = snapped[snapped.length - 1].metro;
+if (metroFinal - ultimaInstruccion > umbralCR) {
+const inicioZona = ultimaInstruccion + bufferCR;
+const finZona = metroFinal - bufferCR;
+if (finZona > inicioZona) {
+let metroActual = inicioZona;
+while (metroActual <= finZona) {
+const idxInsertar = findClosestIdx(metroActual);
+if (snapped[idxInsertar].instruccion === null) {
+snapped[idxInsertar].instruccion = 'Continúe recto';
+snapped[idxInsertar].tipo = 'CONTINUE_RECTO';
+continueRectoCount++;
+}
+metroActual += umbralCR;
+}
+}
+}
+}
+const { gruposModificados, continueRectoConLado } = aplicarReglasContinueRecto(snapped);
+const puntosFinales = snapped
+.filter(p => p.instruccion !== null)
+.map(p => ({
+lat: p.lat_snap,
+lon: p.lon_snap,
+msg: p.instruccion,
+tipo: p.tipo
+}));
+return {
+puntos: puntosFinales,
+stats: {
+distancia: snapped[snapped.length - 1].metro,
+total: puntosFinales.length,
+giros_leves: girosLeves,
+fusiones: fusionesCount,
+anticipados: anticipados,
+continue_recto: continueRectoCount,
+continue_recto_con_lado: continueRectoConLado,
+edges_cargados: crossingsIndex !== null
+},
+routeCoords: coordsRuta
+};
 }
 
-function formatKm(m) { const km = m / 1000; return km >= 10 ? km.toFixed(1) + " kilómetros" : km.toFixed(2) + " kilómetros"; }
-function formatSpeedKmh(ms) { return ms == null || isNaN(ms) ? "-" : (ms * 3.6).toFixed(0) + " km/h"; }
-function formatDuration(ms) {
-    if (!ms || ms < 0) return "-";
-    const s = Math.floor(ms/1000), h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
-    return h > 0 ? `${h}h ${m}m` : (m > 0 ? `${m} min` : `${s} seg`);
+function formatKm(m) {
+const km = m / 1000;
+return km >= 10 ? km.toFixed(1) + " kilómetros" : km.toFixed(2) + " kilómetros";
 }
-function getDistance(lat1, lon1, lat2, lon2) { return haversineDistance(lat1, lon1, lat2, lon2); }
-function escapeHtml(str) { return String(str).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); }
+function formatSpeedKmh(ms) {
+if (ms == null || isNaN(ms)) return "-";
+return (ms * 3.6).toFixed(0) + " km/h";
+}
+function formatDuration(ms) {
+if (!ms || ms < 0) return "-";
+const totalSec = Math.floor(ms / 1000);
+const h = Math.floor(totalSec / 3600);
+const m = Math.floor((totalSec % 3600) / 60);
+const s = totalSec % 60;
+if (h > 0) return `${h}h ${m}m ${s}s`;
+if (m > 0) return `${m} minutos`;
+return `${s} segundos`;
+}
+function getDistance(lat1, lon1, lat2, lon2) {
+const R = 6371e3;
+const dLat = (lat2 - lat1) * Math.PI / 180;
+const dLon = (lon2 - lon1) * Math.PI / 180;
+const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+Math.sin(dLon / 2) * Math.sin(dLon / 2);
+const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+return R * c;
+}
+function escapeHtml(str) {
+return String(str).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
 function logHistory(text) {
-    const box = document.getElementById('history');
-    const item = document.createElement('div');
-    item.className = 'history-item';
-    item.textContent = `[${new Date().toLocaleTimeString('es-CO')}] ${text}`;
-    box.prepend(item);
+const box = document.getElementById('history');
+const item = document.createElement('div');
+item.className = 'history-item';
+item.textContent = `[${new Date().toLocaleTimeString('es-CO')}] ${text}`;
+box.prepend(item);
 }
 function toggleFollow() {
-    isFollowing = !isFollowing;
-    document.getElementById('btnFollow').innerText = `Seguir: ${isFollowing ? 'ON' : 'OFF'}`;
-    if (isFollowing) centerMap();
+isFollowing = !isFollowing;
+document.getElementById('btnFollow').innerText = `Seguir: ${isFollowing ? 'ON' : 'OFF'}`;
+if (isFollowing) centerMap();
 }
 function centerMap() {
-    if (lastPosition && map) {
-        map.setView([lastPosition.coords.latitude, lastPosition.coords.longitude], Math.max(map.getZoom(), 16));
-        if (!isFollowing) { isFollowing = true; document.getElementById('btnFollow').innerText = `Seguir: ON`; }
-    }
+if (lastPosition && map) {
+map.setView([lastPosition.coords.latitude, lastPosition.coords.longitude], Math.max(map.getZoom(), 16));
+if (!isFollowing) {
+isFollowing = true;
+document.getElementById('btnFollow').innerText = `Seguir: ON`;
+}
+}
 }
 function clearField(fieldId) {
-    document.getElementById(fieldId).value = '';
-    if (fieldId === 'orsOrigin' && originMarker) { map.removeLayer(originMarker); originMarker = null; }
-    if (fieldId === 'orsDestination' && destinationMarker) { map.removeLayer(destinationMarker); destinationMarker = null; }
-    updateGPSOriginHint();
+document.getElementById(fieldId).value = '';
+if (fieldId === 'orsOrigin' && originMarker) {
+map.removeLayer(originMarker);
+originMarker = null;
+}
+if (fieldId === 'orsDestination' && destinationMarker) {
+map.removeLayer(destinationMarker);
+destinationMarker = null;
+}
+updateGPSOriginHint();
 }
 function updateGPSOriginHint() {
-    const originVal = document.getElementById('orsOrigin').value.trim();
-    const destVal = document.getElementById('orsDestination').value.trim();
-    const hint = document.getElementById('gpsOriginHint');
-    if (hint) hint.style.display = (!originVal && destVal && watchId !== null) ? 'block' : 'none';
+const originVal = document.getElementById('orsOrigin').value.trim();
+const destVal = document.getElementById('orsDestination').value.trim();
+const hint = document.getElementById('gpsOriginHint');
+if (hint) hint.style.display = (!originVal && destVal && watchId !== null) ? 'block' : 'none';
 }
 function startPicking(mode) {
-    const btnOrigin = document.getElementById('btnPickOrigin'), btnDest = document.getElementById('btnPickDest');
-    if (pickingMode === mode) { pickingMode = null; pickingWaypointIdx = null; btnOrigin.innerText = "📍 Capturar en Mapa"; btnOrigin.style.background = ""; btnDest.innerText = "📍 Capturar en Mapa"; btnDest.style.background = ""; renderWaypoints(); return; }
-    pickingMode = mode; pickingWaypointIdx = null;
-    if (mode === 'origin') { btnOrigin.innerText = "⌛ Toca el mapa..."; btnOrigin.style.background = "var(--accent)"; btnDest.innerText = "📍 Capturar en Mapa"; btnDest.style.background = ""; }
-    else if (mode === 'destination') { btnDest.innerText = "⌛ Toca el mapa..."; btnDest.style.background = "var(--accent)"; btnOrigin.innerText = "📍 Capturar en Mapa"; btnOrigin.style.background = ""; }
-    renderWaypoints();
+const btnOrigin = document.getElementById('btnPickOrigin');
+const btnDest = document.getElementById('btnPickDest');
+if (pickingMode === mode) {
+pickingMode = null;
+pickingWaypointIdx = null;
+btnOrigin.innerText = "📍 Capturar en Mapa";
+btnOrigin.style.background = "";
+btnDest.innerText = "📍 Capturar en Mapa";
+btnDest.style.background = "";
+renderWaypoints();
+return;
+}
+pickingMode = mode;
+pickingWaypointIdx = null;
+if (mode === 'origin') {
+btnOrigin.innerText = "⌛ Toca el mapa...";
+btnOrigin.style.background = "var(--accent)";
+btnDest.innerText = "📍 Capturar en Mapa";
+btnDest.style.background = "";
+} else if (mode === 'destination') {
+btnDest.innerText = "⌛ Toca el mapa...";
+btnDest.style.background = "var(--accent)";
+btnOrigin.innerText = "📍 Capturar en Mapa";
+btnOrigin.style.background = "";
+}
+renderWaypoints();
 }
 function startPickingWaypoint(idx) {
-    pickingMode = 'waypoint'; pickingWaypointIdx = idx;
-    document.getElementById('btnPickOrigin').innerText = "📍 Capturar en Mapa"; document.getElementById('btnPickOrigin').style.background = "";
-    document.getElementById('btnPickDest').innerText = "📍 Capturar en Mapa"; document.getElementById('btnPickDest').style.background = "";
-    renderWaypoints();
+pickingMode = 'waypoint';
+pickingWaypointIdx = idx;
+document.getElementById('btnPickOrigin').innerText = "📍 Capturar en Mapa";
+document.getElementById('btnPickOrigin').style.background = "";
+document.getElementById('btnPickDest').innerText = "📍 Capturar en Mapa";
+document.getElementById('btnPickDest').style.background = "";
+renderWaypoints();
 }
 function resetPickingButtons() {
-    pickingMode = null; pickingWaypointIdx = null;
-    document.getElementById('btnPickOrigin').innerText = "📍 Capturar en Mapa"; document.getElementById('btnPickOrigin').style.background = "";
-    document.getElementById('btnPickDest').innerText = "📍 Capturar en Mapa"; document.getElementById('btnPickDest').style.background = "";
-    renderWaypoints();
+pickingMode = null;
+pickingWaypointIdx = null;
+document.getElementById('btnPickOrigin').innerText = "📍 Capturar en Mapa";
+document.getElementById('btnPickOrigin').style.background = "";
+document.getElementById('btnPickDest').innerText = "📍 Capturar en Mapa";
+document.getElementById('btnPickDest').style.background = "";
+renderWaypoints();
 }
-
 function initMap() {
-    map = L.map('map').setView([4.65, -74.05], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-    routeLine = L.polyline([], { color: '#3b82f6', weight: 4 }).addTo(map);
-    orsRouteLine = L.polyline([], { color: '#f59e0b', weight: 3, dashArray: '8 4', opacity: 0.8 }).addTo(map);
-    const originIcon = L.divIcon({ html: '<div style="background:#16a34a;width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.7);"></div>', className: '', iconSize: [22, 22], iconAnchor: [11, 11] });
-    const destIcon = L.divIcon({ html: '<div style="background:#dc2626;width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.7);"></div>', className: '', iconSize: [22, 22], iconAnchor: [11, 11] });
-    map.on('dragstart', () => { isFollowing = false; document.getElementById('btnFollow').innerText = `Seguir: OFF`; });
-    map.on('click', function(e) {
-        if (pickingMode) {
-            const coordStr = `${e.latlng.lat.toFixed(6)},${e.latlng.lng.toFixed(6)}`;
-            if (pickingMode === 'origin') {
-                document.getElementById('orsOrigin').value = coordStr;
-                if (originMarker) map.removeLayer(originMarker);
-                originMarker = L.marker(e.latlng, { icon: originIcon }).addTo(map).bindPopup('📍 Origen');
-                startPicking('destination'); updateGPSOriginHint();
-            } else if (pickingMode === 'destination') {
-                document.getElementById('orsDestination').value = coordStr;
-                if (destinationMarker) map.removeLayer(destinationMarker);
-                destinationMarker = L.marker(e.latlng, { icon: destIcon }).addTo(map).bindPopup('🏁 Destino');
-                resetPickingButtons(); updateGPSOriginHint();
-            } else if (pickingMode === 'waypoint' && pickingWaypointIdx !== null) {
-                waypoints[pickingWaypointIdx] = coordStr;
-                resetPickingButtons(); renderWaypoints(); redrawWaypointMarkers();
-            }
-            return;
-        }
-        pendingClickLatLng = e.latlng; _editingPointIdx = null;
-        document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
-        document.getElementById('modalSelect').value = ""; document.getElementById('modalText').value = "";
-        document.getElementById('pointDialog').showModal();
-    });
+map = L.map('map').setView([4.65, -74.05], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+routeLine = L.polyline([], { color: '#3b82f6', weight: 4 }).addTo(map);
+orsRouteLine = L.polyline([], { color: '#f59e0b', weight: 3, dashArray: '8 4', opacity: 0.8 }).addTo(map);
+const originIcon = L.divIcon({
+html: '<div style="background:#16a34a;width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.7);"></div>',
+className: '',
+iconSize: [22, 22],
+iconAnchor: [11, 11]
+});
+const destIcon = L.divIcon({
+html: '<div style="background:#dc2626;width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.7);"></div>',
+className: '',
+iconSize: [22, 22],
+iconAnchor: [11, 11]
+});
+map.on('dragstart', () => {
+isFollowing = false;
+document.getElementById('btnFollow').innerText = `Seguir: OFF`;
+});
+map.on('click', function(e) {
+if (pickingMode) {
+const coordStr = `${e.latlng.lat.toFixed(6)},${e.latlng.lng.toFixed(6)}`;
+if (pickingMode === 'origin') {
+document.getElementById('orsOrigin').value = coordStr;
+if (originMarker) map.removeLayer(originMarker);
+originMarker = L.marker(e.latlng, { icon: originIcon }).addTo(map).bindPopup('📍 Origen');
+startPicking('destination');
+updateGPSOriginHint();
+} else if (pickingMode === 'destination') {
+document.getElementById('orsDestination').value = coordStr;
+if (destinationMarker) map.removeLayer(destinationMarker);
+destinationMarker = L.marker(e.latlng, { icon: destIcon }).addTo(map).bindPopup('🏁 Destino');
+resetPickingButtons();
+updateGPSOriginHint();
+} else if (pickingMode === 'waypoint' && pickingWaypointIdx !== null) {
+waypoints[pickingWaypointIdx] = coordStr;
+resetPickingButtons();
+renderWaypoints();
+redrawWaypointMarkers();
 }
-
-function cancelPointModal() { document.getElementById('pointDialog').close(); pendingClickLatLng = null; _editingPointIdx = null; }
+return;
+}
+pendingClickLatLng = e.latlng;
+_editingPointIdx = null;
+document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
+document.getElementById('modalSelect').value = "";
+document.getElementById('modalText').value = "";
+document.getElementById('pointDialog').showModal();
+});
+}
+function cancelPointModal() {
+document.getElementById('pointDialog').close();
+document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
+pendingClickLatLng = null;
+_editingPointIdx = null;
+}
 function acceptPointModal() {
-    const selectVal = document.getElementById('modalSelect').value;
-    const textVal = document.getElementById('modalText').value.trim();
-    let finalMessage = textVal !== "" ? textVal : selectVal;
-    if (!finalMessage || finalMessage.trim() === "") { alert('¡Advertencia! No has escrito ni seleccionado nada.'); return; }
-    if (_editingPointIdx !== null) {
-        const idx = _editingPointIdx;
-        if (idx >= 0 && idx < points.length) {
-            const rawMsg = finalMessage.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-            if (rawMsg === 'ESTADISTICAS') { points[idx].type = 'ESTADISTICAS'; points[idx].msg = ''; }
-            else { points[idx].type = 'INFO'; points[idx].msg = finalMessage.trim(); }
-            rebuildTextarea(); redrawPointMarkers(); updateTable(); renderPointsList();
-            logHistory(`Pto ${idx + 1} editado: "${points[idx].msg || points[idx].type}".`);
-        }
-        _editingPointIdx = null;
-        document.getElementById('pointDialog').close();
-        document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
-        return;
-    }
-    if (pendingClickLatLng) {
-        const line = `${pendingClickLatLng.lat.toFixed(6)},${pendingClickLatLng.lng.toFixed(6)},${finalMessage.trim()}`;
-        const textarea = document.getElementById('inputData');
-        textarea.value = textarea.value.trim() ? textarea.value.trim() + '\n' + line : line;
-        loadPoints(true);
-    }
-    document.getElementById('pointDialog').close();
-    document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
-    pendingClickLatLng = null;
+const selectVal = document.getElementById('modalSelect').value;
+const textVal = document.getElementById('modalText').value.trim();
+let finalMessage = textVal !== "" ? textVal : selectVal;
+if (!finalMessage || finalMessage.trim() === "") {
+alert('¡Advertencia! No has escrito ni seleccionado nada. El punto no se creará.');
+return;
 }
-
+if (_editingPointIdx !== null) {
+const idx = _editingPointIdx;
+if (idx >= 0 && idx < points.length) {
+const rawMsg = finalMessage.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+if (rawMsg === 'ESTADISTICAS') {
+points[idx].type = 'ESTADISTICAS';
+points[idx].msg  = '';
+} else {
+points[idx].type = 'INFO';
+points[idx].msg  = finalMessage.trim();
+}
+rebuildTextarea();
+redrawPointMarkers();
+updateTable();
+renderPointsList();
+logHistory(`Pto ${idx + 1} editado: "${points[idx].msg || points[idx].type}".`);
+}
+_editingPointIdx = null;
+document.getElementById('pointDialog').close();
+document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
+return;
+}
+if (pendingClickLatLng) {
+const line = `${pendingClickLatLng.lat.toFixed(6)},${pendingClickLatLng.lng.toFixed(6)},${finalMessage.trim()}`;
+const textarea = document.getElementById('inputData');
+textarea.value = textarea.value.trim() ? textarea.value.trim() + '\n' + line : line;
+loadPoints(true);
+}
+document.getElementById('pointDialog').close();
+document.getElementById('pointDialog').querySelector('h3').textContent = 'Configurar Punto Nuevo';
+pendingClickLatLng = null;
+}
 function saveOrsKey() {
-    const val = document.getElementById('orsApiKeyInput').value.trim();
-    if (!val) { alert("El campo está vacío."); return; }
-    localStorage.setItem('ors_api_key', val);
-    alert("Clave guardada correctamente.");
+const val = document.getElementById('orsApiKeyInput').value.trim();
+if (!val) { alert("El campo está vacío. Escribe tu API key antes de guardar."); return; }
+localStorage.setItem('ors_api_key', val);
+alert("Clave guardada correctamente.");
 }
-
-function addWaypoint() { waypoints.push(''); renderWaypoints(); redrawWaypointMarkers(); }
-function removeWaypoint(idx) { if (idx < 0 || idx >= waypoints.length) return; waypoints.splice(idx, 1); renderWaypoints(); redrawWaypointMarkers(); }
-function moveWaypointUp(idx) { if (idx > 0) { [waypoints[idx-1], waypoints[idx]] = [waypoints[idx], waypoints[idx-1]]; renderWaypoints(); redrawWaypointMarkers(); } }
-function moveWaypointDown(idx) { if (idx < waypoints.length-1) { [waypoints[idx], waypoints[idx+1]] = [waypoints[idx+1], waypoints[idx]]; renderWaypoints(); redrawWaypointMarkers(); } }
-function updateWaypointValue(idx, value) { waypoints[idx] = value; redrawWaypointMarkers(); }
-
+function addWaypoint() {
+waypoints.push('');
+renderWaypoints();
+redrawWaypointMarkers();
+}
+function removeWaypoint(idx) {
+if (idx < 0 || idx >= waypoints.length) return;
+waypoints.splice(idx, 1);
+renderWaypoints();
+redrawWaypointMarkers();
+}
+function moveWaypointUp(idx) {
+if (idx <= 0 || idx >= waypoints.length) return;
+[waypoints[idx - 1], waypoints[idx]] = [waypoints[idx], waypoints[idx - 1]];
+renderWaypoints();
+redrawWaypointMarkers();
+}
+function moveWaypointDown(idx) {
+if (idx < 0 || idx >= waypoints.length - 1) return;
+[waypoints[idx], waypoints[idx + 1]] = [waypoints[idx + 1], waypoints[idx]];
+renderWaypoints();
+redrawWaypointMarkers();
+}
+function updateWaypointValue(idx, value) {
+waypoints[idx] = value;
+redrawWaypointMarkers();
+}
 function renderWaypoints() {
-    const container = document.getElementById('waypointsList'); container.innerHTML = '';
-    waypoints.forEach((wp, idx) => {
-        const div = document.createElement('div'); div.className = 'waypoint-item';
-        const isCap = pickingMode === 'waypoint' && pickingWaypointIdx === idx;
-        div.innerHTML = `<input type="text" value="${escapeHtml(wp)}" placeholder="Ej: 4.6534,-74.0543" onchange="updateWaypointValue(${idx}, this.value)" />
-            <button class="waypoint-btn" onclick="startPickingWaypoint(${idx})" style="${isCap?'background:var(--accent);':''}" title="Capturar en mapa">${isCap?'⌛':'📍'}</button>
-            <div class="waypoint-controls">
-                <button class="waypoint-btn" onclick="moveWaypointUp(${idx})" title="Subir">↑</button>
-                <button class="waypoint-btn" onclick="moveWaypointDown(${idx})" title="Bajar">↓</button>
-                <button class="waypoint-btn" onclick="removeWaypoint(${idx})" title="Eliminar" style="background:var(--danger);">✕</button>
-            </div>`;
-        container.appendChild(div);
-    });
+const container = document.getElementById('waypointsList');
+container.innerHTML = '';
+waypoints.forEach((wp, idx) => {
+const div = document.createElement('div');
+div.className = 'waypoint-item';
+const isCapturing = pickingMode === 'waypoint' && pickingWaypointIdx === idx;
+const captureBtnText = isCapturing ? '⌛ Toca el mapa...' : '📍';
+const captureBtnStyle = isCapturing ? 'background:var(--accent);' : '';
+div.innerHTML = `
+<input type="text" value="${escapeHtml(wp)}" placeholder="Ej: 4.6534,-74.0543"
+onchange="updateWaypointValue(${idx}, this.value)" />
+<button class="waypoint-btn" onclick="startPickingWaypoint(${idx})"
+style="${captureBtnStyle}" title="Capturar en mapa">${captureBtnText}</button>
+<div class="waypoint-controls">
+<button class="waypoint-btn" onclick="moveWaypointUp(${idx})" title="Subir">↑</button>
+<button class="waypoint-btn" onclick="moveWaypointDown(${idx})" title="Bajar">↓</button>
+<button class="waypoint-btn" onclick="removeWaypoint(${idx})" title="Eliminar" style="background:var(--danger);">✕</button>
+</div>
+`;
+container.appendChild(div);
+});
 }
-
 function redrawWaypointMarkers() {
-    if (!map) return;
-    waypointMarkers.forEach(m => map.removeLayer(m)); waypointMarkers = [];
-    const icon = L.divIcon({ html: '<div style="background:#f59e0b;width:18px;height:18px;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.5);"></div>', className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
-    waypoints.forEach((wpStr, idx) => {
-        if (!wpStr) return;
-        const c = wpStr.split(',').map(x => parseFloat(x.trim()));
-        if (c.length === 2 && !isNaN(c[0]) && !isNaN(c[1]))
-            waypointMarkers.push(L.marker([c[0], c[1]], { icon }).addTo(map).bindPopup(`Waypoint ${idx + 1}`));
-    });
+if (!map) return;
+waypointMarkers.forEach(m => map.removeLayer(m));
+waypointMarkers = [];
+const waypointIcon = L.divIcon({
+html: '<div style="background:#f59e0b;width:18px;height:18px;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.5);"></div>',
+className: '',
+iconSize: [18, 18],
+iconAnchor: [9, 9]
+});
+waypoints.forEach((wpStr, idx) => {
+if (!wpStr) return;
+const coords = wpStr.split(',').map(c => parseFloat(c.trim()));
+if (coords.length !== 2 || isNaN(coords[0]) || isNaN(coords[1])) return;
+const marker = L.marker([coords[0], coords[1]], { icon: waypointIcon })
+.addTo(map)
+.bindPopup(`Waypoint ${idx + 1}`);
+waypointMarkers.push(marker);
+});
 }
 
+// 🆕 CALCULAR RUTA - LEE LOS 4 PARÁMETROS Y LOS PASA
 async function calculateORSRoute() {
-    const orsApiKey = localStorage.getItem('ors_api_key') || '';
-    if (!orsApiKey) { alert("Primero guarda tu API key."); return; }
-    let originVal = document.getElementById('orsOrigin').value.trim();
-    const destVal = document.getElementById('orsDestination').value.trim();
-    const profile = document.getElementById('orsProfile').value;
-    if (!originVal && watchId !== null && lastPosition) {
-        originVal = `${lastPosition.coords.latitude.toFixed(6)},${lastPosition.coords.longitude.toFixed(6)}`;
-        document.getElementById('orsOrigin').value = originVal;
-        logHistory("Usando ubicación GPS actual como origen automático.");
-    }
-    if (!originVal || !destVal) { alert("Introduce origen y destino."); return; }
-    const oc = originVal.split(',').map(c => parseFloat(c.trim())), dc = destVal.split(',').map(c => parseFloat(c.trim()));
-    if (oc.length !== 2 || dc.length !== 2 || isNaN(oc[0]) || isNaN(dc[0])) { alert("Formato inválido."); return; }
-    
-    const intervalo = parseFloat(document.getElementById('intervaloInput').value) || 1;
-    const offsetMetros = parseFloat(document.getElementById('offsetInput').value) || 8;
-    const umbralCR = parseInt(document.getElementById('umbralCRInput').value) || 150;
-    const bufferCR = parseInt(document.getElementById('bufferCRInput').value) || 150;
-    
-    const coordinates = [[oc[1], oc[0]]];
-    waypoints.forEach(w => { const c = w.split(',').map(x => parseFloat(x.trim())); if (c.length === 2 && !isNaN(c[0])) coordinates.push([c[1], c[0]]); });
-    coordinates.push([dc[1], dc[0]]);
-    
-    try {
-        logHistory("🌐 Llamando a API de ORS (con extra_info)...");
-        const res = await fetch(`https://api.openrouteservice.org/v2/directions/${profile}`, {
-            method: 'POST',
-            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': orsApiKey },
-            body: JSON.stringify({
-                coordinates, language: "es", preference: document.getElementById('orsPreference').value,
-                instructions: true, instructions_format: "text",
-                extra_info: ["waytype", "waycategory"], geometry_simplify: false
-            })
-        });
-        if (!res.ok) throw new Error(`Error ORS: ${res.status}`);
-        const data = await res.json();
-        logHistory("✅ Respuesta recibida");
-        if (!data.routes || data.routes.length === 0) { alert("No se encontró ruta."); return; }
-        
-        if (!edgesData) logHistory("⚠️ Edges no cargados: avisos anticipados aproximados");
-        else logHistory(`✅ Usando ${edgesData.cruces.length} cruces para avisos precisos`);
-        
-        logHistory("🔄 Procesando ruta con lógica completa...");
-        const resultado = procesarRutaCompleta(data, intervalo, offsetMetros, umbralCR, bufferCR);
-        const { puntos, stats } = resultado;
-        
-        if (puntos.length === 0) { alert("No se pudieron generar instrucciones."); return; }
-        
-        const ta = document.getElementById('inputData');
-        const newContent = puntos.map(p => `${p.lat.toFixed(6)},${p.lon.toFixed(6)},${p.msg},ORS`).join('\n');
-        ta.value = ta.value.trim() ? ta.value.trim() + '\n' + newContent : newContent;
-        loadPoints(true);
-        
-        const routeCoords = decodePolyline(data.routes[0].geometry);
-        const leafletCoords = routeCoords.map(c => [c.lat, c.lon]);
-        if (orsRouteLine) orsRouteLine.setLatLngs(leafletCoords);
-        if (leafletCoords.length > 0 && map) map.fitBounds(L.polyline(leafletCoords).getBounds());
-        
-        logHistory(`✅ Ruta procesada: ${stats.total} instrucciones`);
-        alert(`¡Ruta calculada con éxito!\n\n📋 ${stats.total} instrucciones generadas\n📏 ${(stats.distancia/1000).toFixed(2)} km\n⇤ ${stats.giros_leves} giros leves\n🔄 ${stats.fusiones} fusiones\n🔔 ${stats.anticipados} avisos anticipados${stats.edges_cargados ? ' (precisos)' : ' (aproximados)'}\n➡️ ${stats.continue_recto} "Continúe recto"\n🎯 ${stats.continue_recto_con_lado} "Continúe recto" con lado`);
-    } catch (error) {
-        console.error(error);
-        logHistory(`Error: ${error.message}`);
-        alert(`Error: ${error.message}`);
-    }
+const orsApiKey = localStorage.getItem('ors_api_key') || '';
+if (!orsApiKey) {
+alert("Primero debes guardar tu API key de OpenRouteService en el campo de arriba.");
+return;
+}
+let originVal = document.getElementById('orsOrigin').value.trim();
+const destVal = document.getElementById('orsDestination').value.trim();
+const profile = document.getElementById('orsProfile').value;
+if (!originVal && watchId !== null && lastPosition) {
+originVal = `${lastPosition.coords.latitude.toFixed(6)},${lastPosition.coords.longitude.toFixed(6)}`;
+document.getElementById('orsOrigin').value = originVal;
+logHistory("Usando ubicación GPS actual como origen automático.");
+}
+if (!originVal || !destVal) {
+alert("Por favor, introduce las coordenadas de origen y destino (o inicia la navegación para usar GPS como origen).");
+return;
+}
+const originCoords = originVal.split(',').map(c => parseFloat(c.trim()));
+const destCoords = destVal.split(',').map(c => parseFloat(c.trim()));
+if (originCoords.length !== 2 || isNaN(originCoords[0]) || isNaN(originCoords[1]) ||
+destCoords.length !== 2 || isNaN(destCoords[0]) || isNaN(destCoords[1])) {
+alert("El formato de origen o destino es inválido. Debe ser: latitud,longitud");
+return;
+}
+
+// 🆕 LEER PARÁMETROS PERSONALIZABLES
+const intervalo = parseFloat(document.getElementById('intervaloInput').value) || 1;
+const offsetMetros = parseFloat(document.getElementById('offsetInput').value) || 8;
+const umbralCR = parseInt(document.getElementById('umbralCRInput').value) || 150;
+const bufferCR = parseInt(document.getElementById('bufferCRInput').value) || 150;
+
+const coordinates = [
+[originCoords[1], originCoords[0]]
+];
+waypoints.forEach(wpStr => {
+if (!wpStr) return;
+const coords = wpStr.split(',').map(c => parseFloat(c.trim()));
+if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+coordinates.push([coords[1], coords[0]]);
+}
+});
+coordinates.push([destCoords[1], destCoords[0]]);
+const url = `https://api.openrouteservice.org/v2/directions/${profile}`;
+const bodyData = {
+coordinates: coordinates,
+language: "es",
+preference: document.getElementById('orsPreference').value,
+instructions: true,
+instructions_format: "text",
+extra_info: ["waytype", "waycategory"],
+geometry_simplify: false
+};
+try {
+logHistory("Solicitando ruta automática a OpenRouteService (con extra_info)...");
+const response = await fetch(url, {
+method: 'POST',
+headers: {
+'Accept': 'application/json, application/geo+json',
+'Content-Type': 'application/json',
+'Authorization': orsApiKey
+},
+body: JSON.stringify(bodyData)
+});
+if (!response.ok) throw new Error(`Error en el servidor ORS: ${response.status}`);
+const data = await response.json();
+if (!data.routes || data.routes.length === 0) {
+alert("No se encontró ninguna ruta válida para los puntos indicados.");
+return;
+}
+
+if (!edgesData) logHistory("⚠️ Edges no cargados: avisos anticipados aproximados");
+else logHistory(`✅ Usando ${edgesData.cruces.length} cruces para avisos precisos`);
+
+// 🆕 PASAR LOS 4 PARÁMETROS A LA FUNCIÓN
+const resultado = procesarRutaCompleta(data, intervalo, offsetMetros, umbralCR, bufferCR);
+const { puntos, stats } = resultado;
+if (puntos.length === 0) {
+alert("Ruta recibida pero no se pudieron generar instrucciones utilizables.");
+return;
+}
+const plainTextLines = puntos.map(p =>
+`${p.lat.toFixed(6)},${p.lon.toFixed(6)},${p.msg},ORS`
+);
+const textarea = document.getElementById('inputData');
+const existingContent = textarea.value.trim();
+const newContent = plainTextLines.join('\n');
+if (existingContent) {
+textarea.value = existingContent + '\n' + newContent;
+logHistory(`Ruta de ORS agregada al final de los puntos existentes.`);
+} else {
+textarea.value = newContent;
+}
+loadPoints(true);
+const leafletCoords = stats.routeCoords.map(c => [c.lat, c.lon]);
+if (orsRouteLine) {
+orsRouteLine.setLatLngs(leafletCoords);
+}
+if (leafletCoords.length > 0 && map) {
+map.fitBounds(L.polyline(leafletCoords).getBounds());
+}
+logHistory(`Ruta procesada: ${stats.total} instrucciones`);
+alert(`¡Ruta calculada con éxito!\n\n📋 ${stats.total} instrucciones generadas\n📏 ${(stats.distancia/1000).toFixed(2)} km\n⇤ ${stats.giros_leves} giros leves\n🔄 ${stats.fusiones} fusiones\n🔔 ${stats.anticipados} avisos anticipados${stats.edges_cargados ? ' (precisos)' : ' (aproximados)'}\n🎯 ${stats.continue_recto_con_lado} "Continúe recto" con lado`);
+} catch (error) {
+console.error(error);
+logHistory(`Error al calcular ruta: ${error.message}`);
+alert(`Error al conectar con OpenRouteService: ${error.message}\nVerifica que tu 'orsApiKey' esté configurada correctamente.`);
+}
 }
 
 function refreshVoices() {
-    let rawVoices = synth.getVoices().filter(v => (v.lang || '').toLowerCase().startsWith('es'));
-    rawVoices.sort((a, b) => (a.localService && !b.localService) ? -1 : (!a.localService && b.localService) ? 1 : 0);
-    voices = rawVoices;
-    const select = document.getElementById('voiceSelect'); const previous = select.value;
-    select.innerHTML = '';
-    if (!voices.length) { select.innerHTML = '<option value="">Cargando...</option>'; return; }
-    voices.forEach((v, i) => { const o = document.createElement('option'); o.value = i; o.textContent = `${v.name} (${v.lang})`; select.appendChild(o); });
-    const saved = localStorage.getItem('gps_voice_idx');
-    if (saved && voices[saved]) select.value = saved;
-    else if (previous && voices[previous]) select.value = previous;
-    else select.value = '0';
+let rawVoices = synth.getVoices().filter(v => {
+const lang = (v.lang || '').toLowerCase();
+return lang.startsWith('es');
+});
+rawVoices.sort((a, b) => {
+if (a.localService && !b.localService) return -1;
+if (!a.localService && b.localService) return 1;
+return 0;
+});
+voices = rawVoices;
+const select = document.getElementById('voiceSelect');
+const previous = select.value;
+select.innerHTML = '';
+if (!voices.length) {
+select.innerHTML = '<option value="">Cargando voces...</option>';
+return;
 }
-document.getElementById('voiceSelect').addEventListener('change', function() { localStorage.setItem('gps_voice_idx', this.value); });
+voices.forEach((voice, idx) => {
+const opt = document.createElement('option');
+opt.value = String(idx);
+opt.textContent = `${voice.name} (${voice.lang})`;
+select.appendChild(opt);
+});
+const saved = localStorage.getItem('gps_voice_idx');
+if (saved && voices[parseInt(saved, 10)]) select.value = saved;
+else if (previous && voices[parseInt(previous, 10)]) select.value = previous;
+else select.value = '0';
+}
+document.getElementById('voiceSelect').addEventListener('change', function() {
+localStorage.setItem('gps_voice_idx', this.value);
+});
 synth.onvoiceschanged = refreshVoices;
 setTimeout(refreshVoices, 300);
-
 function applyAccentCorrections(text) {
-    const corrections = { "estadisticas": "estadísticas", "kilometros": "kilómetros", "rapido": "rápido", "precaucion": "precaución", "atencion": "atención", "proximo": "próximo", "camara": "cámara" };
-    let corrected = text;
-    for (const [w, r] of Object.entries(corrections)) corrected = corrected.replace(new RegExp(`\\b${w}\\b`, 'gi'), r);
-    return corrected;
+const corrections = {
+"estadisticas": "estadísticas",
+"kilometros": "kilómetros",
+"rapido": "rápido",
+"precaucion": "precaución",
+"atencion": "atención",
+"proximo": "próximo",
+"camara": "cámara"
+};
+let corrected = text;
+for (const [wrong, right] of Object.entries(corrections)) {
+const regex = new RegExp(`\\b${wrong}\\b`, 'gi');
+corrected = corrected.replace(regex, right);
 }
-
+return corrected;
+}
 function numToWordsEs(n) {
-    const ones = ['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve'];
-    const tens = ['','diez','veinte','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'];
-    const hundreds = ['','ciento','doscientos','trescientos','cuatrocientos','quinientos','seiscientos','setecientos','ochocientos','novecientos'];
-    if (n < 0) return 'menos ' + numToWordsEs(-n);
-    if (n === 0) return 'cero';
-    if (n === 100) return 'cien';
-    if (n < 20) return ones[n];
-    if (n < 30) return n === 20 ? 'veinte' : 'veinti' + ones[n - 20];
-    if (n < 100) { const t = Math.floor(n / 10), u = n % 10; return u === 0 ? tens[t] : tens[t] + ' y ' + ones[u]; }
-    if (n < 1000) { const h = Math.floor(n / 100), rest = n % 100; return rest === 0 ? hundreds[h] : hundreds[h] + ' ' + numToWordsEs(rest); }
-    return String(n);
+const ones = ['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve',
+'diez','once','doce','trece','catorce','quince','dieciséis','diecisiete',
+'dieciocho','diecinueve'];
+const tens = ['','diez','veinte','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'];
+const hundreds = ['','ciento','doscientos','trescientos','cuatrocientos','quinientos',
+'seiscientos','setecientos','ochocientos','novecientos'];
+if (n < 0)    return 'menos ' + numToWordsEs(-n);
+if (n === 0)  return 'cero';
+if (n === 100) return 'cien';
+if (n < 20)   return ones[n];
+if (n < 30)   return n === 20 ? 'veinte' : 'veinti' + ones[n - 20];
+if (n < 100) {
+const t = Math.floor(n / 10), u = n % 10;
+return u === 0 ? tens[t] : tens[t] + ' y ' + ones[u];
 }
-
-function applyNumbersToWords(text) { return text.replace(/(?<![.\d])(\d+)(?![.\d])/g, (m) => { const n = parseInt(m, 10); return (n >= 0 && n <= 999) ? numToWordsEs(n) : m; }); }
-
+if (n < 1000) {
+const h = Math.floor(n / 100), rest = n % 100;
+return rest === 0 ? hundreds[h] : hundreds[h] + ' ' + numToWordsEs(rest);
+}
+return String(n);
+}
+function applyNumbersToWords(text) {
+return text.replace(/(?<![.\d])(\d+)(?![.\d])/g, (match) => {
+const n = parseInt(match, 10);
+return (n >= 0 && n <= 999) ? numToWordsEs(n) : match;
+});
+}
 function speak(text, onDone) {
-    const textToRead = applyAccentCorrections(applyNumbersToWords(text));
-    const u = new SpeechSynthesisUtterance(textToRead);
-    const v = voices[document.getElementById('voiceSelect').value || '0'];
-    if (v) u.voice = v;
-    u.volume = parseFloat(document.getElementById('voiceVolume').value || '1');
-    if (currentAudio && !currentAudio.paused) { currentAudio.pause(); currentAudio.dataset.wasPlaying = '1'; }
-    currentSpeech = true; synth.cancel();
-    u.onend = () => { currentSpeech = false; if (currentAudio && currentAudio.dataset.wasPlaying === '1') { currentAudio.play().catch(()=>{}); delete currentAudio.dataset.wasPlaying; } if (typeof onDone === 'function') onDone(); };
-    u.onerror = u.onend; synth.speak(u);
+const textToRead = applyAccentCorrections(applyNumbersToWords(text));
+const utterance = new SpeechSynthesisUtterance(textToRead);
+const voice = voices[parseInt(document.getElementById('voiceSelect').value || '0', 10)];
+if (voice) utterance.voice = voice;
+utterance.volume = parseFloat(document.getElementById('voiceVolume').value || '1');
+if (currentAudio && !currentAudio.paused) {
+currentAudio.pause();
+currentAudio.dataset.wasPlaying = '1';
 }
-
-function testVoice() { speak("Probando estadísticas. 40 kilómetros. Atención."); }
-
+currentSpeech = true;
+synth.cancel();
+utterance.onend = () => {
+currentSpeech = false;
+if (currentAudio && currentAudio.dataset.wasPlaying === '1') {
+currentAudio.play().catch(() => {});
+delete currentAudio.dataset.wasPlaying;
+}
+if (typeof onDone === 'function') onDone();
+};
+utterance.onerror = utterance.onend;
+synth.speak(utterance);
+}
+function testVoice() {
+speak("Probando estadísticas. 40 kilometros. Atención.");
+}
 function currentStats() {
-    const now = new Date(), elapsed = startTime ? (Date.now() - startTime - totalPausedMs) : 0;
-    let h = now.getHours(), m = now.getMinutes();
-    if (h > 12) h -= 12; if (h === 0) h = 12;
-    return { timeText: m === 0 ? `${h} en punto` : `${h} y ${m}`, currSpeedText: Math.round(currentPositionSpeedKmh || 0), avgSpeedText: Math.round(elapsed > 0 ? ((totalDistanceMeters / (elapsed / 1000)) * 3.6) : 0), distanceText: totalDistanceMeters / 1000, tripMinutesText: Math.max(1, Math.round(elapsed / 60000)), accuracyText: latestAccuracy != null ? Math.round(latestAccuracy) : 0 };
+const now = new Date();
+const elapsed = startTime ? (Date.now() - startTime - totalPausedMs) : 0;
+const avgSpeed = elapsed > 0 ? ((totalDistanceMeters / (elapsed / 1000)) * 3.6) : 0;
+const currSpeed = currentPositionSpeedKmh || 0;
+let h = now.getHours();
+let m = now.getMinutes();
+if (h > 12) h -= 12;
+if (h === 0) h = 12;
+const timeText = m === 0 ? `${h} en punto` : `${h} y ${m}`;
+return {
+timeText,
+currSpeedText: Math.round(currSpeed),
+avgSpeedText: Math.round(avgSpeed),
+distanceText: totalDistanceMeters / 1000,
+tripMinutesText: Math.max(1, Math.round(elapsed / 60000)),
+accuracyText: latestAccuracy != null ? Math.round(latestAccuracy) : 0
+};
 }
-
-function buildStatsMessage() { const s = currentStats(); return `Son las ${s.timeText}. Velocidad actual ${s.currSpeedText} kilómetros por hora. Velocidad media ${s.avgSpeedText} kilómetros por hora. Distancia recorrida ${s.distanceText.toFixed(1)} kilómetros. Tiempo de viaje ${s.tripMinutesText} minutos. Precisión del GPS ${s.accuracyText} metros.`; }
-
+function buildStatsMessage() {
+const s = currentStats();
+return `Son las ${s.timeText}. Velocidad actual ${s.currSpeedText} kilómetros por hora. Velocidad media ${s.avgSpeedText} kilómetros por hora. Distancia recorrida ${s.distanceText.toFixed(1)} kilómetros. Tiempo de viaje ${s.tripMinutesText} minutos. Precisión del GPS ${s.accuracyText} metros.`;
+}
 function parseLine(line) {
-    const trimmed = line.trim(); if (!trimmed) return null;
-    const c1 = trimmed.indexOf(','), c2 = trimmed.indexOf(',', c1+1);
-    if (c1 === -1 || c2 === -1) return null;
-    const lat = parseFloat(trimmed.substring(0, c1).trim()), lon = parseFloat(trimmed.substring(c1+1, c2).trim());
-    if (isNaN(lat) || isNaN(lon)) return null;
-    let rest = trimmed.substring(c2+1).trim(), source = 'MANUAL', msg = rest, type = 'INFO';
-    const lc = rest.lastIndexOf(',');
-    if (lc !== -1) { const pot = rest.substring(lc+1).trim().toUpperCase(); if (pot === 'ORS' || pot === 'MANUAL') { msg = rest.substring(0, lc).trim(); source = pot; } }
-    const rawRest = msg.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-    if (rawRest === 'ESTADISTICAS') { type = 'ESTADISTICAS'; msg = ''; }
-    return { lat, lon, type, msg, triggered: false, anticipated: false, source };
+const trimmed = line.trim();
+if (!trimmed) return null;
+const firstComma = trimmed.indexOf(',');
+if (firstComma === -1) return null;
+const secondComma = trimmed.indexOf(',', firstComma + 1);
+if (secondComma === -1) return null;
+const latStr = trimmed.substring(0, firstComma).trim();
+const lonStr = trimmed.substring(firstComma + 1, secondComma).trim();
+const rest   = trimmed.substring(secondComma + 1).trim();
+const lat = parseFloat(latStr);
+const lon = parseFloat(lonStr);
+if (isNaN(lat) || isNaN(lon) || !rest) return null;
+let messagePart = rest;
+let sourcePart = 'MANUAL';
+const lastComma = rest.lastIndexOf(',');
+if (lastComma !== -1) {
+const potentialSource = rest.substring(lastComma + 1).trim().toUpperCase();
+if (potentialSource === 'ORS' || potentialSource === 'MANUAL') {
+messagePart = rest.substring(0, lastComma).trim();
+sourcePart = potentialSource;
 }
-
+}
+const rawRest = messagePart.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+let type = 'INFO';
+let msg  = '';
+if (rawRest === 'ESTADISTICAS') {
+type = 'ESTADISTICAS';
+} else {
+msg = messagePart;
+}
+return {
+lat,
+lon,
+type,
+msg,
+triggered: false,
+anticipated: false,
+source: sourcePart
+};
+}
 function loadPoints(skipConfirm) {
-    if (!skipConfirm) { const hasProgress = watchId !== null && points.some(p => p.triggered); if (hasProgress) { if (!confirm('¿Cargar nuevos puntos y perder el progreso?')) return; } }
-    points = document.getElementById('inputData').value.split('\n').map(parseLine).filter(p => p !== null);
-    updateTable(); redrawPointMarkers(); renderPointsList();
+if (!skipConfirm) {
+const hasProgress = watchId !== null && points.some(p => p.triggered);
+if (hasProgress) {
+if (!confirm('Estás en medio de una ruta activa. ¿Cargar nuevos puntos y perder el progreso actual?')) return false;
 }
-
+}
+const text = document.getElementById('inputData').value;
+points = text.split('\n').map(line => parseLine(line)).filter(p => p !== null);
+updateTable();
+redrawPointMarkers();
+renderPointsList();
+return true;
+}
 function renderPointsList() {
-    const container = document.getElementById('pointsListContainer'); container.innerHTML = '';
-    points.forEach((p, idx) => {
-        const div = document.createElement('div'); div.className = 'point-item'; div.id = `point-item-${idx}`;
-        const streetViewUrl = `https://www.google.com/maps/@${p.lat},${p.lon},3a,75y,0h,90t`;
-        div.innerHTML = `<span class="point-number">${idx+1}.</span><a class="point-link" href="${streetViewUrl}" target="_blank">${p.lat.toFixed(6)},${p.lon.toFixed(6)}</a><span class="point-msg">${p.msg || p.type}</span><button class="point-delete" onclick="deletePointFromList(${idx})">✕</button>`;
-        div.onclick = (e) => { if (e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') highlightPointOnMap(idx); };
-        container.appendChild(div);
-    });
-    if (points.length === 0) container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--muted);">No hay puntos cargados</div>';
+const container = document.getElementById('pointsListContainer');
+container.innerHTML = '';
+points.forEach((p, idx) => {
+const div = document.createElement('div');
+div.className = 'point-item';
+div.id = `point-item-${idx}`;
+const coordStr = `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
+const streetViewUrl = `https://www.google.com/maps/@${p.lat},${p.lon},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192`;
+const numberSpan = document.createElement('span');
+numberSpan.className = 'point-number';
+numberSpan.textContent = `${idx + 1}.`;
+const linkElement = document.createElement('a');
+linkElement.className = 'point-link';
+linkElement.href = streetViewUrl;
+linkElement.target = '_blank';
+linkElement.textContent = coordStr;
+linkElement.addEventListener('click', function(e) {
+e.stopPropagation();
+highlightPointOnMap(idx);
+});
+const msgSpan = document.createElement('span');
+msgSpan.className = 'point-msg';
+msgSpan.textContent = p.msg || p.type;
+const deleteBtn = document.createElement('button');
+deleteBtn.className = 'point-delete';
+deleteBtn.innerHTML = '✕';
+deleteBtn.title = 'Eliminar';
+deleteBtn.onclick = function(e) {
+e.stopPropagation();
+deletePointFromList(idx);
+};
+div.appendChild(numberSpan);
+div.appendChild(linkElement);
+div.appendChild(msgSpan);
+div.appendChild(deleteBtn);
+div.addEventListener('click', function(e) {
+if (e.target !== linkElement && e.target !== deleteBtn) {
+highlightPointOnMap(idx);
 }
-
-function highlightPointOnMap(idx) { if (map && pointMarkers[idx]) { map.setView([points[idx].lat, points[idx].lon], 16); pointMarkers[idx].openPopup(); } }
-function highlightPointInList(idx) { document.querySelectorAll('.point-item.highlighted').forEach(el => el.classList.remove('highlighted')); const item = document.getElementById(`point-item-${idx}`); if (item) { item.classList.add('highlighted'); item.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } }
-function deletePointFromList(idx) { if (!confirm(`¿Eliminar Pto ${idx+1}?`)) return; points.splice(idx, 1); rebuildTextarea(); redrawPointMarkers(); updateTable(); renderPointsList(); }
-function toggleRawMode() { document.getElementById('inputData').classList.toggle('show-raw'); }
-
+});
+container.appendChild(div);
+});
+if (points.length === 0) {
+container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--muted);">No hay puntos cargados</div>';
+}
+}
+function highlightPointOnMap(idx) {
+if (idx < 0 || idx >= points.length) return;
+if (map && pointMarkers[idx]) {
+map.setView([points[idx].lat, points[idx].lon], Math.max(map.getZoom(), 16));
+pointMarkers[idx].openPopup();
+}
+}
+function highlightPointInList(idx) {
+document.querySelectorAll('.point-item.highlighted').forEach(el => {
+el.classList.remove('highlighted');
+});
+const item = document.getElementById(`point-item-${idx}`);
+if (item) {
+item.classList.add('highlighted');
+item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+highlightedPointIdx = idx;
+}
+function deletePointFromList(idx) {
+if (idx < 0 || idx >= points.length) return;
+const label = points[idx].msg || points[idx].type;
+if (!confirm(`¿Eliminar el Pto ${idx + 1}: "${label}"?`)) return;
+if (map) map.closePopup();
+logHistory(`Pto ${idx + 1} eliminado: "${label}".`);
+points.splice(idx, 1);
+rebuildTextarea();
+redrawPointMarkers();
+updateTable();
+renderPointsList();
+}
+function toggleRawMode() {
+const textarea = document.getElementById('inputData');
+const listContainer = document.getElementById('pointsListContainer');
+if (textarea.classList.contains('show-raw')) {
+textarea.classList.remove('show-raw');
+listContainer.style.display = 'block';
+} else {
+textarea.classList.add('show-raw');
+listContainer.style.display = 'none';
+}
+}
 function updateTable() {
-    const tbody = document.getElementById('pointsBody'); tbody.innerHTML = '';
-    points.forEach((p, idx) => {
-        let dist = '-';
-        if (lastPosition) dist = Math.round(getDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, p.lat, p.lon)) + ' m';
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${idx+1}</td><td>${escapeHtml(p.msg || p.type)}</td><td>${dist}</td><td>${p.triggered ? '✅' : '⏳'}</td><td><button onclick="editPoint(${idx})" style="padding:3px 6px;background:#2563eb;color:white;border:none;border-radius:4px;">✏️</button> <button onclick="deletePoint(${idx})" style="padding:3px 6px;background:#dc2626;color:white;border:none;border-radius:4px;">🗑️</button></td>`;
-        tbody.appendChild(row);
-    });
-    document.getElementById('pointsCounter').textContent = points.length ? `${points.filter(p=>p.triggered).length} / ${points.length} activados` : '';
+const tbody = document.getElementById('pointsBody');
+tbody.innerHTML = '';
+const currentLat = lastPosition?.coords.latitude;
+const currentLon = lastPosition?.coords.longitude;
+points.forEach((p, idx) => {
+let dist = '-';
+if (typeof currentLat === 'number' && typeof currentLon === 'number') {
+dist = Math.round(getDistance(currentLat, currentLon, p.lat, p.lon)) + ' m';
 }
-
-function resetPoints() { points.forEach(p => { p.triggered = false; p.anticipated = false; }); updateTable(); renderPointsList(); logHistory("Puntos reiniciados."); }
-
-function triggerPoint(p) { p.triggered = true; speak(p.type === 'ESTADISTICAS' ? buildStatsMessage() : replaceVariables(p.msg || '', currentStats())); logHistory(`Punto activado: ${p.msg || p.type}`); updateTable(); renderPointsList(); }
-
-function replaceVariables(msg, s) { return msg.replaceAll('${hora}', s.timeText).replaceAll('${velocidad}', s.currSpeedText).replaceAll('${promedio}', s.avgSpeedText).replaceAll('${distancia}', s.distanceText.toFixed(1)).replaceAll('${tiempo}', s.tripMinutesText); }
-
-function rebuildTextarea() { document.getElementById('inputData').value = points.map(p => p.type === 'ESTADISTICAS' ? `${p.lat.toFixed(6)},${p.lon.toFixed(6)},ESTADISTICAS${p.source === 'ORS' ? ',ORS' : ''}` : `${p.lat.toFixed(6)},${p.lon.toFixed(6)},${p.msg}${p.source === 'ORS' ? ',ORS' : ''}`).join('\n'); }
-
-function editPoint(idx) { if (idx < 0 || idx >= points.length) return; _editingPointIdx = idx; const p = points[idx]; document.getElementById('pointDialog').querySelector('h3').textContent = `Editar Pto ${idx+1}`; document.getElementById('modalSelect').value = ""; document.getElementById('modalText').value = p.type === 'ESTADISTICAS' ? 'ESTADISTICAS' : (p.msg || ''); document.getElementById('pointDialog').showModal(); }
-
-function deletePoint(idx) { if (!confirm(`¿Eliminar Pto ${idx+1}?`)) return; points.splice(idx, 1); rebuildTextarea(); redrawPointMarkers(); updateTable(); renderPointsList(); }
-
+const row = document.createElement('tr');
+const n = idx + 1;
+row.innerHTML = `<td style="color:var(--muted);font-size:0.8rem;">${n}</td><td>${escapeHtml(p.msg || p.type)}</td><td>${escapeHtml(dist)}</td><td>${p.triggered ? '✅' : '⏳'}</td><td style="white-space:nowrap"><button onclick="editPoint(${idx})" title="Editar pto ${n}" style="padding:3px 6px;background:#2563eb;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.75rem;">✏️</button> <button onclick="deletePoint(${idx})" title="Eliminar pto ${n}" style="padding:3px 6px;background:#dc2626;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.75rem;">🗑️</button></td>`;
+tbody.appendChild(row);
+});
+const triggered = points.filter(p => p.triggered).length;
+const counter = document.getElementById('pointsCounter');
+if (counter) counter.textContent = points.length ? `${triggered} / ${points.length} puntos activados` : '';
+}
+function resetPoints() {
+points.forEach(p => {
+p.triggered = false;
+p.anticipated = false;
+});
+updateTable();
+renderPointsList();
+logHistory("Puntos reiniciados.");
+}
+function triggerPoint(p) {
+p.triggered = true;
+const stats = currentStats();
+let spoken = p.type === 'ESTADISTICAS' ? buildStatsMessage() : replaceVariables(p.msg || '', stats);
+speak(spoken);
+logHistory(`Punto activado: ${p.msg || p.type}`);
+updateTable();
+renderPointsList();
+}
+function replaceVariables(msg, stats) {
+return msg.replaceAll('${hora}', stats.timeText)
+.replaceAll('${velocidad}', stats.currSpeedText)
+.replaceAll('${promedio}', stats.avgSpeedText)
+.replaceAll('${distancia}', stats.distanceText.toFixed(1))
+.replaceAll('${tiempo}', stats.tripMinutesText);
+}
+function rebuildTextarea() {
+document.getElementById('inputData').value = points.map(p => {
+if (p.type === 'ESTADISTICAS') {
+return `${p.lat.toFixed(6)},${p.lon.toFixed(6)},ESTADISTICAS${p.source === 'ORS' ? ',ORS' : ''}`;
+}
+return `${p.lat.toFixed(6)},${p.lon.toFixed(6)},${p.msg}${p.source === 'ORS' ? ',ORS' : ''}`;
+}).join('\n');
+}
+function editPoint(idx) {
+if (idx < 0 || idx >= points.length) return;
+if (map) map.closePopup();
+_editingPointIdx = idx;
+const p = points[idx];
+document.getElementById('pointDialog').querySelector('h3').textContent = `Editar Pto ${idx + 1}`;
+document.getElementById('modalSelect').value = "";
+document.getElementById('modalText').value = p.type === 'ESTADISTICAS' ? 'ESTADISTICAS' : (p.msg || '');
+document.getElementById('pointDialog').showModal();
+}
+function deletePoint(idx) {
+if (idx < 0 || idx >= points.length) return;
+const label = points[idx].msg || points[idx].type;
+if (!confirm(`¿Eliminar el Pto ${idx + 1}: "${label}"?`)) return;
+if (map) map.closePopup();
+logHistory(`Pto ${idx + 1} eliminado: "${label}".`);
+points.splice(idx, 1);
+rebuildTextarea();
+redrawPointMarkers();
+updateTable();
+renderPointsList();
+}
 function startNav() {
-    if (watchId !== null) return;
-    if (!navigator.geolocation) return alert("Geolocalización no soportada.");
-    if (noSleep) noSleep.enable().catch(()=>{});
-    document.getElementById('status').innerText = "Navegando...";
-    if (startTime === null) { startTime = Date.now(); totalPausedMs = 0; pauseStartTime = null; }
-    else if (pauseStartTime !== null) { totalPausedMs += Date.now() - pauseStartTime; pauseStartTime = null; }
-    logHistory("Navegación iniciada.");
-    watchId = navigator.geolocation.watchPosition((pos) => {
-        const { latitude, longitude, accuracy, speed } = pos.coords;
-        const radius = parseInt(document.getElementById('radius').value || '40', 10);
-        currentPositionSpeedKmh = speed ? speed * 3.6 : 0; latestAccuracy = accuracy;
-        if (accuracy > parseInt(document.getElementById('accThreshold').value || '50', 10) && Date.now() - lastAccuracyWarn > 60000) { lastAccuracyWarn = Date.now(); speak(`Señal GPS débil. Precisión ${Math.round(accuracy)} metros.`); }
-        if (lastPosition) { const d = getDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, latitude, longitude); if (d > 0 && d < 500) totalDistanceMeters += d; }
-        lastPosition = pos;
-        updateStatusPanel(latitude, longitude, accuracy, speed || 0);
-        routePath.push([latitude, longitude]); if (routeLine) routeLine.setLatLngs(routePath);
-        if (userMarker) userMarker.setLatLng([latitude, longitude]);
-        else if (map) userMarker = L.marker([latitude, longitude]).addTo(map).bindPopup("Tú");
-        if (isFollowing && map) map.setView([latitude, longitude]);
-        if (document.getElementById('sequentialMode').checked) {
-            const idx = points.findIndex(p => !p.triggered);
-            if (idx >= 0) { const dist = getDistance(latitude, longitude, points[idx].lat, points[idx].lon); if (dist <= radius) triggerPoint(points[idx]); }
-        } else {
-            let cl = null, cd = Infinity;
-            points.forEach(p => { if (!p.triggered) { const d = getDistance(latitude, longitude, p.lat, p.lon); if (d < cd) { cd = d; cl = p; } } });
-            if (cl && cd <= radius) triggerPoint(cl);
-        }
-        if (document.getElementById('repeatStats').checked) points.forEach(p => { if (p.type === 'ESTADISTICAS' && p.triggered && getDistance(latitude, longitude, p.lat, p.lon) > radius * 1.5) { p.triggered = false; p.anticipated = false; } });
-    }, (err) => { document.getElementById('status').innerText = 'Error GPS'; speak('Error GPS'); }, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
+if (watchId !== null) {
+logHistory("La navegación ya está activa. Detén primero antes de reiniciar.");
+return;
 }
-
+if (!navigator.geolocation) return alert("Geolocalización no soportada.");
+if (noSleep) noSleep.enable().catch(() => {});
+document.getElementById('status').innerText = "Navegando...";
+if (startTime === null) {
+startTime = Date.now();
+totalPausedMs = 0;
+pauseStartTime = null;
+} else if (pauseStartTime !== null) {
+totalPausedMs += Date.now() - pauseStartTime;
+pauseStartTime = null;
+}
+logHistory("Navegación iniciada.");
+updateGPSOriginHint();
+watchId = navigator.geolocation.watchPosition((pos) => {
+const { latitude, longitude, accuracy, speed } = pos.coords;
+const radius = parseInt(document.getElementById('radius').value || '40', 10);
+currentPositionSpeedKmh = speed != null && !isNaN(speed) ? (speed * 3.6) : 0;
+latestAccuracy = accuracy;
+const accThreshold = parseInt(document.getElementById('accThreshold').value || '50', 10);
+const nowMs = Date.now();
+if (accuracy > accThreshold && nowMs - lastAccuracyWarn > 60000) {
+lastAccuracyWarn = nowMs;
+speak(`Señal GPS débil. Precisión ${Math.round(accuracy)} metros.`);
+}
+if (lastPosition) {
+const stepDist = getDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, latitude, longitude);
+if (stepDist > 0 && stepDist < 500) {
+totalDistanceMeters += stepDist;
+}
+}
+lastPosition = pos;
+updateStatusPanel(latitude, longitude, accuracy, speed || 0);
+updateGPSOriginHint();
+routePath.push([latitude, longitude]);
+if (routeLine) routeLine.setLatLngs(routePath);
+if (userMarker) userMarker.setLatLng([latitude, longitude]);
+else if (map) userMarker = L.marker([latitude, longitude]).addTo(map).bindPopup("Tú");
+if (isFollowing && map) map.setView([latitude, longitude]);
+const sequential = document.getElementById('sequentialMode').checked;
+if (sequential) {
+const idx = points.findIndex(p => !p.triggered);
+if (idx >= 0) {
+const dist = getDistance(latitude, longitude, points[idx].lat, points[idx].lon);
+if (dist <= radius) {
+triggerPoint(points[idx]);
+}
+}
+} else {
+let closestPoint = null;
+let closestDist = Infinity;
+points.forEach((p) => {
+if (!p.triggered) {
+const dist = getDistance(latitude, longitude, p.lat, p.lon);
+if (dist < closestDist) {
+closestDist = dist;
+closestPoint = p;
+}
+}
+});
+if (closestPoint) {
+if (closestDist <= radius) {
+triggerPoint(closestPoint);
+}
+}
+}
+if (document.getElementById('repeatStats').checked) {
+points.forEach(p => {
+if (p.type === 'ESTADISTICAS' && p.triggered) {
+const dist = getDistance(latitude, longitude, p.lat, p.lon);
+if (dist > radius * 1.5) {
+p.triggered = false;
+p.anticipated = false;
+}
+}
+});
+}
+}, (err) => {
+let errMsg = 'Error de GPS desconocido.';
+if (err.code === 1) errMsg = 'Permiso de ubicación denegado.';
+else if (err.code === 2) errMsg = 'Señal GPS no disponible.';
+else if (err.code === 3) errMsg = 'Tiempo de espera del GPS agotado.';
+document.getElementById('status').innerText = 'Error GPS: ' + errMsg;
+speak(errMsg);
+logHistory('Error GPS: ' + errMsg);
+}, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
+}
 function stopNav() {
-    if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; pauseStartTime = Date.now(); synth.cancel(); document.getElementById('status').innerText = "Detenido"; if (noSleep) noSleep.disable(); logHistory("Navegación detenida."); }
+if (watchId !== null) {
+navigator.geolocation.clearWatch(watchId);
+watchId = null;
+pauseStartTime = Date.now();
+synth.cancel();
+document.getElementById('status').innerText = "Detenido";
+if (noSleep) noSleep.disable();
+logHistory("Navegación detenida.");
+updateGPSOriginHint();
 }
-
+}
 function updateStatusPanel(lat, lon, accuracy, speedMps) {
-    document.getElementById('lat').innerText = lat.toFixed(5); document.getElementById('lon').innerText = lon.toFixed(5);
-    document.getElementById('acc').innerText = Math.round(accuracy); document.getElementById('speed').innerText = formatSpeedKmh(speedMps);
-    if (startTime) {
-        const el = Date.now() - startTime - totalPausedMs;
-        document.getElementById('avgSpeed').innerText = (el > 0 ? (totalDistanceMeters / (el / 1000)) * 3.6 : 0).toFixed(0) + " km/h";
-        document.getElementById('distanceTravelled').innerText = formatKm(totalDistanceMeters);
-        document.getElementById('tripTime').innerText = formatDuration(el);
-    }
+document.getElementById('lat').innerText = lat.toFixed(5);
+document.getElementById('lon').innerText = lon.toFixed(5);
+document.getElementById('acc').innerText = Math.round(accuracy);
+document.getElementById('speed').innerText = formatSpeedKmh(speedMps);
+if (startTime) {
+const elapsed = Date.now() - startTime - totalPausedMs;
+const avg = elapsed > 0 ? (totalDistanceMeters / (elapsed / 1000)) : 0;
+document.getElementById('avgSpeed').innerText = (avg * 3.6).toFixed(0) + " km/h";
+document.getElementById('distanceTravelled').innerText = formatKm(totalDistanceMeters);
+document.getElementById('tripTime').innerText = formatDuration(elapsed);
 }
-
+}
 function redrawPointMarkers() {
-    if (!map) return;
-    pointMarkers.forEach(m => map.removeLayer(m)); pointMarkers = [];
-    points.forEach((p, idx) => {
-        const m = L.marker([p.lat, p.lon]).addTo(map);
-        m.bindPopup(`<strong>Pto ${idx+1}</strong><br>${escapeHtml(p.msg || p.type)}<br><button onclick="editPoint(${idx})" style="padding:4px 10px;background:#2563eb;color:white;border:none;border-radius:4px;margin-top:4px;">✏️ Editar</button> <button onclick="deletePoint(${idx})" style="padding:4px 10px;background:#dc2626;color:white;border:none;border-radius:4px;margin-top:4px;">🗑️ Eliminar</button>`);
-        m.on('click', () => highlightPointInList(idx));
-        pointMarkers.push(m);
-    });
+if (!map) return;
+pointMarkers.forEach(m => map.removeLayer(m));
+pointMarkers = [];
+points.forEach((p, idx) => {
+const marker = L.marker([p.lat, p.lon]).addTo(map);
+const n = idx + 1;
+marker.bindPopup(
+`<strong>Pto ${n}</strong><br>${escapeHtml(p.msg || p.type)}<br>` +
+`<div style="margin-top:6px;display:flex;gap:6px;">` +
+`<button onclick="editPoint(${idx})" style="padding:4px 10px;background:#2563eb;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.82rem;">✏️ Editar</button>` +
+`<button onclick="deletePoint(${idx})" style="padding:4px 10px;background:#dc2626;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.82rem;">🗑️ Eliminar</button>` +
+`</div>`
+);
+marker.on('click', function() {
+highlightPointInList(idx);
+});
+pointMarkers.push(marker);
+});
 }
-
-function createAudioFromFile(f) { return { url: URL.createObjectURL(f), name: f.name }; }
-function loadPlaylistFromInput(files) { musicPlaylist.forEach(t => { if (t.url) URL.revokeObjectURL(t.url); }); musicPlaylist = Array.from(files).map(createAudioFromFile); currentTrackIndex = musicPlaylist.length ? 0 : -1; renderPlaylist(); document.getElementById('musicStatus').textContent = 'Playlist cargada'; }
-function renderPlaylist() { const box = document.getElementById('playlist'); box.innerHTML = ''; musicPlaylist.forEach((t, i) => { const d = document.createElement('div'); d.className = 'playlist-item' + (i === currentTrackIndex ? ' active' : ''); d.innerHTML = `<span>${escapeHtml(t.name)}</span>`; d.onclick = () => { currentTrackIndex = i; playCurrentTrack(); }; box.appendChild(d); }); }
-function getMusicVolume() { return parseFloat(document.getElementById('globalVolume').value || '1') * parseFloat(document.getElementById('musicVolume').value || '1'); }
+function createAudioFromFile(file) { return { url: URL.createObjectURL(file), name: file.name }; }
+function loadPlaylistFromInput(files) {
+musicPlaylist.forEach(t => { if (t.url) URL.revokeObjectURL(t.url); });
+musicPlaylist = Array.from(files).map(createAudioFromFile);
+currentTrackIndex = musicPlaylist.length ? 0 : -1;
+renderPlaylist();
+document.getElementById('musicStatus').textContent = 'Playlist cargada';
+}
+function renderPlaylist() {
+const box = document.getElementById('playlist');
+box.innerHTML = '';
+musicPlaylist.forEach((track, idx) => {
+const div = document.createElement('div');
+div.className = 'playlist-item' + (idx === currentTrackIndex ? ' active' : '');
+div.innerHTML = `<span>${escapeHtml(track.name)}</span>`;
+div.onclick = () => { currentTrackIndex = idx; playCurrentTrack(); };
+box.appendChild(div);
+});
+}
+function getMusicVolume() {
+return parseFloat(document.getElementById('globalVolume').value || '1') * parseFloat(document.getElementById('musicVolume').value || '1');
+}
 function playCurrentTrack() {
-    if (currentTrackIndex < 0) return;
-    if (currentAudio) currentAudio.pause();
-    currentAudio = new Audio(musicPlaylist[currentTrackIndex].url);
-    currentAudio.volume = getMusicVolume(); currentAudio.loop = repeatMode;
-    currentAudio.onended = () => { if (shuffleMode) { let n = currentTrackIndex; while(n===currentTrackIndex) n = Math.floor(Math.random()*musicPlaylist.length); currentTrackIndex = n; playCurrentTrack(); } else if (!repeatMode) nextTrack(); else playCurrentTrack(); };
-    currentAudio.play().then(() => { document.getElementById('musicStatus').textContent = `Música: ${musicPlaylist[currentTrackIndex].name}`; renderPlaylist(); }).catch(()=>{});
+if (currentTrackIndex < 0 || currentTrackIndex >= musicPlaylist.length) return;
+if (currentAudio) currentAudio.pause();
+currentAudio = new Audio(musicPlaylist[currentTrackIndex].url);
+currentAudio.volume = getMusicVolume();
+currentAudio.loop = repeatMode;
+currentAudio.onended = () => {
+if (shuffleMode && musicPlaylist.length > 1) {
+let next = currentTrackIndex;
+while (next === currentTrackIndex) next = Math.floor(Math.random() * musicPlaylist.length);
+currentTrackIndex = next; playCurrentTrack();
+} else if (!repeatMode) nextTrack();
+else playCurrentTrack();
+};
+currentAudio.play().then(() => {
+document.getElementById('musicStatus').textContent = `Música: ${musicPlaylist[currentTrackIndex].name}`;
+renderPlaylist();
+}).catch(() => {});
 }
-function playMusic() { if (!musicPlaylist.length && document.getElementById('musicFiles').files.length) loadPlaylistFromInput(document.getElementById('musicFiles').files); if (!currentAudio) playCurrentTrack(); else currentAudio.play(); }
+function playMusic() {
+if (!musicPlaylist.length && document.getElementById('musicFiles').files.length) loadPlaylistFromInput(document.getElementById('musicFiles').files);
+if (!currentAudio) playCurrentTrack(); else currentAudio.play();
+}
 function pauseMusic() { if (currentAudio) currentAudio.pause(); }
 function nextTrack() { if (!musicPlaylist.length) return; currentTrackIndex = (currentTrackIndex + 1) % musicPlaylist.length; playCurrentTrack(); }
 function prevTrack() { if (!musicPlaylist.length) return; currentTrackIndex = (currentTrackIndex - 1 + musicPlaylist.length) % musicPlaylist.length; playCurrentTrack(); }
-function toggleShuffle() { shuffleMode = !shuffleMode; document.getElementById('btnShuffle').classList.toggle('btn-active', shuffleMode); saveConfigToLocalStorage(); }
-function toggleRepeat() { repeatMode = !repeatMode; if (currentAudio) currentAudio.loop = repeatMode; document.getElementById('btnRepeat').classList.toggle('btn-active', repeatMode); saveConfigToLocalStorage(); }
+function toggleShuffle() {
+shuffleMode = !shuffleMode;
+document.getElementById('btnShuffle').classList.toggle('btn-active', shuffleMode);
+saveConfigToLocalStorage();
+}
+function toggleRepeat() {
+repeatMode = !repeatMode;
+if (currentAudio) currentAudio.loop = repeatMode;
+document.getElementById('btnRepeat').classList.toggle('btn-active', repeatMode);
+saveConfigToLocalStorage();
+}
 document.getElementById('musicFiles').addEventListener('change', function() { if (this.files.length) loadPlaylistFromInput(this.files); });
 document.getElementById('musicVolume').addEventListener('input', function() { if (currentAudio) currentAudio.volume = getMusicVolume(); });
 document.getElementById('globalVolume').addEventListener('input', function() { if (currentAudio) currentAudio.volume = getMusicVolume(); });
 
+// 🆕 GUARDAR TAMBIÉN LOS 4 PARÁMETROS PERSONALIZABLES
 function saveConfigToLocalStorage() {
-    if (!document.getElementById('saveState').checked) return;
-    localStorage.setItem('gps_config', JSON.stringify({
-        radius: document.getElementById('radius').value, voiceVolume: document.getElementById('voiceVolume').value, globalVolume: document.getElementById('globalVolume').value,
-        sequentialMode: document.getElementById('sequentialMode').checked, repeatStats: document.getElementById('repeatStats').checked, accThreshold: document.getElementById('accThreshold').value,
-        musicVolume: document.getElementById('musicVolume').value, shuffleMode, repeatMode,
-        intervalo: document.getElementById('intervaloInput').value, offsetMetros: document.getElementById('offsetInput').value, umbralCR: document.getElementById('umbralCRInput').value, bufferCR: document.getElementById('bufferCRInput').value
-    }));
+const saveStateChecked = document.getElementById('saveState').checked;
+if (!saveStateChecked) return;
+const config = {
+radius: document.getElementById('radius').value,
+voiceVolume: document.getElementById('voiceVolume').value,
+globalVolume: document.getElementById('globalVolume').value,
+sequentialMode: document.getElementById('sequentialMode').checked,
+repeatStats: document.getElementById('repeatStats').checked,
+accThreshold: document.getElementById('accThreshold').value,
+musicVolume: document.getElementById('musicVolume').value,
+shuffleMode: shuffleMode,
+repeatMode: repeatMode,
+intervalo: document.getElementById('intervaloInput').value,
+offsetMetros: document.getElementById('offsetInput').value,
+umbralCR: document.getElementById('umbralCRInput').value,
+bufferCR: document.getElementById('bufferCRInput').value
+};
+localStorage.setItem('gps_config', JSON.stringify(config));
 }
 
+// 🆕 CARGAR TAMBIÉN LOS 4 PARÁMETROS PERSONALIZABLES
 function loadConfigFromLocalStorage() {
-    const c = localStorage.getItem('gps_config'); if (!c) return;
-    try {
-        const cfg = JSON.parse(c);
-        if (cfg.radius) document.getElementById('radius').value = cfg.radius;
-        if (cfg.voiceVolume) document.getElementById('voiceVolume').value = cfg.voiceVolume;
-        if (cfg.globalVolume) document.getElementById('globalVolume').value = cfg.globalVolume;
-        if (cfg.sequentialMode !== undefined) document.getElementById('sequentialMode').checked = cfg.sequentialMode;
-        if (cfg.repeatStats !== undefined) document.getElementById('repeatStats').checked = cfg.repeatStats;
-        if (cfg.accThreshold) document.getElementById('accThreshold').value = cfg.accThreshold;
-        if (cfg.musicVolume) document.getElementById('musicVolume').value = cfg.musicVolume;
-        if (cfg.shuffleMode !== undefined) { shuffleMode = cfg.shuffleMode; document.getElementById('btnShuffle').classList.toggle('btn-active', shuffleMode); }
-        if (cfg.repeatMode !== undefined) { repeatMode = cfg.repeatMode; document.getElementById('btnRepeat').classList.toggle('btn-active', repeatMode); }
-        if (cfg.intervalo) document.getElementById('intervaloInput').value = cfg.intervalo;
-        if (cfg.offsetMetros) document.getElementById('offsetInput').value = cfg.offsetMetros;
-        if (cfg.umbralCR) document.getElementById('umbralCRInput').value = cfg.umbralCR;
-        if (cfg.bufferCR) document.getElementById('bufferCRInput').value = cfg.bufferCR;
-        if (currentAudio) currentAudio.volume = getMusicVolume();
-    } catch (e) {}
+const savedConfig = localStorage.getItem('gps_config');
+if (!savedConfig) return;
+try {
+const config = JSON.parse(savedConfig);
+if (config.radius !== undefined) document.getElementById('radius').value = config.radius;
+if (config.voiceVolume !== undefined) document.getElementById('voiceVolume').value = config.voiceVolume;
+if (config.globalVolume !== undefined) document.getElementById('globalVolume').value = config.globalVolume;
+if (config.sequentialMode !== undefined) document.getElementById('sequentialMode').checked = config.sequentialMode;
+if (config.repeatStats !== undefined) document.getElementById('repeatStats').checked = config.repeatStats;
+if (config.accThreshold !== undefined) document.getElementById('accThreshold').value = config.accThreshold;
+if (config.musicVolume !== undefined) document.getElementById('musicVolume').value = config.musicVolume;
+if (config.shuffleMode !== undefined) {
+shuffleMode = config.shuffleMode;
+document.getElementById('btnShuffle').classList.toggle('btn-active', shuffleMode);
 }
-
-['radius','voiceVolume','globalVolume','accThreshold','musicVolume','intervaloInput','offsetInput','umbralCRInput','bufferCRInput'].forEach(id => document.getElementById(id).addEventListener('input', saveConfigToLocalStorage));
-['sequentialMode','repeatStats','saveState'].forEach(id => document.getElementById(id).addEventListener('change', saveConfigToLocalStorage));
-
-function lockScreen() { isScreenLocked = true; document.getElementById('lockOverlay').classList.add('active'); document.getElementById('lockButton').style.display = 'none'; logHistory("Pantalla bloqueada"); }
-function unlockScreen() { isScreenLocked = false; document.getElementById('lockOverlay').classList.remove('active'); document.getElementById('lockButton').style.display = 'block'; tapCount = 0; logHistory("Pantalla desbloqueada"); }
-function showToast() { const t = document.getElementById('toast'); t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
-document.getElementById('lockOverlay').addEventListener('click', function(e) {
-    if (!isScreenLocked) return;
-    tapCount++;
-    if (tapCount === 1) tapTimer = setTimeout(() => { if (tapCount < 3) showToast(); tapCount = 0; }, TAP_INTERVAL);
-    if (tapCount === 3) { clearTimeout(tapTimer); unlockScreen(); }
+if (config.repeatMode !== undefined) {
+repeatMode = config.repeatMode;
+document.getElementById('btnRepeat').classList.toggle('btn-active', repeatMode);
+}
+if (config.intervalo) document.getElementById('intervaloInput').value = config.intervalo;
+if (config.offsetMetros) document.getElementById('offsetInput').value = config.offsetMetros;
+if (config.umbralCR) document.getElementById('umbralCRInput').value = config.umbralCR;
+if (config.bufferCR) document.getElementById('bufferCRInput').value = config.bufferCR;
+if (currentAudio) currentAudio.volume = getMusicVolume();
+} catch (e) {
+console.error("Error al cargar configuración:", e);
+}
+}
+document.getElementById('radius').addEventListener('input', saveConfigToLocalStorage);
+document.getElementById('voiceVolume').addEventListener('input', saveConfigToLocalStorage);
+document.getElementById('globalVolume').addEventListener('input', saveConfigToLocalStorage);
+document.getElementById('sequentialMode').addEventListener('change', saveConfigToLocalStorage);
+document.getElementById('repeatStats').addEventListener('change', saveConfigToLocalStorage);
+document.getElementById('accThreshold').addEventListener('input', saveConfigToLocalStorage);
+document.getElementById('musicVolume').addEventListener('input', saveConfigToLocalStorage);
+// 🆕 EVENT LISTENERS PARA LOS 4 PARÁMETROS
+document.getElementById('intervaloInput').addEventListener('input', saveConfigToLocalStorage);
+document.getElementById('offsetInput').addEventListener('input', saveConfigToLocalStorage);
+document.getElementById('umbralCRInput').addEventListener('input', saveConfigToLocalStorage);
+document.getElementById('bufferCRInput').addEventListener('input', saveConfigToLocalStorage);
+document.getElementById('saveState').addEventListener('change', function() {
+if (this.checked) saveConfigToLocalStorage();
 });
-document.addEventListener('click', e => { if (isScreenLocked && !e.target.closest('#lockOverlay')) { e.stopPropagation(); e.preventDefault(); showToast(); } }, true);
-document.addEventListener('touchstart', e => { if (isScreenLocked && !e.target.closest('#lockOverlay')) { e.stopPropagation(); e.preventDefault(); showToast(); } }, true);
+function lockScreen() {
+isScreenLocked = true;
+document.getElementById('lockOverlay').classList.add('active');
+document.getElementById('lockButton').style.display = 'none';
+logHistory("Pantalla bloqueada");
+}
+function unlockScreen() {
+isScreenLocked = false;
+document.getElementById('lockOverlay').classList.remove('active');
+document.getElementById('lockButton').style.display = 'block';
+tapCount = 0;
+logHistory("Pantalla desbloqueada");
+}
+function showToast() {
+const toast = document.getElementById('toast');
+toast.classList.add('show');
+setTimeout(() => {
+toast.classList.remove('show');
+}, 2000);
+}
+document.getElementById('lockOverlay').addEventListener('click', function(e) {
+if (!isScreenLocked) return;
+tapCount++;
+if (tapCount === 1) {
+tapTimer = setTimeout(() => {
+if (tapCount < 3) {
+showToast();
+}
+tapCount = 0;
+}, TAP_INTERVAL);
+}
+if (tapCount === 3) {
+clearTimeout(tapTimer);
+unlockScreen();
+}
+});
+document.addEventListener('click', function(e) {
+if (isScreenLocked && !e.target.closest('#lockOverlay')) {
+e.stopPropagation();
+e.preventDefault();
+showToast();
+}
+}, true);
+document.addEventListener('touchstart', function(e) {
+if (isScreenLocked && !e.target.closest('#lockOverlay')) {
+e.stopPropagation();
+e.preventDefault();
+showToast();
+}
+}, true);
 
+// =========================================================
+// INICIALIZACIÓN
+// =========================================================
 initMap();
 renderWaypoints();
 renderPointsList();
@@ -1257,6 +2059,7 @@ loadConfigFromLocalStorage();
 const savedKey = localStorage.getItem('ors_api_key');
 if (savedKey) document.getElementById('orsApiKeyInput').value = savedKey;
 
+// Verificar edges en caché al cargar la página
 checkEdgesInCache().then(loaded => {
     if (loaded) logHistory("🚀 Sistema listo con mapa cargado");
     else logHistory("⚠️ Carga el archivo de edges manualmente.");
